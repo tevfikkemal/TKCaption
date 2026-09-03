@@ -70,24 +70,35 @@
    * yolu uzerinde calisir ve yanlis yere bakar. realpathSync junction'i
    * gercek hedefine cozer, boylece hem gelistirme hem dagitim yerlesimi tutar.
    */
+  var coreSearchLog = [];
+
   function resolveCore() {
     if (coreDir) return coreDir;
-    if (!nodeReq) return null;
+    coreSearchLog = [];
+    if (!nodeReq) { coreSearchLog.push('Node.js kapalı'); return null; }
+
     var ext = CEP.extensionPath();
+    coreSearchLog.push('eklenti yolu: ' + (ext || '(alınamadı)'));
     if (!ext) return null;
+
     var real = ext;
-    try { real = nfs.realpathSync(ext); } catch (e) {}
+    try {
+      real = nfs.realpathSync(ext);
+      if (real !== ext) coreSearchLog.push('junction çözüldü: ' + real);
+    } catch (e) {
+      coreSearchLog.push('realpath başarısız: ' + e.message);
+    }
+
     var candidates = [
       npath.join(real, 'core'),          // dagitim: core/ eklentinin icinde
       npath.join(real, '..', 'core')     // gelistirme: depo kokunde
     ];
     for (var i = 0; i < candidates.length; i++) {
-      try {
-        if (nfs.existsSync(npath.join(candidates[i], 'src', 'pipeline.js'))) {
-          coreDir = candidates[i];
-          return coreDir;
-        }
-      } catch (e) {}
+      var probe = npath.join(candidates[i], 'src', 'pipeline.js');
+      var found = false;
+      try { found = nfs.existsSync(probe); } catch (e) {}
+      coreSearchLog.push((found ? 'BULUNDU  ' : 'yok      ') + probe);
+      if (found) { coreDir = candidates[i]; return coreDir; }
     }
     return null;
   }
@@ -118,6 +129,16 @@
       field('envHost', (host.appName || 'PPRO') + ' ' + (host.appVersion || '?'), 'ok');
     } else {
       field('envHost', 'okunamadı', 'warn');
+    }
+
+    // Cekirdek modulleri bulunuyor mu? Panel acilir acilmaz gorunsun ki
+    // "core bulunamadi" hatasi calistirma anina kadar saklanmasin.
+    var core = resolveCore();
+    if (core) {
+      field('envCore', core, 'ok');
+    } else {
+      field('envCore', 'bulunamadı', 'err');
+      $('envCore').title = coreSearchLog.join('\n');
     }
 
     // Kopru yuklu mu? bridge.jsx ScriptPath uzerinden otomatik yuklenmeli.
@@ -257,8 +278,9 @@
     }
     var core = resolveCore();
     if (!core) {
-      show('runOut', '<span class="err">core/ klasörü bulunamadı. ' +
-           'Eklenti eksik kurulmuş olabilir.</span>');
+      show('runOut', '<span class="err">core/ klasörü bulunamadı.</span>\n\n' +
+           '<span class="dim">Aranan yollar:\n  ' +
+           esc(coreSearchLog.join('\n  ')) + '</span>');
       return;
     }
 

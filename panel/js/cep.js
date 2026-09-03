@@ -63,11 +63,30 @@
       });
     },
 
-    /** CEP'in bildigi sistem yollari (extension, userData, common vb.) */
+    /**
+     * CEP'in bildigi sistem yollari (extension, userData, common vb.)
+     *
+     * DIKKAT: __adobe_cep__.getSystemPath() duz yol DEGIL, "file:///C:/..."
+     * bicimde URL dondurur ve bosluklar %20 olarak kodlanmistir. Adobe'un
+     * CSInterface.js'i bunu iceride kirpar; ham hali fs.existsSync'e verilirse
+     * her zaman false doner. Ayni donusumu burada yapiyoruz.
+     */
     getSystemPath: function (type) {
       var c = cep();
       if (!c) return null;
-      try { return c.getSystemPath(type); } catch (e) { return null; }
+      try {
+        var p = c.getSystemPath(type);
+        if (typeof p !== 'string' || !p) return null;
+        p = decodeURI(p);
+        if (p.indexOf('file:///') === 0) {
+          var rest = p.slice(8);
+          // Windows'ta "C:/..." ile baslar; POSIX'te kok egik cizgi geri gelir
+          p = /^[a-zA-Z]:/.test(rest) ? rest : '/' + rest;
+        } else if (p.indexOf('file://') === 0) {
+          p = p.slice(7);
+        }
+        return p;
+      } catch (e) { return null; }
     },
 
     /** Eklentinin kendi klasoru — core/ ve models/ yollarini bundan turetiyoruz */
