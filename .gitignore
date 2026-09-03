@@ -1,0 +1,11 @@
+node_modules/
+models/*
+!models/.gitkeep
+bin/*
+!bin/.gitkeep
+tmp/
+*.log
+.DS_Store
+Thumbs.db
+core/test/out/
+*.zxp
