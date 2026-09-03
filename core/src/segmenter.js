@@ -42,6 +42,11 @@ const STARTS_UPPER = /^["'(\[]?[\p{Lu}]/u;
  * @returns {boolean} true ise bu noktadan BOLUNEMEZ
  */
 function forbiddenBreak(prev, next) {
+  // Cumle sinirinda bolmek HER ZAMAN serbesttir. Bu kontrol once gelmeli:
+  // "ne" bir baglactir ama "ne?" cumle sonudur - kelimeye bakip yasaklarsak
+  // iki cumleyi ayni satira sikistiririz.
+  if (SENTENCE_END.test(prev.text)) return false;
+
   const nx = norm(next.text);
   const pv = norm(prev.text);
   if (CLITICS.has(nx)) return true;        // "geldi | de"
@@ -169,9 +174,17 @@ function mergeShort(blocks, cfg) {
     const merged = prev.concat(b);
     const c = blockCost(merged, cfg);
     const prevDur = prev[prev.length - 1].end - prev[0].start;
-    // Sadece onceki blok cok kisaysa ve birlesim tum kurallara uyuyorsa birlestir
-    if (prevDur < L.minDurationSec && gap < 0.6 && c.chars <= maxChars &&
-        c.dur <= L.maxDurationSec && c.cps <= L.maxCps) {
+    const curDur = b[b.length - 1].end - b[0].start;
+
+    // Iki taraftan biri asgari sureden kisaysa birlestirmeyi dene.
+    // Ekranda 0.7 saniye kalan bir altyazi okunamaz; bunu duzeltmek icin
+    // okuma hizi tavanini bir miktar esnetmeye degir (hizli konusmada
+    // zaten hicbir blok 17 cps'in altina inemiyor).
+    const fixesDuration = prevDur < L.minDurationSec || curDur < L.minDurationSec;
+    const cpsLimit = fixesDuration ? L.maxCps * 1.3 : L.maxCps;
+
+    if (fixesDuration && gap < 0.6 && c.chars <= maxChars &&
+        c.dur <= L.maxDurationSec && c.cps <= cpsLimit) {
       out[out.length - 1] = merged;
     } else {
       out.push(b);
@@ -239,17 +252,28 @@ function applyTiming(blocks, cfg) {
     const b = blocks[i];
     const dur = b.end - b.start;
 
-    // Cok kisaysa uzat - once ileri, gerekirse geri
-    if (dur < L.minDurationSec) {
-      const need = L.minDurationSec - dur;
+    // Hedef sure: hem asgari sureyi hem OKUMA HIZINI (cps) karsilasin.
+    // Hizli konusmada blok metni kisa surede sigmaz; altyazinin ardindaki
+    // duraklamaya tasmasi standart altyazi pratigidir.
+    const chars = (b.text || '').replace(/\n/g, ' ').length;
+    const cpsNeed = L.maxCps > 0 ? chars / L.maxCps : 0;
+    const want = Math.min(Math.max(L.minDurationSec, cpsNeed), L.maxDurationSec);
+
+    if (dur < want) {
+      const need = want - dur;
       const next = blocks[i + 1];
       const room = next ? Math.max(0, (next.start - b.end) - minGap) : need;
       b.end += Math.min(need, room);
-      const still = L.minDurationSec - (b.end - b.start);
+      const still = want - (b.end - b.start);
       if (still > 0) {
-        const prev = blocks[i - 1];
-        const back = prev ? Math.max(0, (b.start - prev.end) - minGap) : b.start;
-        b.start -= Math.min(still, back);
+        // Geriye dogru uzatmak konusmanin oncesine tasar; sadece asgari
+        // sureyi tutturmak icin yapilir, okuma hizi ugruna degil.
+        const backWant = Math.min(still, Math.max(0, L.minDurationSec - (b.end - b.start)));
+        if (backWant > 0) {
+          const prev = blocks[i - 1];
+          const back = prev ? Math.max(0, (b.start - prev.end) - minGap) : b.start;
+          b.start -= Math.min(backWant, back);
+        }
       }
     }
     // Cok uzunsa kis (okuma bittikten sonra ekranda asili kalmasin)

@@ -167,8 +167,15 @@ async function ensureVadModel(onProgress) {
 /** whisper.cpp calistirilabilirinin adi surumler arasinda degisti. */
 const EXE_NAMES = ['whisper-cli.exe', 'main.exe', 'whisper-cli', 'main'];
 
+/**
+ * DIKKAT: main.exe bu surumlerde yalnizca bir uyari basip 1 ile cikan
+ * "deprecation stub"tir; gercek calistirilabilir whisper-cli.exe'dir.
+ * Bu yuzden dizin sirasina gore ILK bulunani degil, EXE_NAMES'teki
+ * ONCELIGE gore en uygun olani secmemiz gerekir (main.exe son care).
+ */
 function findExe(dir) {
   if (!fs.existsSync(dir)) return null;
+  const hits = new Map();
   const stack = [dir];
   while (stack.length) {
     const d = stack.pop();
@@ -177,8 +184,11 @@ function findExe(dir) {
     for (const e of entries) {
       const full = path.join(d, e.name);
       if (e.isDirectory()) stack.push(full);
-      else if (EXE_NAMES.includes(e.name)) return full;
+      else if (EXE_NAMES.includes(e.name) && !hits.has(e.name)) hits.set(e.name, full);
     }
+  }
+  for (const name of EXE_NAMES) {           // oncelik sirasiyla ara
+    if (hits.has(name)) return hits.get(name);
   }
   return null;
 }

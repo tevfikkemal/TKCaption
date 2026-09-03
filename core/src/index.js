@@ -140,12 +140,40 @@ function makeReporter(useJson) {
 /*  Ses hazirligi                                                      */
 /* ------------------------------------------------------------------ */
 
-function hasFfmpeg() {
-  const r = spawnSync('ffmpeg', ['-version'], { stdio: 'ignore', timeout: 10000 });
-  return r.status === 0;
+/**
+ * ffmpeg'i bul. Sirasiyla: --ffmpeg secenegi, ortam degiskeni, config,
+ * PATH, sonra sistemde sik rastlanan konumlar.
+ *
+ * Not: ffmpeg SADECE WAV disi girdiler icin gerekir. Premiere zaten WAV
+ * urettigi icin eklentinin ana akisinda hic kullanilmaz.
+ */
+const FFMPEG_HINTS = [
+  'C:\\Program Files\\Topaz Labs LLC\\Topaz Video AI\\ffmpeg.exe',
+  'C:\\ffmpeg\\bin\\ffmpeg.exe',
+  'C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe'
+];
+
+function works(exe) {
+  try {
+    return spawnSync(exe, ['-version'], { stdio: 'ignore', timeout: 15000 }).status === 0;
+  } catch (_) { return false; }
 }
 
-function prepareAudio(inputPath, workDir, report) {
+function resolveFfmpeg(opts, cfg) {
+  const candidates = [
+    opts.ffmpeg,
+    process.env.TR_ALTYAZI_FFMPEG,
+    cfg && cfg.ffmpegPath,
+    'ffmpeg'
+  ].concat(FFMPEG_HINTS).filter(Boolean);
+  for (const c of candidates) {
+    if (c !== 'ffmpeg' && !fs.existsSync(c)) continue;
+    if (works(c)) return c;
+  }
+  return null;
+}
+
+function prepareAudio(inputPath, workDir, report, opts, cfg) {
   const ext = path.extname(inputPath).toLowerCase();
   const target = path.join(workDir, 'audio16k.wav');
 
@@ -164,16 +192,18 @@ function prepareAudio(inputPath, workDir, report) {
   }
 
   // WAV disi girdi: ffmpeg gerekli
-  if (!hasFfmpeg()) {
+  const ffmpeg = resolveFfmpeg(opts || {}, cfg);
+  if (!ffmpeg) {
     throw new Error(
-      `"${ext}" biçimi için ffmpeg gerekli ama PATH'te bulunamadı.\n` +
+      `"${ext}" biçimi için ffmpeg gerekli ama bulunamadı.\n` +
       `Seçenekler:\n` +
       `  1) Girdiyi WAV olarak verin (Premiere zaten WAV üretiyor — ffmpeg gerekmez)\n` +
-      `  2) ffmpeg kurun: https://www.gyan.dev/ffmpeg/builds/ (LGPL "essentials" yeterli)`
+      `  2) --ffmpeg <yol> ile konumunu belirtin\n` +
+      `  3) ffmpeg kurun: https://www.gyan.dev/ffmpeg/builds/ (LGPL "essentials" yeterli)`
     );
   }
-  report.step('ses', 'ffmpeg ile 16 kHz mono WAV çıkarılıyor');
-  execFileSync('ffmpeg', ['-y', '-i', inputPath, '-vn', '-ar', '16000', '-ac', '1',
+  report.step('ses', `ffmpeg ile 16 kHz mono WAV çıkarılıyor (${path.basename(ffmpeg)})`);
+  execFileSync(ffmpeg, ['-y', '-i', inputPath, '-vn', '-ar', '16000', '-ac', '1',
     '-c:a', 'pcm_s16le', target], { stdio: ['ignore', 'ignore', 'pipe'], timeout: 1800000 });
   const d = audio.decodeWav(target);
   return { path: target, durationSec: d.durationSec };
