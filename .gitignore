@@ -9,3 +9,6 @@ tmp/
 Thumbs.db
 core/test/out/
 *.zxp
+
+# test malzemesi (buyuk)
+video/

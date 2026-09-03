@@ -1,15 +1,25 @@
 {
-  "name": "tr-altyazi-core",
+  "name": "tkcaption-core",
   "version": "0.1.0",
-  "description": "Türkçe otomatik altyazı çekirdeği — whisper.cpp tabanlı, yerel, ücretsiz",
+  "description": "TK Caption cekirdegi — Adobe Premiere Pro icin Turkce otomatik altyazi (yerel, ucretsiz)",
   "type": "commonjs",
   "main": "src/index.js",
-  "bin": { "tr-altyazi": "src/index.js" },
+  "bin": {
+    "tkcaption": "src/index.js"
+  },
   "scripts": {
     "test": "node --test test/",
     "start": "node src/index.js"
   },
-  "engines": { "node": ">=16" },
+  "engines": {
+    "node": ">=16"
+  },
   "license": "MIT",
-  "dependencies": {}
+  "dependencies": {},
+  "author": "Tevfik Kemal (TK Labs)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tevfikkemal/TKCaption.git"
+  },
+  "homepage": "https://github.com/tevfikkemal/TKCaption"
 }
