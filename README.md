@@ -44,9 +44,32 @@ Ayrıca konuşma tanıma motorlarının Türkçe'de sessiz bölümlerde üretti�
 |---|---|
 | **1 — Çekirdek CLI** (ses → altyazı) | Çalışıyor, gerçek videoyla test edildi |
 | **2 — ExtendScript köprüsü** (Premiere ↔ CLI) | Yazıldı, Premiere içinde henüz test edilmedi |
-| **3 — CEP paneli** (arayüz) | Başlanmadı |
+| **3 — CEP paneli** (arayüz) | Teşhis sürümü kuruluyor, altyazı üretimi henüz bağlı değil |
 
-Şu an bir komut satırı aracı. Premiere eklentisi hâlâ yapım aşamasında.
+Şu an kullanılabilir olan şey **komut satırı aracıdır**. Panel yalnızca teşhis
+yapar: ortamı kontrol eder, sekans bilgisini okur ve altyazı pisti API'sini yoklar.
+"Altyazı Oluştur" düğmesi henüz yoktur.
+
+### Paneli kurmak (geliştirme)
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\install-panel.ps1
+```
+
+İki şey yapar: Adobe'un imzasız panelleri yüklemesi için gereken `PlayerDebugMode`
+bayrağını açar (`HKCU` altında, yönetici gerektirmez) ve CEP eklenti klasöründen
+bu depodaki `panel/` klasörüne bir junction kurar — kodu değiştirdiğinizde kopyalamanız
+gerekmez.
+
+Premiere'i yeniden başlatın, ardından **Pencere > Uzantılar > TK Caption**.
+
+Geri almak için `-Uninstall` ekleyin.
+
+Paneli Premiere açmadan görmek için:
+
+```bash
+node tools/serve-panel.js
+```
 
 ### Ölçülen sonuç
 

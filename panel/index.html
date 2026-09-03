@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TK Caption</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="head">
+    <h1>TK Caption</h1>
+    <span class="by">by TK Labs</span>
+  </header>
+
+  <!-- Ortam durumu: panel acilir acilmaz doldurulur -->
+  <section class="card">
+    <h2>Ortam</h2>
+    <dl class="env" id="env">
+      <dt>CEP</dt><dd id="envCep" class="pending">kontrol ediliyor…</dd>
+      <dt>Node.js</dt><dd id="envNode" class="pending">—</dd>
+      <dt>Premiere</dt><dd id="envHost" class="pending">—</dd>
+      <dt>Köprü</dt><dd id="envBridge" class="pending">—</dd>
+    </dl>
+  </section>
+
+  <!-- Sekans bilgisi -->
+  <section class="card">
+    <h2>Sekans</h2>
+    <div class="row">
+      <button id="btnSeq" class="btn">Bilgileri Oku</button>
+    </div>
+    <dl class="env" id="seqInfo" hidden>
+      <dt>Ad</dt><dd id="seqName">—</dd>
+      <dt>Kare hızı</dt><dd id="seqFps">—</dd>
+      <dt>Başlangıç TC</dt><dd id="seqZero">—</dd>
+      <dt>Süre</dt><dd id="seqDur">—</dd>
+      <dt>Pistler</dt><dd id="seqTracks">—</dd>
+    </dl>
+    <p class="hint" id="seqHint" hidden></p>
+  </section>
+
+  <!-- Asil mesele: caption API var mi? -->
+  <section class="card accent">
+    <h2>Altyazı Pisti API Yoklaması</h2>
+    <p class="desc">
+      Premiere'in bu sürümünde altyazı pistlerine hangi betik API'lerinin açık
+      olduğunu <strong>çalışma anında</strong> ölçer. Sonuç, altyazının tam
+      otomatik mi yerleştirileceğini yoksa sürükle-bırak mı gerekeceğini belirler.
+    </p>
+    <div class="row">
+      <button id="btnProbe" class="btn primary">Yoklamayı Çalıştır</button>
+    </div>
+    <div id="probeOut" class="out" hidden></div>
+  </section>
+
+  <!-- Ses disari aktarma testi -->
+  <section class="card">
+    <h2>Ses Dışa Aktarma</h2>
+    <p class="desc">
+      Sekansın sesini WAV olarak çıkarır. Bir ses-only <code>.epr</code> preset'i
+      gerekir; aşağıdan mevcut preset'leri listeleyebilirsiniz.
+    </p>
+    <div class="row">
+      <button id="btnPresets" class="btn">Preset'leri Listele</button>
+    </div>
+    <div id="presetOut" class="out" hidden></div>
+  </section>
+
+  <footer class="foot">
+    <button id="btnCopy" class="link">Tüm çıktıyı kopyala</button>
+    <span id="status"></span>
+  </footer>
+
+  <script src="js/cep.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
