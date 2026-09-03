@@ -18,6 +18,15 @@
 
   function setStatus(msg) { $('status').textContent = msg || ''; }
 
+  /** Kopruden gelen deger dizi de olabilir, dizi-string de. Ikisini de kabul et. */
+  function asArray(v) {
+    if (Array.isArray(v)) return v;
+    if (typeof v === 'string' && v) {
+      try { var p = JSON.parse(v); return Array.isArray(p) ? p : [v]; } catch (e) { return [v]; }
+    }
+    return [];
+  }
+
   function field(id, text, cls) {
     var el = $(id);
     el.textContent = text;
@@ -123,10 +132,11 @@
     setStatus('yoklanıyor…');
 
     CEP.call('trProbeCaptionApi()').then(function (d) {
-      var found = [];
-      var notes = [];
-      try { found = JSON.parse(d.found); } catch (e) {}
-      try { notes = JSON.parse(d.notes); } catch (e) {}
+      // bridge.jsx dizileri JSON'un ICINE ham olarak gomuyor, dolayisiyla
+      // dis JSON.parse onlari zaten dizi haline getiriyor. Ikinci kez
+      // parse etmek hata firlatir ve gercek bulgulari sessizce yutar.
+      var found = asArray(d.found);
+      var notes = asArray(d.notes);
 
       var html = '';
       html += '<h3>Premiere ' + esc(d.appVersion) + '</h3>';
@@ -149,15 +159,24 @@
         }
       }
 
+      // Tam uye dokumu: regex'in kacirdigi bir isim varsa burada gorunur
+      var dump = asArray(d.allMembers);
+      if (dump.length) {
+        html += '<h3>Tüm üyeler (' + dump.length + ')</h3>';
+        html += '<span class="dim">' + esc(dump.join('\n')) + '</span>\n';
+      }
+
+      // Sonucu koprunun metnine degil, bulgunun kendisine gore yaz —
+      // boylece "0 uye bulundu" ile "adaylar bulundu" bir daha celisemez.
       html += '<h3>Sonuç</h3>';
       if (found.length) {
-        html += '<span class="ok">' + esc(d.verdict) + '</span>\n';
-        html += '<span class="dim">Bu üyelerin gerçekten iş görüp görmediği ayrıca ' +
-                'denenmeli — varlıkları çalıştıkları anlamına gelmiyor.</span>';
+        html += '<span class="ok">' + found.length + ' aday API üyesi bulundu.</span>\n';
+        html += '<span class="dim">Varlıkları çalıştıkları anlamına gelmiyor; ' +
+                'her biri ayrıca denenmeli.</span>';
       } else {
-        html += '<span class="warn">' + esc(d.verdict) + '</span>\n';
-        html += '<span class="dim">Yarı otomatik yol hâlâ çok değerli: kullanıcı tek ' +
-                'tıkla Türkçe altyazısını alır, yalnızca son sürükleme elde kalır.</span>';
+        html += '<span class="warn">Altyazı pisti API’si bulunamadı.</span>\n';
+        html += '<span class="dim">Yarı otomatik yola geçiyoruz: kullanıcı tek tıkla ' +
+                'Türkçe altyazısını alır, yalnızca son sürükleme elde kalır.</span>';
       }
 
       show('probeOut', html);

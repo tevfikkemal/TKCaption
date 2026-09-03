@@ -296,11 +296,50 @@ function trProbeCaptionApi() {
             if (typeof seq.importMGT === 'function') found.push('sequence.importMGT MEVCUT (yedek plan uygulanabilir)');
         } catch (e) {}
 
+        // --- TAM UYE DOKUMU ---
+        // Regex ile arama, API'nin bekledigimiz kelimeleri kullanmasina bagli.
+        // Adobe farkli bir adlandirma sectiyse ("textTracks", "graphics" vb.)
+        // kacirlar. Bu yuzden sequence'in tum uyelerini de dokuyoruz.
+        var allMembers = [];
+        try {
+            var seqKeys = [];
+            for (var m in seq) {
+                try { seqKeys.push(m + (typeof seq[m] === 'function' ? '()' : '')); } catch (e) {}
+            }
+            seqKeys.sort();
+            allMembers.push('sequence: ' + seqKeys.join(', '));
+        } catch (e) { allMembers.push('sequence uyeleri okunamadi: ' + e); }
+
+        if (qeAvailable) {
+            try {
+                var qs = qe.project.getActiveSequence();
+                var qKeys = [];
+                for (var m2 in qs) {
+                    try { qKeys.push(m2 + (typeof qs[m2] === 'function' ? '()' : '')); } catch (e) {}
+                }
+                qKeys.sort();
+                allMembers.push('QE sequence: ' + qKeys.join(', '));
+            } catch (e) { allMembers.push('QE uyeleri okunamadi: ' + e); }
+        }
+
+        try {
+            if (seq.videoTracks.numTracks > 0) {
+                var vt0 = seq.videoTracks[0];
+                var vKeys = [];
+                for (var m3 in vt0) {
+                    try { vKeys.push(m3 + (typeof vt0[m3] === 'function' ? '()' : '')); } catch (e) {}
+                }
+                vKeys.sort();
+                allMembers.push('videoTrack[0]: ' + vKeys.join(', '));
+            }
+        } catch (e) {}
+
         return ok([
             kv('appVersion', app.version),
             kv('qeAvailable', qeAvailable ? 'true' : 'false', true),
             kv('found', arrToJson(found), true),
             kv('notes', arrToJson(notes), true),
+            kv('allMembers', arrToJson(allMembers), true),
             kv('verdict', found.length ? 'API adaylari bulundu' : 'Caption API bulunamadi - yari otomatik yola gecilecek')
         ]);
     } catch (e) {
