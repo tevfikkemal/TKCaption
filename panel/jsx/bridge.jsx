@@ -177,13 +177,43 @@ function trExportAudio(outPath, presetPath, rangeType) {
  * konusma tanima ozelligi icin). Yani kendi .epr'imizi uretip dagitmamiza
  * gerek yok - tercih sirasiyla arayip bulaniyi kullaniyoruz.
  */
+/**
+ * ONEMLI AYRIM: dosya adi dogru olsa bile PRESET TURU yanlis olabilir.
+ *
+ * "WAV_Mono_16bit_16kHz.epr" tam istedigimiz formati tarif ediyor ama bir
+ * INGEST/TRANSCODE preset'idir (icinde <IngestPreset>, <IngestTranscodeEnabled>
+ * gibi alanlar var). exportAsMediaDirect'e verilince "Unknown Error" doner.
+ * Gercek disa aktarma preset'lerinde bunlar yerine <DoAudio>, <DoVideo>,
+ * <CropRect> gibi sekans export parametreleri bulunur.
+ *
+ * Hepsinin ExporterFileType degeri 1463899717 = "WAVE" — yani Wave48mono16 de
+ * WAV uretir; 48 kHz'i cekirdek yeniden ornekleyici 16 kHz'e indirir.
+ */
 var PRESET_PREFERENCE = [
-    'WAV_Mono_16bit_16kHz.epr',          // birebir istedigimiz format
-    'RawPCM_mono_16khz_nometadata.epr',  // yine 16 kHz mono
-    'Wave48mono16.epr',                  // 48 kHz mono - CLI yeniden orneklemeye indirir
+    'Wave48mono16.epr',   // 48 kHz mono 16-bit - en temiz disa aktarma preset'i
     'Wave48mono24.epr',
-    'AudioOnly.epr'                      // son care
+    'Wave96mono16.epr',
+    'AudioOnly.epr',
+    'AudioForAudition.epr'
 ];
+
+// Bu alanlardan biri varsa preset ingest icindir, sekans export'unda kullanilamaz
+var INGEST_MARKERS = ['IngestTranscodeExporterModuleName', 'IngestPresetUserComments'];
+
+/** Preset dosyasi disa aktarma icin mi, ingest icin mi? */
+function isExportPreset(file) {
+    try {
+        if (!file.open('r')) return false;
+        var head = file.read(4000);
+        file.close();
+        for (var i = 0; i < INGEST_MARKERS.length; i++) {
+            if (head.indexOf(INGEST_MARKERS[i]) >= 0) return false;
+        }
+        return true;
+    } catch (e) {
+        return true; // okuyamadiysak denemesine izin ver
+    }
+}
 
 function presetFolders() {
     var list = [];
@@ -194,32 +224,105 @@ function presetFolders() {
     return list;
 }
 
-function trFindAudioPreset() {
-    try {
-        var folders = presetFolders();
-        var checked = [];
-        for (var f = 0; f < folders.length; f++) {
-            var dir = new Folder(folders[f]);
-            checked.push(folders[f] + (dir.exists ? ' (var)' : ' (yok)'));
-            if (!dir.exists) continue;
-            for (var p = 0; p < PRESET_PREFERENCE.length; p++) {
-                var candidate = new File(folders[f] + '/' + PRESET_PREFERENCE[p]);
-                if (candidate.exists) {
-                    return ok([
-                        kv('preset', PRESET_PREFERENCE[p]),
-                        kv('path', candidate.fsName),
-                        kv('folder', folders[f]),
-                        kv('rank', String(p), true),
-                        kv('exact', p <= 1 ? 'true' : 'false', true),
-                        kv('checked', arrToJson(checked), true)
-                    ]);
-                }
+/** Denenebilecek disa aktarma preset'lerini tercih sirasiyla toplar. */
+function collectPresets() {
+    var folders = presetFolders();
+    var found = [];
+    var seen = {};
+    for (var f = 0; f < folders.length; f++) {
+        var dir = new Folder(folders[f]);
+        if (!dir.exists) continue;
+        for (var p = 0; p < PRESET_PREFERENCE.length; p++) {
+            var name = PRESET_PREFERENCE[p];
+            if (seen[name]) continue;
+            var file = new File(folders[f] + '/' + name);
+            if (file.exists && isExportPreset(file)) {
+                seen[name] = true;
+                found.push({ name: name, path: file.fsName });
             }
         }
-        return err('16 kHz mono WAV preset bulunamadi',
-                   'Bakilan klasorler: ' + checked.join(' | '));
+    }
+    return found;
+}
+
+function trFindAudioPreset() {
+    try {
+        var list = collectPresets();
+        if (!list.length) return err('Kullanilabilir ses disa aktarma preset bulunamadi.');
+        var names = [];
+        for (var i = 0; i < list.length; i++) names.push(list[i].name);
+        return ok([
+            kv('preset', list[0].name),
+            kv('path', list[0].path),
+            kv('count', String(list.length), true),
+            kv('all', arrToJson(names), true)
+        ]);
     } catch (e) {
         return err('Preset aramasi basarisiz', e);
+    }
+}
+
+/**
+ * Sesi disari aktarir; preset'leri SIRAYLA dener.
+ *
+ * Bir preset'in dosya adinin dogru olmasi ise yarayacagi anlamina gelmiyor
+ * (ingest preset'leri "Unknown Error" veriyor). Tek tek deneyip gercekten
+ * dosya ureteni buluyoruz ve hangilerinin neden basarisiz oldugunu raporluyoruz.
+ */
+function trExportAudioAuto(outPath, rangeType) {
+    try {
+        var seq = app.project.activeSequence;
+        if (!seq) return err('Aktif sekans yok.');
+
+        var list = collectPresets();
+        if (!list.length) return err('Kullanilabilir ses disa aktarma preset bulunamadi.');
+
+        var range = (rangeType === undefined || rangeType === null) ? 0 : parseInt(rangeType, 10);
+        var attempts = [];
+
+        for (var i = 0; i < list.length; i++) {
+            var preset = list[i];
+            try {
+                var f = new File(outPath);
+                if (f.parent && !f.parent.exists) f.parent.create();
+                if (f.exists) f.remove();
+            } catch (e) {}
+
+            var t0 = new Date().getTime();
+            var res = null;
+            var threw = '';
+            try {
+                res = seq.exportAsMediaDirect(outPath, preset.path, range);
+            } catch (e2) {
+                threw = String(e2.message || e2);
+            }
+            var elapsed = (new Date().getTime() - t0) / 1000;
+
+            if (fileExists(outPath)) {
+                var size = 0;
+                try { size = new File(outPath).length; } catch (e) {}
+                if (size > 1024) {
+                    attempts.push('OK  ' + preset.name + '  -> ' + size + ' bayt, ' +
+                                  elapsed.toFixed(1) + ' sn');
+                    return ok([
+                        kv('path', outPath),
+                        kv('preset', preset.name),
+                        kv('bytes', String(size), true),
+                        kv('elapsedSec', elapsed.toFixed(1), true),
+                        kv('attempts', arrToJson(attempts), true)
+                    ]);
+                }
+                attempts.push('BOS ' + preset.name + '  -> dosya ' + size + ' bayt');
+            } else {
+                attempts.push('HATA ' + preset.name + '  -> ' +
+                              (threw || String(res) || 'dosya uretilmedi'));
+            }
+        }
+
+        return err('Hicbir preset ses uretemedi',
+                   attempts.join(' | '));
+    } catch (e) {
+        return err('Ses disari aktarilamadi', e);
     }
 }
 

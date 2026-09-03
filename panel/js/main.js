@@ -309,20 +309,17 @@
                   Number(d.zeroPointSec).toFixed(2) + ' sn — kayma uygulanacak</span>');
       }
 
-      // 2) Ses preset'i
-      return CEP.call('trFindAudioPreset()');
-    }).then(function (p) {
-      appendRun('<span class="dim">preset:</span> ' + esc(p.preset) +
-                (String(p.exact) === 'true' ? ' <span class="ok">(16 kHz mono)</span>'
-                                            : ' <span class="warn">(yeniden örneklenecek)</span>'));
-
-      // 3) Sesi disari aktar — Premiere arayuzu bu sirada donar
+      // 2) Sesi disari aktar — preset'ler sirayla denenir
       appendRun('<span class="dim">ses çıkarılıyor… (Premiere bu sırada yanıt vermeyebilir)</span>');
       setBar(0.05);
-      return CEP.call('trExportAudio("' + wav.replace(/\\/g, '/') + '", "' +
-                      p.path.replace(/\\/g, '/') + '", 0)');
+      return CEP.call('trExportAudioAuto("' + wav.replace(/\\/g, '/') + '", 0)');
     }).then(function (e) {
-      appendRun('<span class="ok">ses hazır</span> ' +
+      var tries = asArray(e.attempts);
+      // Ilk preset tutmadiysa hangilerinin elendigini gormek isteriz
+      for (var i = 0; i < tries.length - 1; i++) {
+        appendRun('<span class="dim">' + esc(tries[i]) + '</span>');
+      }
+      appendRun('<span class="ok">ses hazır</span> ' + esc(e.preset) + '  ' +
                 (Number(e.bytes) / 1048576).toFixed(1) + ' MB, ' +
                 Number(e.elapsedSec).toFixed(1) + ' sn');
       setBar(0.15);

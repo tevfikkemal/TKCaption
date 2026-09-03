@@ -111,3 +111,38 @@ var zeroSec = parseFloat(seq.zeroPoint) / TICKS_PER_SECOND;
 
 Çekirdek CLI bunu `--offset` ile alıyor (`core/src/srt.js`), drop-frame NTSC
 zaman kodu çevrimi dahil.
+
+---
+
+## `.epr` preset'leri — ingest ile export ayrımı
+
+`exportAsMediaDirect` yalnızca **dışa aktarma** preset'lerini kabul eder.
+Premiere'in preset klasöründe ikisi bir arada durur ve **dosya adından
+ayırt edilemez**.
+
+`WAV_Mono_16bit_16kHz.epr` adı whisper.cpp'nin istediği formatı birebir
+tarif ediyor, ama bir ingest preset'idir. `exportAsMediaDirect`'e verilince:
+
+```
+Error: Unknown Error
+```
+
+Hata mesajı sebebi hiç açıklamıyor — bu yüzden ayrımı XML içeriğinden yapıyoruz.
+
+| | İngest preset'i | Export preset'i |
+|---|---|---|
+| Ayırt edici alanlar | `IngestPreset`, `IngestTranscodeEnabled`, `IngestTranscodeExporterModuleName`, `IngestPresetUserComments` | `DoAudio`, `DoVideo`, `CropRect`, `DeinterlaceState` |
+| Örnek | `WAV_Mono_16bit_16kHz.epr`, `RawPCM_mono_16khz_nometadata.epr` | `Wave48mono16.epr`, `AudioOnly.epr` |
+
+Üçünün de `ExporterFileType` değeri `1463899717` = `"WAVE"`, yani hepsi WAV
+üretir — fark biçimde değil, preset'in **kullanım amacındadır**.
+
+### Uygulanan çözüm
+
+`bridge.jsx` preset dosyasının ilk 4 KB'ını okuyup ingest işaretlerini arar,
+bulursa o preset'i eler. Kalanları `exportAsMediaDirect` ile **sırayla dener**
+ve gerçekten dosya üreteni kullanır. Böylece hangi Premiere sürümünde hangi
+preset'in çalıştığını önceden bilmek zorunda değiliz.
+
+Tercih sırası `Wave48mono16.epr` ile başlar: 48 kHz mono 16-bit WAV üretir,
+çekirdek yeniden örnekleyici bunu 16 kHz'e indirir (10 saniyelik ses için ~9 ms).
