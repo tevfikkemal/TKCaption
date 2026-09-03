@@ -42,13 +42,15 @@ Ayrıca konuşma tanıma motorlarının Türkçe'de sessiz bölümlerde üretti�
 
 | Katman | Durum |
 |---|---|
-| **1 — Çekirdek CLI** (ses → altyazı) | Çalışıyor, gerçek videoyla test edildi |
-| **2 — ExtendScript köprüsü** (Premiere ↔ CLI) | Yazıldı, Premiere içinde henüz test edilmedi |
-| **3 — CEP paneli** (arayüz) | Teşhis sürümü kuruluyor, altyazı üretimi henüz bağlı değil |
+| **1 — Çekirdek CLI** (ses → altyazı) | Çalışıyor |
+| **2 — ExtendScript köprüsü** (Premiere ↔ çekirdek) | Çalışıyor |
+| **3 — CEP paneli** (arayüz) | Çalışıyor |
 
-Şu an kullanılabilir olan şey **komut satırı aracıdır**. Panel yalnızca teşhis
-yapar: ortamı kontrol eder, sekans bilgisini okur ve altyazı pisti API'sini yoklar.
-"Altyazı Oluştur" düğmesi henüz yoktur.
+**Uçtan uca çalışıyor.** Premiere'de bir sekans açıp panelden tek düğmeye
+basıyorsunuz; ses çıkarılıyor, yerelde çözümleniyor, Türkçe kurallara göre
+bölünüyor ve sekansa altyazı pisti olarak yerleştiriliyor. Sürükle-bırak yok.
+
+Henüz yapılmadı: ZXP paketleme ve dağıtım. Şu an geliştirme kurulumu gerekiyor.
 
 ### Paneli kurmak (geliştirme)
 
@@ -58,8 +60,8 @@ powershell -ExecutionPolicy Bypass -File tools\install-panel.ps1
 
 İki şey yapar: Adobe'un imzasız panelleri yüklemesi için gereken `PlayerDebugMode`
 bayrağını açar (`HKCU` altında, yönetici gerektirmez) ve CEP eklenti klasöründen
-bu depodaki `panel/` klasörüne bir junction kurar — kodu değiştirdiğinizde kopyalamanız
-gerekmez.
+bu depodaki `panel/` klasörüne bir junction kurar — kodu değiştirdiğinizde
+kopyalamanız gerekmez.
 
 Premiere'i yeniden başlatın, ardından **Pencere > Uzantılar > TK Caption**.
 
@@ -173,6 +175,7 @@ CPS dağılımı, ihlal sayıları ve en sorunlu blokları listeler.
 node core/test/segmenter.test.js
 node core/test/srt-hallucination.test.js
 node core/test/postprocess.test.js
+node core/test/espath.test.js
 ```
 
 ## Lisans

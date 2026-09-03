@@ -268,6 +268,16 @@
   /* ---------------------------------------------------------------- */
 
   var running = false;
+  var cancelFn = null;
+
+  function cancelRun() {
+    if (cancelFn) {
+      appendRun('<span class="warn">iptal ediliyor…</span>');
+      cancelFn();
+      cancelFn = null;
+    }
+    $('btnCancel').hidden = true;
+  }
 
   function setBar(pct) {
     $('runBar').hidden = false;
@@ -356,7 +366,12 @@
         out: srtPath,
         cfg: cfg,
         onPhase: function (ph, msg) { appendRun('<span class="dim">' + esc(ph) + ':</span> ' + esc(msg)); },
-        onProgress: function (ph, pct) { setBar(0.15 + (pct || 0) * 0.75); }
+        onProgress: function (ph, pct) { setBar(0.15 + (pct || 0) * 0.75); },
+        // Cozumleme baslayinca iptal kolu gelir; uzun sekanslarda sart
+        onCancellable: function (stop) {
+          cancelFn = stop;
+          $('btnCancel').hidden = false;
+        }
       });
     }).then(function (res) {
       setBar(0.95);
@@ -385,6 +400,8 @@
       setStatus('hata');
     }).then(function () {
       running = false;
+      cancelFn = null;
+      $('btnCancel').hidden = true;
       $('btnRun').disabled = false;
     });
   }
@@ -540,6 +557,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     checkEnvironment();
     $('btnRun').addEventListener('click', generate);
+    $('btnCancel').addEventListener('click', cancelRun);
     $('btnSeq').addEventListener('click', readSequence);
     $('btnProbe').addEventListener('click', runProbe);
     $('btnCaption').addEventListener('click', testCaptionTrack);

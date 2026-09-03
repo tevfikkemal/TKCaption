@@ -165,19 +165,36 @@ function run(opts) {
  * DTW bazi yapilarda desteklenmez. Once DTW ile dene, "dtw" iceren bir hata
  * alirsak DTW'siz tekrar dene - kullanici bir sey fark etmesin.
  */
-async function runWithFallback(opts) {
-  try {
-    return await run(opts);
-  } catch (e) {
-    const msg = String(e.message || '');
-    if (opts.cfg.whisper.useDtw && /dtw|aheads|alignment/i.test(msg)) {
-      const cfg2 = JSON.parse(JSON.stringify(opts.cfg));
-      cfg2.whisper.useDtw = false;
-      if (opts.onNotice) opts.onNotice('DTW bu yapida desteklenmiyor, DTW olmadan devam ediliyor.');
-      return await run(Object.assign({}, opts, { cfg: cfg2 }));
-    }
-    throw e;
-  }
+function runWithFallback(opts) {
+  // DIKKAT: async function kullanilamaz — donen promise .cancel tasimaz ve
+  // iptal kolu cagirana ulasmaz. Elle promise kurup cancel'i o an calisan
+  // ic ise yonlendiriyoruz (DTW'siz tekrar denemede de gecerli kalsin diye).
+  let current = null;
+  let cancelled = false;
+
+  const p = new Promise((resolve, reject) => {
+    const attempt = (o, isRetry) => {
+      current = run(o);
+      current.then(resolve, (e) => {
+        if (cancelled || e.cancelled) return reject(e);
+        const msg = String(e.message || '');
+        if (!isRetry && o.cfg.whisper.useDtw && /dtw|aheads|alignment/i.test(msg)) {
+          const cfg2 = JSON.parse(JSON.stringify(o.cfg));
+          cfg2.whisper.useDtw = false;
+          if (opts.onNotice) opts.onNotice('DTW bu yapida desteklenmiyor, DTW olmadan devam ediliyor.');
+          return attempt(Object.assign({}, o, { cfg: cfg2 }), true);
+        }
+        reject(e);
+      });
+    };
+    attempt(opts, false);
+  });
+
+  p.cancel = () => {
+    cancelled = true;
+    if (current && current.cancel) current.cancel();
+  };
+  return p;
 }
 
 function cleanup(dir) {

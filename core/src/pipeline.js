@@ -72,8 +72,10 @@ async function run(opts) {
       : prepareWav(opts.input, workDir, phase);
 
     // --- 4. Cozumleme ---
+    // En uzun adim burasi. Cagirana iptal kolu veriyoruz: uzun bir sekansta
+    // kullanicinin beklemekten baska secenegi olmamasi kabul edilemez.
     phase('çözümleme', 'konuşma tanıma başlıyor');
-    const result = await whisper.runWithFallback({
+    const job = whisper.runWithFallback({
       exePath: bin.exe,
       modelPath: modelFile,
       wavPath: prepared.path,
@@ -83,6 +85,8 @@ async function run(opts) {
       onProgress: (p) => progress('çözümleme', p.pct, 'konuşma tanınıyor'),
       onNotice: (m) => phase('uyarı', m)
     });
+    if (opts.onCancellable) opts.onCancellable(() => { if (job.cancel) job.cancel(); });
+    const result = await job;
 
     // --- 5. Halusinasyon filtresi ---
     const segs = (result.json && result.json.transcription) || [];
