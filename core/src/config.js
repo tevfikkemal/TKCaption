@@ -32,11 +32,45 @@ const DEFAULTS = {
     temperature: 0.0,
     suppressNonSpeech: true,
     useDtw: true,             // DTW hizalama — daha isabetli zaman damgasi
-    useVad: true,
+
+    /**
+     * VAD VARSAYILAN OLARAK KAPALI — bilincli karar, eksiklik degil.
+     *
+     * whisper.cpp b4938'in --vad'i sessizlikleri kesip atiyor ama zaman
+     * damgalarini orijinal sese GERI ESLEMIYOR. Sonuc: tum altyazilar
+     * bosluksuz, bastan itibaren dumduz diziliyor.
+     *
+     * Olculdu (core/test/vad-timing.test.js): basina 30 sn sessizlik
+     * eklenmis 118 sn'lik ses uzerinde
+     *   VAD kapali -> ilk kelime  31.00 sn, son 110.14 sn  (dogru)
+     *   VAD acik   -> ilk kelime   0.02 sn, son  70.57 sn  (yanlis)
+     *
+     * Sessizlikte olusan halusinasyonlari kendi filtremiz temizliyor
+     * (hallucination.js). VAD duzelen bir yapida acilabilir.
+     */
+    useVad: false,
     vadThreshold: 0.5,
+
+    // Sessizligi KENDIMIZ kirpiyoruz (core/src/vad.js). whisper.cpp'ninkinin
+    // aksine esleme tablosu bizde kaldigi icin zaman damgalari dogru kaliyor.
+    // Yan faydasi: sessizlik whisper'a hic ulasmadigindan halusinasyon
+    // uretilmiyor ve islenecek ses kisaldigi icin daha hizli.
+    trimSilence: true,
     beamSize: 5,
     initialPrompt: 'Merhaba, bugün sizlere önemli bir konudan bahsedeceğim. Evet, doğru duydunuz.'
     // ^ Duzgun noktalamali TR ornek cumle: Whisper'in noktalama uretmesini belirgin artirir.
+  },
+
+  // --- Sessizlik tespiti (core/src/vad.js) ---
+  vad: {
+    frameMs: 20,
+    hopMs: 10,
+    minSpeechMs: 200,      // bundan kisa "konusma" gurultudur
+    minSilenceMs: 400,
+    padMs: 400,            // konusmanin bas/sonunu kirpmamak icin pay
+    energyRatio: 2.0,      // gurultu tabaninin kac kati konusma sayilir
+    minRemovableSilenceMs: 2000,  // SADECE bundan uzun sessizlikler atilir
+    absoluteFloor: 0.0016
   },
 
   // --- Halusinasyon filtresi ---

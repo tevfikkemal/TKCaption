@@ -11,6 +11,7 @@ const hallucination = require('./hallucination.js');
 const postprocess = require('./postprocess.js');
 const segmenter = require('./segmenter.js');
 const srt = require('./srt.js');
+const vad = require('./vad.js');
 
 /**
  * Ses -> altyazi boru hatti.
@@ -71,6 +72,28 @@ async function run(opts) {
       ? opts.prepareAudio(opts.input, workDir)
       : prepareWav(opts.input, workDir, phase);
 
+    // --- 3b. Sessizligi KENDIMIZ kirp ---
+    // whisper.cpp'nin --vad'i zaman damgalarini geri eslemedigi icin
+    // (bkz. config.js useVad aciklamasi) bu isi kendimiz yapiyoruz:
+    // sessizlik whisper'a hic gitmiyor, esleme tablosu bizde kaliyor.
+    let trimMap = null;
+    let wavForWhisper = prepared.path;
+    if (cfg.whisper.trimSilence !== false) {
+      const decoded = audio.decodeWav(prepared.path);
+      const regions = vad.detectSpeech(decoded.samples, decoded.sampleRate, cfg.vad);
+      const info = vad.summarize(regions, decoded.samples.length, decoded.sampleRate);
+      if (regions.length && info.removedSec > 1.0) {
+        const trimmed = vad.buildTrimmed(decoded.samples, regions);
+        wavForWhisper = path.join(workDir, 'konusma.wav');
+        audio.writeWav16k(wavForWhisper, trimmed.samples);
+        trimMap = { map: trimmed.map, rate: decoded.sampleRate };
+        phase('ses', `${info.regions} konuşma bölgesi, ` +
+          `${info.removedSec.toFixed(1)} sn sessizlik atıldı (%${info.removedPct.toFixed(0)})`);
+      } else if (!regions.length) {
+        phase('uyarı', 'Konuşma bölgesi bulunamadı; ses olduğu gibi işlenecek.');
+      }
+    }
+
     // --- 4. Cozumleme ---
     // En uzun adim burasi. Cagirana iptal kolu veriyoruz: uzun bir sekansta
     // kullanicinin beklemekten baska secenegi olmamasi kabul edilemez.
@@ -78,7 +101,7 @@ async function run(opts) {
     const job = whisper.runWithFallback({
       exePath: bin.exe,
       modelPath: modelFile,
-      wavPath: prepared.path,
+      wavPath: wavForWhisper,
       vadModelPath: vadModel,
       cfg,
       workDir,
@@ -97,6 +120,9 @@ async function run(opts) {
 
     // --- 6. Kelimeler ---
     let words = tokens.toWords({ transcription: filtered.segments });
+    // Kirpma yaptiysak zamanlari ORIJINAL sese geri esle. Bu adim
+    // atlanirsa altyazi one kayar — whisper.cpp'nin hatasinin aynisi.
+    if (trimMap) vad.remapWords(words, trimMap.map, trimMap.rate);
     if (!words.length) {
       throw new Error('Konuşma bulunamadı. Ses sessiz olabilir veya dil yanlış seçilmiş olabilir.');
     }
