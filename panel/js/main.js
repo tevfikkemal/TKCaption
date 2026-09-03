@@ -188,6 +188,50 @@
   }
 
   /* ---------------------------------------------------------------- */
+  /*  createCaptionTrack imza deneyi                                   */
+  /* ---------------------------------------------------------------- */
+
+  function testCaptionTrack() {
+    var btn = $('btnCaption');
+    btn.disabled = true;
+    setStatus('deneniyor…');
+
+    CEP.call('trTestCaptionTrack("")').then(function (d) {
+      var attempts = asArray(d.attempts);
+      var html = '';
+
+      html += '<h3>Fonksiyon</h3>';
+      html += 'beklenen argüman sayısı: ' + esc(d.arity) + '\n';
+      if (d.source) html += '<span class="dim">' + esc(d.source) + '</span>\n';
+      if (d.itemName) html += 'içeri alınan öğe: ' + esc(d.itemName) + '\n';
+
+      html += '<h3>Denemeler (' + attempts.length + ')</h3>';
+      for (var i = 0; i < attempts.length; i++) {
+        var a = attempts[i];
+        var cls = a.indexOf('OK ') === 0 ? 'ok' : 'err';
+        html += '<span class="' + cls + '">' + esc(a) + '</span>\n';
+      }
+
+      html += '<h3>Sonuç</h3>';
+      if (d.success) {
+        html += '<span class="ok">Çalışan imza: ' + esc(d.success) + '</span>\n';
+        html += '<span class="dim">Tam otomasyon mümkün. Altyazı pisti oluşturulup ' +
+                'SRT doğrudan yerleştirilebilir.</span>';
+      } else {
+        html += '<span class="warn">Hiçbir bileşim işe yaramadı.</span>\n';
+        html += '<span class="dim">Hata mesajları doğru argüman türünü gösteriyor olabilir; ' +
+                'yukarıdaki metinler bir sonraki denemeyi yönlendirecek.</span>';
+      }
+
+      show('captionOut', html);
+      setStatus('');
+    }).catch(function (e) {
+      show('captionOut', '<span class="err">' + esc(e.message) + '</span>');
+      setStatus('hata');
+    }).then(function () { btn.disabled = false; });
+  }
+
+  /* ---------------------------------------------------------------- */
   /*  Preset listesi                                                   */
   /* ---------------------------------------------------------------- */
 
@@ -263,6 +307,7 @@
     checkEnvironment();
     $('btnSeq').addEventListener('click', readSequence);
     $('btnProbe').addEventListener('click', runProbe);
+    $('btnCaption').addEventListener('click', testCaptionTrack);
     $('btnPresets').addEventListener('click', listPresets);
     $('btnCopy').addEventListener('click', copyAll);
   });

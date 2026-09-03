@@ -348,6 +348,118 @@ function trProbeCaptionApi() {
 }
 
 /* ------------------------------------------------------------------ */
+/*  createCaptionTrack IMZA DENEYI                                     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * createCaptionTrack fonksiyonunun nasil cagrildigini deneyerek bulur.
+ *
+ * Fonksiyonun var olmasi calistigi anlamina gelmez. Imzasi belgelenmemis
+ * oldugu icin farkli argüman bilesimlerini tek tek deniyor ve ExtendScript'in
+ * hata mesajlarini topluyoruz - hata metinleri genelde beklenen turu ele verir.
+ *
+ * DIKKAT: Basarili bir cagri kullanicinin projesini DEGISTIRIR (altyazi pisti
+ * olusturur). Panel bunu once uyarir; geri almak icin Ctrl+Z yeterlidir.
+ */
+function trTestCaptionTrack(srtPath) {
+    try {
+        var seq = app.project.activeSequence;
+        if (!seq) return err('Aktif sekans yok.');
+
+        var fn = null;
+        try { fn = seq.createCaptionTrack; } catch (e) {}
+        if (typeof fn !== 'function') {
+            return err('createCaptionTrack bu surumde yok.');
+        }
+
+        // --- Fonksiyon hakkinda ne ogrenebiliyoruz ---
+        var arity = 'bilinmiyor';
+        try { if (typeof fn.length === 'number') arity = String(fn.length); } catch (e) {}
+        var src = '';
+        try { src = String(fn).slice(0, 200); } catch (e) { src = '(okunamadi)'; }
+
+        // --- SRT'yi projeye al ---
+        if (!srtPath) {
+            var picked = File.openDialog('Denenecek SRT dosyasini secin', '*.srt');
+            if (!picked) return err('SRT secilmedi.');
+            srtPath = picked.fsName;
+        }
+        if (!fileExists(srtPath)) return err('SRT bulunamadi: ' + srtPath);
+
+        var bin = null;
+        try { bin = app.project.getInsertionBin(); } catch (e) { bin = app.project.rootItem; }
+        app.project.importFiles([srtPath], true, bin, false);
+
+        // Iceri alinan ogeyi dosya adiyla bul
+        var wanted = decodeURIComponent(new File(srtPath).name);
+        var item = null;
+        try {
+            var root = app.project.rootItem;
+            for (var i = 0; i < root.children.numItems; i++) {
+                var c = root.children[i];
+                if (c.name === wanted || c.name.indexOf(wanted.replace(/\.srt$/i, '')) === 0) {
+                    item = c;
+                }
+            }
+        } catch (e) {}
+
+        if (!item) {
+            return ok([
+                kv('arity', arity),
+                kv('source', src),
+                kv('attempts', arrToJson(['SRT import edildi ama projectItem bulunamadi']), true),
+                kv('imported', 'false', true)
+            ]);
+        }
+
+        // --- Argüman bilesimlerini sirayla dene ---
+        var zero = '0';
+        try { zero = String(seq.zeroPoint); } catch (e) {}
+
+        var variants = [
+            { label: '(projectItem)', args: [item] },
+            { label: '(projectItem, 0)', args: [item, 0] },
+            { label: '(projectItem, "0")', args: [item, '0'] },
+            { label: '(projectItem, zeroPoint)', args: [item, zero] },
+            { label: '(projectItem, 0, 0)', args: [item, 0, 0] },
+            { label: '(projectItem, zeroPoint, 0)', args: [item, zero, 0] },
+            { label: '(projectItem, 0, 0, 0)', args: [item, 0, 0, 0] }
+        ];
+
+        var attempts = [];
+        var success = null;
+        var tracksBefore = 0;
+        try { tracksBefore = seq.videoTracks.numTracks; } catch (e) {}
+
+        for (var v = 0; v < variants.length; v++) {
+            var t = variants[v];
+            try {
+                var r = fn.apply(seq, t.args);
+                var after = 0;
+                try { after = seq.videoTracks.numTracks; } catch (e) {}
+                attempts.push('OK  ' + t.label + '  -> donen: ' + String(r) +
+                              '  | video pist: ' + tracksBefore + ' -> ' + after);
+                if (success === null) success = t.label;
+                break; // ilk basarida dur, projeyi gereksiz kirletme
+            } catch (e2) {
+                attempts.push('HATA ' + t.label + '  -> ' + String(e2.message || e2));
+            }
+        }
+
+        return ok([
+            kv('arity', arity),
+            kv('source', src),
+            kv('itemName', item.name),
+            kv('imported', 'true', true),
+            kv('attempts', arrToJson(attempts), true),
+            kv('success', success ? success : '')
+        ]);
+    } catch (e) {
+        return err('createCaptionTrack denemesi basarisiz', e);
+    }
+}
+
+/* ------------------------------------------------------------------ */
 /*  Ortam kontrolu                                                     */
 /* ------------------------------------------------------------------ */
 

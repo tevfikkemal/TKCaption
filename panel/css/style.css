@@ -132,3 +132,15 @@ body {
 ::-webkit-scrollbar-track { background: #1a1a1a; }
 ::-webkit-scrollbar-thumb { background: #3d3d3d; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #4d4d4d; }
+
+.warn-box {
+  margin: 0 0 9px;
+  padding: 7px 9px;
+  background: #3a2f1e;
+  border-left: 2px solid var(--warn);
+  border-radius: 2px;
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: #e8d5b0;
+}
+.warn-box strong { color: var(--warn); font-weight: 600; }
