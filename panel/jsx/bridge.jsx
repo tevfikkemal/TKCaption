@@ -327,6 +327,129 @@ function trExportAudioAuto(outPath, rangeType) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  DISA AKTARMA TESHISI                                               */
+/* ------------------------------------------------------------------ */
+
+/**
+ * "Unable to initialize export!" hatasinin kaynagini daraltir.
+ *
+ * Bes preset'in de AYNI hatayi vermesi sorunun preset'te degil, ya verdigimiz
+ * yolda ya da exportAsMediaDirect'in kendisinde oldugunu gosteriyor.
+ * Premiere 26.x cok yeni; bu API'nin artik islevsiz olmasi da mumkun.
+ *
+ * Bu fonksiyon tek turda su uc ekseni birden olcer:
+ *   1. Yol bicimi   (ters/duz egik cizgi, farkli klasorler)
+ *   2. Aralik turu  (0 = tum sekans, 1 = in/out, 2 = work area)
+ *   3. Alternatif   (app.encoder.encodeSequence — AME kuyrugu)
+ */
+function trProbeExport() {
+    try {
+        var seq = app.project.activeSequence;
+        if (!seq) return err('Aktif sekans yok.');
+
+        var lines = [];
+
+        // --- app.encoder uzerinde ne var? ---
+        var encMembers = [];
+        try {
+            for (var k in app.encoder) {
+                try { encMembers.push(k + (typeof app.encoder[k] === 'function' ? '()' : '')); } catch (e) {}
+            }
+            encMembers.sort();
+        } catch (e) { encMembers.push('app.encoder okunamadi: ' + e); }
+        lines.push('app.encoder: ' + (encMembers.length ? encMembers.join(', ') : 'YOK'));
+
+        // --- sequence uzerinde export ile ilgili uyeler ---
+        var seqExport = [];
+        var expCandidates = ['exportAsMediaDirect', 'exportAsProject', 'exportAsFinalCutProXML'];
+        for (var c = 0; c < expCandidates.length; c++) {
+            try {
+                if (typeof seq[expCandidates[c]] !== 'undefined') {
+                    seqExport.push(expCandidates[c] + ': ' + (typeof seq[expCandidates[c]]));
+                }
+            } catch (e) {}
+        }
+        lines.push('sequence export uyeleri: ' + (seqExport.length ? seqExport.join(', ') : 'YOK'));
+
+        // --- Preset sec ---
+        var presets = collectPresets();
+        if (!presets.length) return err('Denenecek preset yok.');
+        var preset = presets[0];
+        lines.push('kullanilan preset: ' + preset.name);
+        lines.push('preset yolu var mi: ' + (fileExists(preset.path) ? 'evet' : 'HAYIR'));
+
+        // --- Yazilabilir klasor adaylari ---
+        var folders = [];
+        try { folders.push({ n: 'Documents', p: Folder.myDocuments.fsName }); } catch (e) {}
+        try { folders.push({ n: 'Desktop', p: Folder.desktop.fsName }); } catch (e) {}
+        try { folders.push({ n: 'temp', p: Folder.temp.fsName }); } catch (e) {}
+        try {
+            if (app.project.path) {
+                folders.push({ n: 'proje klasoru', p: new File(app.project.path).parent.fsName });
+            }
+        } catch (e) {}
+
+        // --- Yazma izni gercekten var mi? ---
+        for (var f = 0; f < folders.length; f++) {
+            var probe = new File(folders[f].p + '/tkcaption-yazma-testi.txt');
+            var can = false;
+            try {
+                if (probe.open('w')) { probe.write('test'); probe.close(); can = true; probe.remove(); }
+            } catch (e) {}
+            lines.push('yazilabilir [' + folders[f].n + ']: ' + (can ? 'evet' : 'HAYIR') + '  ' + folders[f].p);
+        }
+
+        // --- exportAsMediaDirect matrisi ---
+        var attempts = [];
+        if (folders.length) {
+            var base = folders[0].p;
+            var variants = [
+                { label: 'duz egik + aralik 0', path: base.replace(/\\/g, '/') + '/tkcaption-test.wav', range: 0 },
+                { label: 'ters egik + aralik 0', path: base + '\\tkcaption-test.wav', range: 0 },
+                { label: 'duz egik + aralik 1', path: base.replace(/\\/g, '/') + '/tkcaption-test.wav', range: 1 },
+                { label: 'duz egik + aralik 2', path: base.replace(/\\/g, '/') + '/tkcaption-test.wav', range: 2 }
+            ];
+            for (var v = 0; v < variants.length; v++) {
+                var t = variants[v];
+                try { var old = new File(t.path); if (old.exists) old.remove(); } catch (e) {}
+                var msg = '';
+                try {
+                    var r = seq.exportAsMediaDirect(t.path, preset.path, t.range);
+                    msg = 'donen: ' + String(r);
+                } catch (e2) {
+                    msg = String(e2.message || e2);
+                }
+                var made = fileExists(t.path);
+                var size = 0;
+                if (made) { try { size = new File(t.path).length; } catch (e) {} }
+                attempts.push((made ? 'OK   ' : 'HATA ') + t.label + '  -> ' + msg +
+                              (made ? '  [' + size + ' bayt]' : ''));
+                if (made) { try { new File(t.path).remove(); } catch (e) {} break; }
+            }
+        }
+
+        // --- Alternatif: AME kuyrugu ---
+        var ame = 'denenmedi';
+        try {
+            if (app.encoder && typeof app.encoder.encodeSequence === 'function') {
+                ame = 'encodeSequence MEVCUT (AME yolu denenebilir)';
+            } else {
+                ame = 'encodeSequence YOK';
+            }
+        } catch (e) { ame = 'kontrol edilemedi: ' + e; }
+        lines.push('AME: ' + ame);
+
+        return ok([
+            kv('appVersion', app.version),
+            kv('info', arrToJson(lines), true),
+            kv('attempts', arrToJson(attempts), true)
+        ]);
+    } catch (e) {
+        return err('Disa aktarma teshisi basarisiz', e);
+    }
+}
+
+/* ------------------------------------------------------------------ */
 /*  SRT iceri alma                                                     */
 /* ------------------------------------------------------------------ */
 

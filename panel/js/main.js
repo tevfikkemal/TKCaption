@@ -9,6 +9,7 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var log = [];
+  var NL = String.fromCharCode(10); // uretilen kodda kacis sorunu yasamamak icin
 
   function esc(s) {
     return String(s).replace(/[&<>]/g, function (c) {
@@ -420,6 +421,38 @@
     }).then(function () { btn.disabled = false; });
   }
 
+
+  /* ---------------------------------------------------------------- */
+  /*  Disa aktarma teshisi                                             */
+  /* ---------------------------------------------------------------- */
+
+  function probeExport() {
+    var btn = $('btnExportProbe');
+    btn.disabled = true;
+    setStatus('teşhis çalışıyor…');
+
+    CEP.call('trProbeExport()').then(function (d) {
+      var info = asArray(d.info);
+      var attempts = asArray(d.attempts);
+      var html = '<h3>Ortam</h3>';
+      for (var i = 0; i < info.length; i++) {
+        var cls = /HAYIR|YOK/.test(info[i]) ? 'err' : 'dim';
+        html += '<span class="' + cls + '">' + esc(info[i]) + '</span>' + NL;
+      }
+      html += '<h3>exportAsMediaDirect denemeleri (' + attempts.length + ')</h3>';
+      if (!attempts.length) html += '<span class="warn">hiç deneme yapılamadı</span>' + NL;
+      for (var j = 0; j < attempts.length; j++) {
+        var c2 = attempts[j].indexOf('OK ') === 0 ? 'ok' : 'err';
+        html += '<span class="' + c2 + '">' + esc(attempts[j]) + '</span>' + NL;
+      }
+      show('presetOut', html);
+      setStatus('');
+    }).catch(function (e) {
+      show('presetOut', '<span class="err">' + esc(e.message) + '</span>');
+      setStatus('hata');
+    }).then(function () { btn.disabled = false; });
+  }
+
   /* ---------------------------------------------------------------- */
   /*  Preset listesi                                                   */
   /* ---------------------------------------------------------------- */
@@ -498,6 +531,7 @@
     $('btnSeq').addEventListener('click', readSequence);
     $('btnProbe').addEventListener('click', runProbe);
     $('btnCaption').addEventListener('click', testCaptionTrack);
+    $('btnExportProbe').addEventListener('click', probeExport);
     $('btnPresets').addEventListener('click', listPresets);
     $('btnCopy').addEventListener('click', copyAll);
   });
