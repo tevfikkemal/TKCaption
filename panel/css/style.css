@@ -16,6 +16,11 @@
 
 * { box-sizing: border-box; }
 
+/* .env{display:grid} gibi kurallar tarayicinin [hidden]{display:none}
+   kuralini eziyor (ayni ozgulluk, sonra geliyor). Bu yuzden hidden
+   ozniteligi calismiyordu — acikca geri aliyoruz. */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   padding: 10px;
@@ -175,3 +180,50 @@ body {
   height: 100%; width: 0; background: var(--accent);
   transition: width .25s ease;
 }
+
+/* --- Dagitim surumu sadelestirmesi --- */
+
+.first-run {
+  margin: 0 0 9px;
+  padding: 8px 10px;
+  background: #2a3340;
+  border-left: 2px solid var(--accent);
+  border-radius: 2px;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: #c5d3e3;
+}
+.first-run strong { color: #e8f0f8; }
+
+.row.spread { justify-content: space-between; align-items: center; }
+.row.spread h2 { margin: 0; }
+
+.btn.small { padding: 3px 9px; font-size: 10px; }
+
+.note {
+  margin: 8px 0 0;
+  font-size: 10px;
+  line-height: 1.45;
+  color: var(--dim);
+}
+
+/* Katlanabilir bolumler */
+details > summary {
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--dim);
+  padding: 4px 0;
+  list-style: none;
+  user-select: none;
+}
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before { content: '▸ '; }
+details[open] > summary::before { content: '▾ '; }
+details > summary:hover { color: var(--text); }
+
+.opts-wrap { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 4px; }
+.opts-wrap .opts { margin-top: 8px; }
+
+.advanced { margin-bottom: 9px; }
+.advanced > summary { padding: 6px 2px; }
+.advanced .card { margin-top: 8px; }

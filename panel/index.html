@@ -13,120 +13,122 @@
     <span class="by">by TK Labs</span>
   </header>
 
+  <!-- Ilk calistirmada model inecegini ONCEDEN soyle -->
+  <p class="first-run" id="firstRun" hidden>
+    İlk çalıştırmada konuşma tanıma modeli indirilecek
+    (<strong id="firstRunSize">~570 MB</strong>). Bir kez iner, sonrasında
+    internet gerekmez.
+  </p>
+
   <!-- ASIL IS -->
   <section class="card generate">
-    <h2>Altyazı Oluştur</h2>
-    <p class="desc">
-      Aktif sekansın sesini çıkarır, yerelde çözümler ve altyazı pistine
-      yerleştirir. İnternet yalnızca ilk çalıştırmada model indirmek için gerekir.
-    </p>
-
-    <div class="opts">
-      <label>
-        Model
-        <select id="optModel">
-          <option value="large-v3-turbo-q5_0">Turbo (hızlı, önerilen)</option>
-          <option value="large-v3-turbo">Turbo tam (daha büyük)</option>
-          <option value="large-v3-q5_0">Large-v3 (karşılaştırma)</option>
-          <option value="medium-q5_0">Medium (zayıf makine)</option>
-        </select>
-      </label>
-      <label>
-        Satır uzunluğu
-        <input id="optChars" type="number" min="20" max="60" value="42">
-      </label>
-      <label>
-        Okuma hızı (kar/sn)
-        <input id="optCps" type="number" min="10" max="30" value="17">
-      </label>
-    </div>
-
-    <div class="row">
+    <div class="row spread">
       <button id="btnRun" class="btn primary big">Altyazı Oluştur</button>
       <button id="btnCancel" class="btn" hidden>İptal</button>
     </div>
 
     <div id="runBar" class="bar" hidden><div id="runFill" class="fill"></div></div>
     <div id="runOut" class="out" hidden></div>
+
+    <details class="opts-wrap">
+      <summary>Ayarlar</summary>
+      <div class="opts">
+        <label>
+          Model
+          <select id="optModel">
+            <option value="large-v3-turbo-q5_0">Turbo — hızlı, önerilen</option>
+            <option value="large-v3-turbo">Turbo tam — daha büyük</option>
+            <option value="large-v3-q5_0">Large-v3 — karşılaştırma</option>
+            <option value="medium-q5_0">Medium — zayıf makine</option>
+          </select>
+        </label>
+        <label>
+          Satır uzunluğu
+          <input id="optChars" type="number" min="20" max="60" value="42">
+        </label>
+        <label>
+          Okuma hızı (kar/sn)
+          <input id="optCps" type="number" min="10" max="30" value="17">
+        </label>
+      </div>
+      <p class="note">
+        Varsayılanlar TRT ve Netflix Türkçe altyazı ölçüleridir: satır başına
+        42 karakter, en fazla 2 satır, saniyede 17 karakter.
+      </p>
+    </details>
   </section>
 
-  <!-- Ortam durumu: panel acilir acilmaz doldurulur -->
+  <!-- Sekans ozeti: calistirmadan once ne islenecegi belli olsun -->
   <section class="card">
-    <h2>Ortam</h2>
-    <dl class="env" id="env">
-      <dt>CEP</dt><dd id="envCep" class="pending">kontrol ediliyor…</dd>
-      <dt>Node.js</dt><dd id="envNode" class="pending">—</dd>
-      <dt>Premiere</dt><dd id="envHost" class="pending">—</dd>
-      <dt>Köprü</dt><dd id="envBridge" class="pending">—</dd>
-      <dt>Çekirdek</dt><dd id="envCore" class="pending">—</dd>
-    </dl>
-  </section>
-
-  <!-- Sekans bilgisi -->
-  <section class="card">
-    <h2>Sekans</h2>
-    <div class="row">
-      <button id="btnSeq" class="btn">Bilgileri Oku</button>
+    <div class="row spread">
+      <h2>Sekans</h2>
+      <button id="btnSeq" class="btn small">Yenile</button>
     </div>
     <dl class="env" id="seqInfo" hidden>
       <dt>Ad</dt><dd id="seqName">—</dd>
       <dt>Kare hızı</dt><dd id="seqFps">—</dd>
       <dt>Başlangıç TC</dt><dd id="seqZero">—</dd>
       <dt>Süre</dt><dd id="seqDur">—</dd>
-      <dt>Pistler</dt><dd id="seqTracks">—</dd>
     </dl>
     <p class="hint" id="seqHint" hidden></p>
   </section>
 
-  <!-- Asil mesele: caption API var mi? -->
-  <section class="card accent">
-    <h2>Altyazı Pisti API Yoklaması</h2>
-    <p class="desc">
-      Premiere'in bu sürümünde altyazı pistlerine hangi betik API'lerinin açık
-      olduğunu <strong>çalışma anında</strong> ölçer. Sonuç, altyazının tam
-      otomatik mi yerleştirileceğini yoksa sürükle-bırak mı gerekeceğini belirler.
-    </p>
-    <div class="row">
-      <button id="btnProbe" class="btn primary">Yoklamayı Çalıştır</button>
-    </div>
-    <div id="probeOut" class="out" hidden></div>
-  </section>
+  <!-- Teshis araclari: normal kullanicinin isine yaramaz, kapali dursun -->
+  <details class="advanced">
+    <summary>Gelişmiş / Teşhis</summary>
 
-  <!-- createCaptionTrack imza deneyi -->
-  <section class="card accent">
-    <h2>createCaptionTrack Denemesi</h2>
-    <p class="desc">
-      Bu fonksiyon sürümünüzde <strong>mevcut</strong>, ama nasıl çağrıldığı
-      belgelenmemiş. Farklı argüman bileşimlerini sırayla dener ve hata
-      mesajlarından doğru imzayı çıkarır.
-    </p>
-    <p class="warn-box">
-      Başarılı bir çağrı <strong>projenizi değiştirir</strong> (altyazı pisti
-      oluşturur). Boş bir deneme projesinde çalıştırın; ya da geri almak için
-      Ctrl+Z kullanın.
-    </p>
-    <div class="row">
-      <button id="btnCaption" class="btn primary">SRT Seç ve Dene</button>
-    </div>
-    <div id="captionOut" class="out" hidden></div>
-  </section>
+    <section class="card">
+      <h2>Ortam</h2>
+      <dl class="env" id="env">
+        <dt>CEP</dt><dd id="envCep" class="pending">kontrol ediliyor…</dd>
+        <dt>Node.js</dt><dd id="envNode" class="pending">—</dd>
+        <dt>Premiere</dt><dd id="envHost" class="pending">—</dd>
+        <dt>Köprü</dt><dd id="envBridge" class="pending">—</dd>
+        <dt>Çekirdek</dt><dd id="envCore" class="pending">—</dd>
+        <dt>Veri klasörü</dt><dd id="envData" class="pending">—</dd>
+      </dl>
+    </section>
 
-  <!-- Ses disari aktarma testi -->
-  <section class="card">
-    <h2>Ses Dışa Aktarma</h2>
-    <p class="desc">
-      Sekansın sesini WAV olarak çıkarır. Bir ses-only <code>.epr</code> preset'i
-      gerekir; aşağıdan mevcut preset'leri listeleyebilirsiniz.
-    </p>
-    <div class="row">
-      <button id="btnExportProbe" class="btn primary">Dışa Aktarma Teşhisi</button>
-      <button id="btnPresets" class="btn">Preset'leri Listele</button>
-    </div>
-    <div id="presetOut" class="out" hidden></div>
-  </section>
+    <section class="card">
+      <h2>Altyazı Pisti API Yoklaması</h2>
+      <p class="desc">
+        Premiere'in bu sürümünde altyazı pistlerine hangi betik API'lerinin açık
+        olduğunu çalışma anında ölçer.
+      </p>
+      <div class="row">
+        <button id="btnProbe" class="btn">Yoklamayı Çalıştır</button>
+      </div>
+      <div id="probeOut" class="out" hidden></div>
+    </section>
+
+    <section class="card">
+      <h2>Dışa Aktarma Teşhisi</h2>
+      <p class="desc">
+        Ses çıkarma başarısız olursa: klasör izinlerini, yol biçimini, aralık
+        türünü ve preset'leri tek tek dener.
+      </p>
+      <div class="row">
+        <button id="btnExportProbe" class="btn">Teşhisi Çalıştır</button>
+        <button id="btnPresets" class="btn">Preset'ler</button>
+      </div>
+      <div id="presetOut" class="out" hidden></div>
+    </section>
+
+    <section class="card">
+      <h2>createCaptionTrack Denemesi</h2>
+      <p class="warn-box">
+        Başarılı bir çağrı <strong>projenizi değiştirir</strong> (altyazı pisti
+        oluşturur). Geri almak için Ctrl+Z.
+      </p>
+      <div class="row">
+        <button id="btnCaption" class="btn">SRT Seç ve Dene</button>
+      </div>
+      <div id="captionOut" class="out" hidden></div>
+    </section>
+  </details>
 
   <footer class="foot">
-    <button id="btnCopy" class="link">Tüm çıktıyı kopyala</button>
+    <button id="btnCopy" class="link">Teşhis raporunu kopyala</button>
     <span id="status"></span>
   </footer>
 

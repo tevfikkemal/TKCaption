@@ -40,10 +40,18 @@
     return [];
   }
 
+  // Arayuz sadelestirilirken bir alan kaldirilirsa panel calisma aninda
+  // patlamasin diye tum alan erisimleri null-guvenli.
   function field(id, text, cls) {
     var el = $(id);
+    if (!el) return;
     el.textContent = text;
     el.className = cls || '';
+  }
+
+  function setText(id, text) {
+    var el = $(id);
+    if (el) el.textContent = text;
   }
 
   function show(id, html) {
@@ -151,7 +159,42 @@
       field('envCore', core, 'ok');
     } else {
       field('envCore', 'bulunamadı', 'err');
-      $('envCore').title = coreSearchLog.join('\n');
+      if ($('envCore')) $('envCore').title = coreSearchLog.join('\n');
+    }
+
+    // Veri klasoru ve model durumu. Ilk calistirmada ~570 MB inecegini
+    // kullanici DUGMEYE BASMADAN once bilmeli.
+    if (core) {
+      try {
+        var models = nodeReq(npath.join(core, 'src', 'models.js'));
+        field('envData', models.modelsDir(), 'ok');
+        // Indirilecek TOPLAM boyutu soyle: model + motor.
+        // NVIDIA kartinda CUDA yapisi 640 MB — sadece modeli soylemek
+        // kullaniciyi yanlis hazirlar.
+        var sel = $('optModel');
+        var wanted = sel ? sel.value : 'large-v3-turbo-q5_0';
+        var need = 0;
+        var parts = [];
+        if (!models.modelExists(wanted)) {
+          var spec = models.MODELS[wanted];
+          if (spec) { need += spec.mb; parts.push('model'); }
+        }
+        var variant = models.recommendVariant();
+        if (!models.findExe(npath.join(models.binDir(), variant)) &&
+            !models.findExe(models.binDir())) {
+          var bspec = models.BINARIES[variant];
+          if (bspec) { need += bspec.mb; parts.push('motor'); }
+        }
+        if (need > 0) {
+          var fr = $('firstRun');
+          if (fr) fr.hidden = false;
+          setText('firstRunSize', '~' + (need >= 1024
+            ? (need / 1024).toFixed(1) + ' GB'
+            : need + ' MB'));
+        }
+      } catch (e) {
+        field('envData', 'okunamadı — ' + e.message, 'warn');
+      }
     }
 
     // Kopru yuklu mu? bridge.jsx ScriptPath uzerinden otomatik yuklenmeli.
@@ -168,20 +211,25 @@
   /*  Sekans bilgisi                                                   */
   /* ---------------------------------------------------------------- */
 
-  function readSequence() {
+  /**
+   * @param {boolean} [auto] panel acilirken kendiliginden cagrildi mi?
+   *   Acilista sekans yoksa bu bir hata degildir; kullaniciya kirmizi
+   *   mesaj gostermek yerine sessizce geciyoruz.
+   */
+  function readSequence(auto) {
     var btn = $('btnSeq');
-    btn.disabled = true;
-    setStatus('sekans okunuyor…');
+    if (btn) btn.disabled = true;
+    if (!auto) setStatus('sekans okunuyor…');
     $('seqHint').hidden = true;
 
     CEP.call('trGetSequenceInfo()').then(function (d) {
       $('seqInfo').hidden = false;
-      $('seqName').textContent = d.name;
-      $('seqFps').textContent = Number(d.fps).toFixed(3) + ' fps';
-      $('seqZero').textContent = fmtTimecode(Number(d.zeroPointSec), Number(d.fps)) +
-        '  (' + Number(d.zeroPointSec).toFixed(2) + ' sn)';
-      $('seqDur').textContent = Number(d.durationSec).toFixed(1) + ' sn';
-      $('seqTracks').textContent = d.videoTracks + ' video · ' + d.audioTracks + ' ses';
+      setText('seqName', d.name);
+      setText('seqFps', Number(d.fps).toFixed(3) + ' fps');
+      setText('seqZero', fmtTimecode(Number(d.zeroPointSec), Number(d.fps)) +
+        '  (' + Number(d.zeroPointSec).toFixed(2) + ' sn)');
+      setText('seqDur', Number(d.durationSec).toFixed(1) + ' sn');
+      setText('seqTracks', d.videoTracks + ' video · ' + d.audioTracks + ' ses');
 
       // Sifirdan farkli baslangic zaman kodu en sik altyazi kaymasi sebebidir.
       if (Number(d.zeroPointSec) > 0.001) {
@@ -193,9 +241,15 @@
       }
       setStatus('');
     }).catch(function (e) {
-      show('probeOut', '<span class="err">' + esc(e.message) + '</span>');
-      setStatus('hata');
-    }).then(function () { btn.disabled = false; });
+      if (auto) {
+        $('seqInfo').hidden = true;   // acilista sekans yoksa sessizce gec
+      } else {
+        var hh = $('seqHint');
+        hh.hidden = false;
+        hh.textContent = e.message;
+        setStatus('');
+      }
+    }).then(function () { if (btn) btn.disabled = false; });
   }
 
   /* ---------------------------------------------------------------- */
@@ -556,9 +610,10 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     checkEnvironment();
+    readSequence(true);  // sekans ozeti dugme beklemeden gorunsun
     $('btnRun').addEventListener('click', generate);
     $('btnCancel').addEventListener('click', cancelRun);
-    $('btnSeq').addEventListener('click', readSequence);
+    $('btnSeq').addEventListener('click', function () { readSequence(false); });
     $('btnProbe').addEventListener('click', runProbe);
     $('btnCaption').addEventListener('click', testCaptionTrack);
     $('btnExportProbe').addEventListener('click', probeExport);

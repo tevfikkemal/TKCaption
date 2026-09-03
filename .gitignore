@@ -12,3 +12,6 @@ core/test/out/
 
 # test malzemesi (buyuk)
 video/
+
+# dagitim ciktisi
+dist/

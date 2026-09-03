@@ -44,8 +44,65 @@ const BINARIES = {
 };
 
 function repoRoot() { return path.resolve(__dirname, '..', '..'); }
-function modelsDir() { return path.join(repoRoot(), 'models'); }
-function binDir() { return path.join(repoRoot(), 'bin'); }
+
+/**
+ * Model ve binary'lerin yasadigi klasor.
+ *
+ * DAGITIM ICIN KRITIK: eklenti sistem geneline kurulursa kendi klasoru
+ * (Program Files (x86)\Common Files\Adobe\CEP\extensions) YAZILABILIR DEGILDIR.
+ * Bu yuzden indirilen dosyalar kullanicinin veri klasorune gider.
+ *
+ * Sira:
+ *   1. TKCAPTION_HOME ortam degiskeni (elle yonlendirmek isteyenler icin)
+ *   2. Depo kokunde zaten indirilmis dosyalar varsa onlar (gelistirme;
+ *      var olan indirmeler bosa gitmesin)
+ *   3. Kullanici veri klasoru
+ */
+function userDataRoot() {
+  if (process.env.TKCAPTION_HOME) return process.env.TKCAPTION_HOME;
+  if (process.platform === 'win32') {
+    return path.join(process.env.APPDATA || os.homedir(), 'TKCaption');
+  }
+  if (process.platform === 'darwin') {
+    return path.join(os.homedir(), 'Library', 'Application Support', 'TKCaption');
+  }
+  return path.join(process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share'), 'tkcaption');
+}
+
+/** Klasor gercekten yazilabilir mi? Varsaymak yerine deneyerek olcuyoruz. */
+function isWritable(dir) {
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+    const probe = path.join(dir, '.yazma-testi-' + process.pid);
+    fs.writeFileSync(probe, 'x');
+    fs.unlinkSync(probe);
+    return true;
+  } catch (_) { return false; }
+}
+
+let _root = null;
+function dataRoot() {
+  if (_root) return _root;
+
+  if (process.env.TKCAPTION_HOME) { _root = process.env.TKCAPTION_HOME; return _root; }
+
+  // Gelistirme: depo kokunde zaten inmis dosyalar varsa onlari kullan
+  const repo = repoRoot();
+  try {
+    const m = path.join(repo, 'models');
+    const b = path.join(repo, 'bin');
+    const hasModel = fs.existsSync(m) && fs.readdirSync(m).some((f) => f.endsWith('.bin'));
+    const hasBin = fs.existsSync(b) && fs.readdirSync(b).some((f) => f !== '.gitkeep');
+    if ((hasModel || hasBin) && isWritable(repo)) { _root = repo; return _root; }
+  } catch (_) {}
+
+  const user = userDataRoot();
+  _root = isWritable(user) ? user : repo;
+  return _root;
+}
+
+function modelsDir() { return path.join(dataRoot(), 'models'); }
+function binDir() { return path.join(dataRoot(), 'bin'); }
 
 function ensureDir(d) { fs.mkdirSync(d, { recursive: true }); return d; }
 const mb = (b) => (b / 1048576).toFixed(1);
