@@ -14,6 +14,7 @@ const hallucination = require('./hallucination.js');
 const postprocess = require('./postprocess.js');
 const segmenter = require('./segmenter.js');
 const srt = require('./srt.js');
+const pipeline = require('./pipeline.js');
 
 const VERSION = '0.1.0';
 
@@ -263,105 +264,52 @@ async function main() {
     (cfg.output.format === 'vtt' ? '.vtt' : '.srt');
 
   const workDir = whisper.safeTempDir();
-  const t0 = Date.now();
 
   try {
-    // --- 1. Motor ve model ---
-    report.step('hazırlık', 'whisper.cpp hazırlanıyor');
-    const bin = await models.ensureBinary(opts.variant, (p) => {
-      if (p.phase === 'download') report.tick('indirme', p.name, p.pct);
-      else if (p.phase === 'start') report.step('indirme', `${p.name} indiriliyor (~${p.mb} MB)`);
-      else if (p.phase === 'extract') { report.endTick(); report.step('indirme', 'arşiv açılıyor'); }
-    });
-    report.step('hazırlık', `motor: ${bin.variant} (${path.basename(bin.exe)})`);
-
-    const modelFile = await models.ensureModel(cfg.whisper.model, (p) => {
-      if (p.phase === 'download') report.tick('indirme', `model ${p.name}`, p.pct);
-      else if (p.phase === 'start') report.step('indirme', `model ${p.name} indiriliyor (~${p.mb} MB)`);
-      else if (p.phase === 'done') report.endTick();
-    });
-
-    let vadModel = null;
-    if (cfg.whisper.useVad) {
-      vadModel = await models.ensureVadModel((p) => {
-        if (p.phase === 'download') report.tick('indirme', 'VAD modeli', p.pct);
-      });
-    }
-
-    // --- 2. Ses ---
-    const prepared = prepareAudio(opts.input, workDir, report);
-
-    // --- 3. Çözümleme ---
-    report.step('çözümleme', 'konuşma tanıma başlıyor', 0);
-    const result = await whisper.runWithFallback({
-      exePath: bin.exe,
-      modelPath: modelFile,
-      wavPath: prepared.path,
-      vadModelPath: vadModel,
+    // Boru hatti core/src/pipeline.js'te durur. CLI ile CEP paneli AYNI kodu
+    // calistirir; ikisi ayri kopya tasirsa zamanla ayrisir ve "panelde farkli
+    // cikiyor" turu hatalar baslar.
+    const res = await pipeline.run({
+      input: opts.input,
+      out: outPath,
       cfg,
+      variant: opts.variant,
       workDir,
-      onProgress: (p) => report.tick('çözümleme', 'konuşma tanınıyor', p.pct),
-      onNotice: (m) => report.step('uyarı', m)
+      keepTemp: true, // temizligi asagidaki finally yapar
+      onPhase: (phase, message) => { report.endTick(); report.step(phase, message); },
+      onProgress: (phase, pct, message) => report.tick(phase, message, pct),
+      // ffmpeg cozumlemesi CLI'ya ozeldir; panel Premiere'den zaten WAV alir
+      prepareAudio: (input, dir) => prepareAudio(input, dir, report, opts, cfg)
     });
     report.endTick();
 
-    // --- 4. Halüsinasyon filtresi ---
-    const segs = (result.json && result.json.transcription) || [];
-    const filtered = hallucination.filterSegments(segs, cfg);
-    if (filtered.removed.length) {
-      report.step('temizlik', `${filtered.removed.length} şüpheli segment atıldı`);
-      if (opts.verbose) {
-        for (const r of filtered.removed) {
-          process.stderr.write(`    atıldı: "${r.text.slice(0, 60)}" [${r.reason}]\n`);
-        }
+    if (opts.verbose && res.removedDetail) {
+      for (const r of res.removedDetail) {
+        process.stderr.write(`    atıldı: "${r.text.slice(0, 60)}" [${r.reason}]
+`);
       }
     }
 
-    // --- 5. Kelimeler ---
-    let words = tokens.toWords({ transcription: filtered.segments });
-    if (!words.length) throw new Error('Konuşma bulunamadı. Ses dosyası sessiz olabilir veya dil yanlış seçilmiş olabilir.');
-    words = hallucination.dedupeWords(words);
-    words = postprocess.processWords(words, cfg);
-    report.step('metin', `${words.length} kelime işlendi`);
-
-    // --- 6. Segmentasyon ---
-    const blocks = segmenter.segment(words, cfg);
-    report.step('bölme', `${blocks.length} altyazı bloğu oluşturuldu`);
-
-    // --- 7. Yazma ---
-    const content = cfg.output.format === 'vtt' ? srt.toVtt(blocks, cfg) : srt.toSrt(blocks, cfg);
-    srt.write(outPath, content, cfg);
-
-    // --- Özet ---
-    const elapsed = (Date.now() - t0) / 1000;
-    const over = blocks.filter((b) => b.cps > cfg.layout.maxCps + 0.5).length;
-    const longLine = blocks.filter((b) => b.lines.some((l) => l.length > cfg.layout.maxCharsPerLine)).length;
-    const speed = prepared.durationSec / elapsed;
-
-    report.done({
-      output: outPath,
-      blocks: blocks.length,
-      words: words.length,
-      removed: filtered.removed.length,
-      durationSec: prepared.durationSec,
-      elapsedSec: +elapsed.toFixed(1),
-      speedRealtime: +speed.toFixed(1),
-      cpsViolations: over,
-      lineLengthViolations: longLine
-    });
+    report.done(res);
 
     if (!opts.json) {
       process.stderr.write(
-        `\nTamamlandı: ${outPath}\n` +
-        `  ${blocks.length} blok, ${words.length} kelime\n` +
-        `  ${prepared.durationSec.toFixed(1)} sn ses / ${elapsed.toFixed(1)} sn işlem (${speed.toFixed(1)}x gerçek zaman)\n` +
-        `  kural ihlali: ${over} CPS, ${longLine} satır uzunluğu\n`
+        `
+Tamamlandı: ${res.output}
+` +
+        `  ${res.blocks} blok, ${res.words} kelime
+` +
+        `  ${res.durationSec.toFixed(1)} sn ses / ${res.elapsedSec} sn işlem (${res.speedRealtime}x gerçek zaman)
+` +
+        `  kural ihlali: ${res.cpsViolations} CPS, ${res.lineLengthViolations} satır uzunluğu
+`
       );
     }
     return 0;
   } finally {
     if (!opts.keepTemp) whisper.cleanup(workDir);
-    else process.stderr.write(`Geçici dosyalar: ${workDir}\n`);
+    else process.stderr.write(`Geçici dosyalar: ${workDir}
+`);
   }
 }
 

@@ -144,3 +144,34 @@ body {
   color: #e8d5b0;
 }
 .warn-box strong { color: var(--warn); font-weight: 600; }
+
+/* Asil is bolumu */
+.card.generate { background: #24303c; border-color: #35485c; }
+.btn.big { padding: 9px 18px; font-size: 12px; font-weight: 600; }
+
+.opts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px 9px;
+  margin-bottom: 10px;
+}
+.opts label {
+  display: flex; flex-direction: column; gap: 3px;
+  font-size: 10px; color: var(--dim);
+}
+.opts label:first-child { grid-column: 1 / -1; }
+.opts select, .opts input {
+  background: #1a1a1a; color: var(--text);
+  border: 1px solid #3d3d3d; border-radius: 3px;
+  padding: 4px 6px; font: inherit; font-size: 11px;
+}
+.opts select:focus, .opts input:focus { outline: none; border-color: var(--accent); }
+
+.bar {
+  height: 4px; background: #1a1a1a; border-radius: 2px;
+  margin-top: 9px; overflow: hidden;
+}
+.fill {
+  height: 100%; width: 0; background: var(--accent);
+  transition: width .25s ease;
+}

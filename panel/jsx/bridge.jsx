@@ -168,6 +168,62 @@ function trExportAudio(outPath, presetPath, rangeType) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Ses preset'i otomatik bulma                                        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * whisper.cpp 16 kHz mono 16-bit WAV ister.
+ * Premiere bu preset'i ZATEN kendi kurulumunda getiriyor (muhtemelen kendi
+ * konusma tanima ozelligi icin). Yani kendi .epr'imizi uretip dagitmamiza
+ * gerek yok - tercih sirasiyla arayip bulaniyi kullaniyoruz.
+ */
+var PRESET_PREFERENCE = [
+    'WAV_Mono_16bit_16kHz.epr',          // birebir istedigimiz format
+    'RawPCM_mono_16khz_nometadata.epr',  // yine 16 kHz mono
+    'Wave48mono16.epr',                  // 48 kHz mono - CLI yeniden orneklemeye indirir
+    'Wave48mono24.epr',
+    'AudioOnly.epr'                      // son care
+];
+
+function presetFolders() {
+    var list = [];
+    try { list.push(Folder.startup.fsName + '/Settings/EncoderPresets'); } catch (e) {}
+    // Folder.startup guvenilmezse bilinen konumlar
+    list.push('C:/Program Files/Adobe/Adobe Premiere Pro 2026/Settings/EncoderPresets');
+    list.push('C:/Program Files/Adobe/Adobe Premiere Pro 2025/Settings/EncoderPresets');
+    return list;
+}
+
+function trFindAudioPreset() {
+    try {
+        var folders = presetFolders();
+        var checked = [];
+        for (var f = 0; f < folders.length; f++) {
+            var dir = new Folder(folders[f]);
+            checked.push(folders[f] + (dir.exists ? ' (var)' : ' (yok)'));
+            if (!dir.exists) continue;
+            for (var p = 0; p < PRESET_PREFERENCE.length; p++) {
+                var candidate = new File(folders[f] + '/' + PRESET_PREFERENCE[p]);
+                if (candidate.exists) {
+                    return ok([
+                        kv('preset', PRESET_PREFERENCE[p]),
+                        kv('path', candidate.fsName),
+                        kv('folder', folders[f]),
+                        kv('rank', String(p), true),
+                        kv('exact', p <= 1 ? 'true' : 'false', true),
+                        kv('checked', arrToJson(checked), true)
+                    ]);
+                }
+            }
+        }
+        return err('16 kHz mono WAV preset bulunamadi',
+                   'Bakilan klasorler: ' + checked.join(' | '));
+    } catch (e) {
+        return err('Preset aramasi basarisiz', e);
+    }
+}
+
+/* ------------------------------------------------------------------ */
 /*  SRT iceri alma                                                     */
 /* ------------------------------------------------------------------ */
 
@@ -193,6 +249,71 @@ function trImportSrt(srtPath) {
         ]);
     } catch (e) {
         return err('SRT projeye alinamadi', e);
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Altyazi yerlestirme — uretim yolu                                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * SRT'yi projeye alir ve sekansa altyazi pisti olarak yerlestirir.
+ *
+ * Olculmus imza (Premiere 26.3.0):
+ *   createCaptionTrack(projectItem, 0) -> true
+ * Tek argümanla cagirmak "Not Enough Parameters" verir.
+ *
+ * Ikinci argümanin anlami belgelenmemis; 0 her durumda gecerli oldugu icin
+ * zaman kodu kaymasini SRT'nin ICINE yaziyoruz (core/src/srt.js --offset).
+ * Boylece ikinci argümanin baslangic zamani mi pist indeksi mi oldugu
+ * sorusuna bagimli kalmiyoruz.
+ */
+function trPlaceCaptions(srtPath) {
+    try {
+        var seq = app.project.activeSequence;
+        if (!seq) return err('Aktif sekans yok.');
+        if (!fileExists(srtPath)) return err('SRT bulunamadi: ' + srtPath);
+
+        if (typeof seq.createCaptionTrack !== 'function') {
+            return err('Bu Premiere surumunde createCaptionTrack yok.',
+                       'SRT projeye alindi, elle surukleyebilirsiniz.');
+        }
+
+        var bin = null;
+        try { bin = app.project.getInsertionBin(); } catch (e) { bin = app.project.rootItem; }
+
+        var imported = app.project.importFiles([srtPath], true, bin, false);
+        if (!imported) return err('SRT projeye alinamadi.');
+
+        // Iceri alinan ogeyi bul
+        var wanted = new File(srtPath).name;
+        var stem = wanted.replace(/\.srt$/i, '');
+        var item = null;
+        try {
+            var root = app.project.rootItem;
+            for (var i = 0; i < root.children.numItems; i++) {
+                var c = root.children[i];
+                if (c.name === wanted || c.name === stem) item = c;
+            }
+        } catch (e) {}
+        if (!item) return err('SRT iceri alindi ama proje ogesi bulunamadi.');
+
+        var placed = false;
+        var detail = '';
+        try {
+            placed = seq.createCaptionTrack(item, 0);
+        } catch (e2) {
+            detail = String(e2.message || e2);
+        }
+
+        return ok([
+            kv('imported', 'true', true),
+            kv('itemName', item.name),
+            kv('placed', placed ? 'true' : 'false', true),
+            kv('detail', detail)
+        ]);
+    } catch (e) {
+        return err('Altyazi yerlestirilemedi', e);
     }
 }
 

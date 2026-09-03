@@ -51,6 +51,48 @@
   }
 
   /* ---------------------------------------------------------------- */
+  /*  Node tarafi — CEP'in KENDI Node'u                                */
+  /* ---------------------------------------------------------------- */
+
+  // Kullanicinin makinesinde Node kurulu olmasi GEREKMEZ; CEP kendi
+  // Node'unu getirir. Bu yuzden CLI'yi disaridan spawn etmiyoruz,
+  // cekirdek modullerini dogrudan require ediyoruz.
+  var nodeReq = (typeof window.require === 'function') ? window.require : null;
+  var npath = nodeReq ? nodeReq('path') : null;
+  var nfs = nodeReq ? nodeReq('fs') : null;
+  var nos = nodeReq ? nodeReq('os') : null;
+
+  var coreDir = null;
+
+  /**
+   * core/ klasorunu bulur.
+   * Gelistirmede panel bir junction uzerinden gorunur; "../core" junction
+   * yolu uzerinde calisir ve yanlis yere bakar. realpathSync junction'i
+   * gercek hedefine cozer, boylece hem gelistirme hem dagitim yerlesimi tutar.
+   */
+  function resolveCore() {
+    if (coreDir) return coreDir;
+    if (!nodeReq) return null;
+    var ext = CEP.extensionPath();
+    if (!ext) return null;
+    var real = ext;
+    try { real = nfs.realpathSync(ext); } catch (e) {}
+    var candidates = [
+      npath.join(real, 'core'),          // dagitim: core/ eklentinin icinde
+      npath.join(real, '..', 'core')     // gelistirme: depo kokunde
+    ];
+    for (var i = 0; i < candidates.length; i++) {
+      try {
+        if (nfs.existsSync(npath.join(candidates[i], 'src', 'pipeline.js'))) {
+          coreDir = candidates[i];
+          return coreDir;
+        }
+      } catch (e) {}
+    }
+    return null;
+  }
+
+  /* ---------------------------------------------------------------- */
   /*  Ortam kontrolu                                                   */
   /* ---------------------------------------------------------------- */
 
@@ -188,6 +230,134 @@
   }
 
   /* ---------------------------------------------------------------- */
+  /*  ASIL AKIS: sekans -> ses -> altyazi -> pist                       */
+  /* ---------------------------------------------------------------- */
+
+  var running = false;
+
+  function setBar(pct) {
+    $('runBar').hidden = false;
+    $('runFill').style.width = Math.round((pct || 0) * 100) + '%';
+  }
+
+  function appendRun(html) {
+    var el = $('runOut');
+    el.hidden = false;
+    el.innerHTML += html + '\n';
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function generate() {
+    if (running) return;
+
+    if (!nodeReq) {
+      show('runOut', '<span class="err">Node.js açık değil. Panel manifest’indeki ' +
+           '--enable-nodejs bayrağı çalışmamış; altyazı üretilemez.</span>');
+      return;
+    }
+    var core = resolveCore();
+    if (!core) {
+      show('runOut', '<span class="err">core/ klasörü bulunamadı. ' +
+           'Eklenti eksik kurulmuş olabilir.</span>');
+      return;
+    }
+
+    running = true;
+    $('btnRun').disabled = true;
+    $('runOut').innerHTML = '';
+    $('runOut').hidden = false;
+    setBar(0);
+    setStatus('çalışıyor…');
+
+    var tmp = npath.join(nos.tmpdir(), 'tkcaption-' + Date.now().toString(36));
+    try { nfs.mkdirSync(tmp, { recursive: true }); } catch (e) {}
+    var wav = npath.join(tmp, 'sekans.wav');
+    var srtPath = npath.join(tmp, 'altyazi.srt');
+
+    var seqInfo = null;
+
+    // 1) Sekans bilgisi — kare hizi ve baslangic zaman kodu
+    CEP.call('trGetSequenceInfo()').then(function (d) {
+      seqInfo = d;
+      appendRun('<span class="dim">sekans:</span> ' + esc(d.name) + '  ' +
+                Number(d.fps).toFixed(3) + ' fps  ' +
+                Number(d.durationSec).toFixed(1) + ' sn');
+      if (Number(d.zeroPointSec) > 0.001) {
+        appendRun('<span class="warn">başlangıç TC ' +
+                  Number(d.zeroPointSec).toFixed(2) + ' sn — kayma uygulanacak</span>');
+      }
+
+      // 2) Ses preset'i
+      return CEP.call('trFindAudioPreset()');
+    }).then(function (p) {
+      appendRun('<span class="dim">preset:</span> ' + esc(p.preset) +
+                (String(p.exact) === 'true' ? ' <span class="ok">(16 kHz mono)</span>'
+                                            : ' <span class="warn">(yeniden örneklenecek)</span>'));
+
+      // 3) Sesi disari aktar — Premiere arayuzu bu sirada donar
+      appendRun('<span class="dim">ses çıkarılıyor… (Premiere bu sırada yanıt vermeyebilir)</span>');
+      setBar(0.05);
+      return CEP.call('trExportAudio("' + wav.replace(/\\/g, '/') + '", "' +
+                      p.path.replace(/\\/g, '/') + '", 0)');
+    }).then(function (e) {
+      appendRun('<span class="ok">ses hazır</span> ' +
+                (Number(e.bytes) / 1048576).toFixed(1) + ' MB, ' +
+                Number(e.elapsedSec).toFixed(1) + ' sn');
+      setBar(0.15);
+
+      // 4) Boru hattini CEP'in Node'unda calistir
+      var pipeline = nodeReq(npath.join(core, 'src', 'pipeline.js'));
+      var configMod = nodeReq(npath.join(core, 'src', 'config.js'));
+      var cfg = configMod.load();
+
+      cfg.whisper.model = $('optModel').value;
+      cfg.layout.maxCharsPerLine = parseInt($('optChars').value, 10) || 42;
+      cfg.layout.maxCps = parseFloat($('optCps').value) || 17;
+      cfg.layout.fps = Number(seqInfo.fps) || 25;
+      // Zaman kodu kaymasini SRT'nin ICINE yaziyoruz. createCaptionTrack'in
+      // ikinci argümaninin anlami belgelenmemis; 0 her durumda gecerli
+      // oldugu icin bu yol o belirsizlige bagimli degil.
+      cfg.output.timecodeOffsetSec = Number(seqInfo.zeroPointSec) || 0;
+
+      return pipeline.run({
+        input: wav,
+        out: srtPath,
+        cfg: cfg,
+        onPhase: function (ph, msg) { appendRun('<span class="dim">' + esc(ph) + ':</span> ' + esc(msg)); },
+        onProgress: function (ph, pct) { setBar(0.15 + (pct || 0) * 0.75); }
+      });
+    }).then(function (res) {
+      setBar(0.95);
+      appendRun('<span class="ok">' + res.blocks + ' blok, ' + res.words + ' kelime</span>  ' +
+                res.elapsedSec + ' sn (' + res.speedRealtime + 'x)');
+      if (res.removed) appendRun('<span class="dim">' + res.removed + ' şüpheli segment atıldı</span>');
+      if (res.cpsViolations) {
+        appendRun('<span class="warn">' + res.cpsViolations + ' blok okuma hızını aşıyor</span> ' +
+                  '<span class="dim">— konuşma hızlıysa bu kaçınılmazdır</span>');
+      }
+
+      // 5) Sekansa yerlestir
+      return CEP.call('trPlaceCaptions("' + srtPath.replace(/\\/g, '/') + '")');
+    }).then(function (pl) {
+      setBar(1);
+      if (String(pl.placed) === 'true') {
+        appendRun('<span class="ok">Altyazı pisti oluşturuldu.</span>');
+      } else {
+        appendRun('<span class="warn">SRT projeye alındı ama piste yerleştirilemedi' +
+                  (pl.detail ? ': ' + esc(pl.detail) : '') + '</span>');
+        appendRun('<span class="dim">Proje panelinden zaman çizelgesine sürükleyebilirsiniz.</span>');
+      }
+      setStatus('tamam');
+    }).catch(function (e) {
+      appendRun('<span class="err">HATA: ' + esc(e.message) + '</span>');
+      setStatus('hata');
+    }).then(function () {
+      running = false;
+      $('btnRun').disabled = false;
+    });
+  }
+
+  /* ---------------------------------------------------------------- */
   /*  createCaptionTrack imza deneyi                                   */
   /* ---------------------------------------------------------------- */
 
@@ -305,6 +475,7 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     checkEnvironment();
+    $('btnRun').addEventListener('click', generate);
     $('btnSeq').addEventListener('click', readSequence);
     $('btnProbe').addEventListener('click', runProbe);
     $('btnCaption').addEventListener('click', testCaptionTrack);

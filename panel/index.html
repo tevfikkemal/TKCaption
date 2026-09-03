@@ -13,6 +13,43 @@
     <span class="by">by TK Labs</span>
   </header>
 
+  <!-- ASIL IS -->
+  <section class="card generate">
+    <h2>Altyazı Oluştur</h2>
+    <p class="desc">
+      Aktif sekansın sesini çıkarır, yerelde çözümler ve altyazı pistine
+      yerleştirir. İnternet yalnızca ilk çalıştırmada model indirmek için gerekir.
+    </p>
+
+    <div class="opts">
+      <label>
+        Model
+        <select id="optModel">
+          <option value="large-v3-turbo-q5_0">Turbo (hızlı, önerilen)</option>
+          <option value="large-v3-turbo">Turbo tam (daha büyük)</option>
+          <option value="large-v3-q5_0">Large-v3 (karşılaştırma)</option>
+          <option value="medium-q5_0">Medium (zayıf makine)</option>
+        </select>
+      </label>
+      <label>
+        Satır uzunluğu
+        <input id="optChars" type="number" min="20" max="60" value="42">
+      </label>
+      <label>
+        Okuma hızı (kar/sn)
+        <input id="optCps" type="number" min="10" max="30" value="17">
+      </label>
+    </div>
+
+    <div class="row">
+      <button id="btnRun" class="btn primary big">Altyazı Oluştur</button>
+      <button id="btnCancel" class="btn" hidden>İptal</button>
+    </div>
+
+    <div id="runBar" class="bar" hidden><div id="runFill" class="fill"></div></div>
+    <div id="runOut" class="out" hidden></div>
+  </section>
+
   <!-- Ortam durumu: panel acilir acilmaz doldurulur -->
   <section class="card">
     <h2>Ortam</h2>
