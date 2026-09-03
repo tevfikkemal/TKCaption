@@ -146,3 +146,55 @@ preset'in çalıştığını önceden bilmek zorunda değiliz.
 
 Tercih sırası `Wave48mono16.epr` ile başlar: 48 kHz mono 16-bit WAV üretir,
 çekirdek yeniden örnekleyici bunu 16 kHz'e indirir (10 saniyelik ses için ~9 ms).
+
+---
+
+## `exportAsMediaDirect` — yol biçimi ZORUNLU
+
+Ölçülen davranış (Premiere 26.3.0, Windows):
+
+| Yol | Sonuç |
+|---|---|
+| `C:/Users/.../test.wav` | `Error: Unable to initialize export!` |
+| `C:\Users\...\test.wav` | `No Error` — 1.406.322 bayt üretildi |
+
+**Windows'ta yerel ters eğik çizgi zorunludur.** Düz eğik çizgi verilirse
+Premiere dışa aktarma motorunu hiç başlatamaz. Hata mesajı yol biçiminden
+hiç söz etmediği için sebebi tahmin etmek çok zor — bu yüzden ölçülüp
+belgelenmiştir.
+
+CEP panelinden çağırırken tuzak şu: yolu ExtendScript kaynak koduna gömmek
+için kaçışlamak gerekir ve akla ilk gelen "ters eğikleri düz eğiğe çevir"
+kısayolu tam da hatayı üretir. Doğrusu ters eğiği **korumak** ve yalnızca
+kaynak kodu için ikilemektir:
+
+```js
+function esPath(p) {
+  return String(p).replace(/\/g, '\\').replace(/"/g, '\\"');
+}
+```
+
+Köprü tarafında ayrıca `toNativePath()` savunması vardır: çağıran taraf düz
+eğik çizgi gönderse bile yerel biçime çevrilir. `core/test/espath.test.js`
+bu zinciri uçtan uca doğrular.
+
+### Doğrulanan preset çıktısı
+
+`Wave48mono16.epr` ile 14,6 saniyelik sekans → 1.406.322 bayt.
+
+```
+1.406.322 ÷ 2 bayt ÷ 48000 Hz = 14,65 sn
+```
+
+Yani preset gerçekten **48 kHz mono 16-bit** üretiyor. Çekirdek yeniden
+örnekleyici bunu 16 kHz'e indiriyor.
+
+### `app.encoder` üyeleri
+
+```
+ENCODE_ENTIRE, ENCODE_IN_TO_OUT, ENCODE_WORKAREA, bind(), setTimeout(), unbind()
+```
+
+`encodeSequence` doğrudan erişimle **mevcut** (yine `for...in` dökümünde
+görünmüyor). `exportAsMediaDirect` çalıştığı için şimdilik gerekmiyor, ancak
+senkron olmayan alternatif olarak dururd — Premiere'i dondurmama avantajı var.

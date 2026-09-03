@@ -19,6 +19,18 @@
 
   function setStatus(msg) { $('status').textContent = msg || ''; }
 
+  /**
+   * Bir yolu ExtendScript string sabitine guvenle gomer.
+   *
+   * DIKKAT: Yolu duz egik cizgiye CEVIRMEYIN. exportAsMediaDirect yerel
+   * Windows yolu ister; "C:/..." verildiginde "Unable to initialize export!"
+   * hatasi doner, "C:\..." ile calisir. Bu yuzden ters egik cizgiyi koruyup
+   * yalnizca ExtendScript kaynak kodu icin kacisliyoruz.
+   */
+  function esPath(p) {
+    return String(p).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  }
+
   /** Kopruden gelen deger dizi de olabilir, dizi-string de. Ikisini de kabul et. */
   function asArray(v) {
     if (Array.isArray(v)) return v;
@@ -313,7 +325,7 @@
       // 2) Sesi disari aktar — preset'ler sirayla denenir
       appendRun('<span class="dim">ses çıkarılıyor… (Premiere bu sırada yanıt vermeyebilir)</span>');
       setBar(0.05);
-      return CEP.call('trExportAudioAuto("' + wav.replace(/\\/g, '/') + '", 0)');
+      return CEP.call('trExportAudioAuto("' + esPath(wav) + '", 0)');
     }).then(function (e) {
       var tries = asArray(e.attempts);
       // Ilk preset tutmadiysa hangilerinin elendigini gormek isteriz
@@ -357,7 +369,7 @@
       }
 
       // 5) Sekansa yerlestir
-      return CEP.call('trPlaceCaptions("' + srtPath.replace(/\\/g, '/') + '")');
+      return CEP.call('trPlaceCaptions("' + esPath(srtPath) + '")');
     }).then(function (pl) {
       setBar(1);
       if (String(pl.placed) === 'true') {

@@ -63,6 +63,21 @@ function fileExists(p) {
     try { return new File(p).exists; } catch (e) { return false; }
 }
 
+/**
+ * Yolu isletim sisteminin YERLI bicimine cevirir.
+ *
+ * OLCULMUS: exportAsMediaDirect Windows'ta ters egik cizgi ister.
+ *   "C:/Users/.../a.wav"  -> Error: Unable to initialize export!
+ *   "C:\\Users\\...\\a.wav" -> No Error, dosya uretildi
+ * Cagiran taraf duz egik cizgi gonderse bile burada duzeltiyoruz ki
+ * bu hata bir daha geri gelmesin.
+ */
+function toNativePath(p) {
+    var s = String(p);
+    if ($.os.indexOf('Windows') >= 0) return s.replace(/\//g, '\\');
+    return s.replace(/\\/g, '/');
+}
+
 /* ------------------------------------------------------------------ */
 /*  Sekans bilgisi                                                     */
 /* ------------------------------------------------------------------ */
@@ -273,6 +288,9 @@ function trExportAudioAuto(outPath, rangeType) {
     try {
         var seq = app.project.activeSequence;
         if (!seq) return err('Aktif sekans yok.');
+
+        // Yerli yol bicimi sart — duz egik cizgi "Unable to initialize export!" verir
+        outPath = toNativePath(outPath);
 
         var list = collectPresets();
         if (!list.length) return err('Kullanilabilir ses disa aktarma preset bulunamadi.');
