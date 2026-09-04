@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.3.0';
+var TR_ALTYAZI_VERSION = '0.3.1';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -559,85 +559,112 @@ function trSuggestSrtPath(sequenceName, ext) {
  * Boylece ikinci argümanin baslangic zamani mi pist indeksi mi oldugu
  * sorusuna bagimli kalmiyoruz.
  */
-function trPlaceCaptions(srtPath) {
+/** Iceri alinan ogeyi dosya adiyla bulur. */
+function findImportedItem(filePath) {
+    var wanted = new File(filePath).name;
+    var stem = wanted.replace(/\.[^.]+$/, '');
+    var found = null;
+    try {
+        var root = app.project.rootItem;
+        for (var i = 0; i < root.children.numItems; i++) {
+            var c = root.children[i];
+            if (c.name === wanted || c.name === stem) found = c;
+        }
+    } catch (e) {}
+    return found;
+}
+
+/** Bir ogeyi altyazi pistine koymayi dener; ayrintiyi rapora yazar. */
+function tryPlace(seq, filePath, attempts) {
+    var ad = new File(filePath).name;
+    if (!fileExists(filePath)) { attempts.push('YOK   ' + ad); return null; }
+
+    var bin = null;
+    try { bin = app.project.getInsertionBin(); } catch (e) { bin = app.project.rootItem; }
+
+    var imported = false;
+    try { imported = app.project.importFiles([filePath], true, bin, false); }
+    catch (e) { attempts.push('HATA  ' + ad + ' -> import: ' + String(e.message || e)); return null; }
+    if (!imported) { attempts.push('HATA  ' + ad + ' -> import reddedildi'); return null; }
+
+    var item = findImportedItem(filePath);
+    if (!item) { attempts.push('HATA  ' + ad + ' -> oge bulunamadi'); return null; }
+
+    // Ogenin ne olarak alindigini gormek, uzanti tahminini dogrulamanin tek yolu
+    var tur = '';
+    try { tur = 'type=' + String(item.type); } catch (e) {}
+    try { tur += ' video=' + String(item.isSequence ? 'seq' : (item.getMediaPath ? 'media' : '?')); } catch (e) {}
+
+    var placed = false;
+    var hata = '';
+    try { placed = seq.createCaptionTrack(item, 0); }
+    catch (e2) { hata = String(e2.message || e2); }
+
+    attempts.push((placed ? 'OK    ' : 'HATA  ') + ad + ' -> ' +
+        (placed ? 'pist olusturuldu' : ('donen=' + String(placed) + (hata ? ' ' + hata : ''))) +
+        '  [' + tur + ']');
+    return placed ? item : null;
+}
+
+/**
+ * Altyaziyi sekansa yerlestirir.
+ *
+ * Birden fazla dosya bicimi SIRAYLA denenir. Sebep olculdu:
+ *   - SRT kare hizi tasimaz; Premiere 30 fps varsayar, 60 fps sekansta kayar
+ *   - TTML kare hizini tasir ama Premiere'in kabul ettigi UZANTI belirsiz
+ *     (.xml Final Cut Pro XML ile karisiyor olabilir)
+ * Hangisinin ise yaradigini tahmin etmek yerine deneyip raporluyoruz.
+ *
+ * @param paths  noktali virgulle ayrilmis aday dosyalar, tercih sirasiyla
+ */
+function trPlaceCaptions(paths) {
     try {
         var seq = app.project.activeSequence;
         if (!seq) return err('Aktif sekans yok.');
-        if (!fileExists(srtPath)) return err('SRT bulunamadi: ' + srtPath);
 
         if (typeof seq.createCaptionTrack !== 'function') {
             return err('Bu Premiere surumunde createCaptionTrack yok.',
-                       'SRT projeye alindi, elle surukleyebilirsiniz.');
+                       'Dosya projeye alindi, elle surukleyebilirsiniz.');
         }
 
-        var bin = null;
-        try { bin = app.project.getInsertionBin(); } catch (e) { bin = app.project.rootItem; }
-
-        var imported = app.project.importFiles([srtPath], true, bin, false);
-        if (!imported) return err('SRT projeye alinamadi.');
-
-        // Iceri alinan ogeyi bul
-        var wanted = new File(srtPath).name;
-        var stem = wanted.replace(/\.srt$/i, '');
+        var list = String(paths).split(';');
+        var attempts = [];
         var item = null;
-        try {
-            var root = app.project.rootItem;
-            for (var i = 0; i < root.children.numItems; i++) {
-                var c = root.children[i];
-                if (c.name === wanted || c.name === stem) item = c;
-            }
-        } catch (e) {}
-        if (!item) return err('SRT iceri alindi ama proje ogesi bulunamadi.');
+        var usedPath = '';
+        for (var i = 0; i < list.length; i++) {
+            var p = list[i];
+            if (!p) continue;
+            item = tryPlace(seq, p, attempts);
+            if (item) { usedPath = p; break; }
+        }
 
-        /* KARE HIZI UYUSMAZLIGI
+        if (!item) {
+            return ok([
+                kv('imported', 'true', true),
+                kv('placed', 'false', true),
+                kv('attempts', arrToJson(attempts), true),
+                kv('detail', 'Hicbir bicim piste yerlestirilemedi')
+            ]);
+        }
+        var srtPath = usedPath;
+
+        /* KARE HIZI
          *
-         * SRT zaman bazlidir, kare hizi tasimaz. Premiere iceri alirken
-         * ogeye bir kare hizi ATAR ve genelde 30 fps varsayar. Sekans
-         * 60 fps ise altyazi kayar.
-         *
-         * setOverrideFrameRate ile ogenin kare hizini sekansinkine
-         * esitlemeyi deniyoruz. Desteklenmiyorsa sessizce geciyoruz —
-         * durumu rapora yaziyoruz ki neyin ise yaradigi olculebilsin. */
+         * OLCULDU: setOverrideFrameRate caption ogelerinde ISE YARAMIYOR.
+         * Cagri hata vermiyor ama ogenin kare hizi degismiyor ve
+         * getFootageInterpretation().frameRate anlamsiz bir deger donduruyor
+         * (2.75e-8). Bu yuzden cozum dosya biciminde: TTML kare hizini
+         * kendi icinde tasir. */
         var seqFps = 0;
         try { seqFps = TICKS_PER_SECOND / parseFloat(seq.timebase); } catch (e) {}
-
-        var fpsBefore = '';
-        try { fpsBefore = String(item.getFootageInterpretation().frameRate); } catch (e) { fpsBefore = 'okunamadi'; }
-
-        var fpsFixed = 'denenmedi';
-        if (seqFps > 0) {
-            try {
-                if (typeof item.setOverrideFrameRate === 'function') {
-                    item.setOverrideFrameRate(seqFps);
-                    fpsFixed = 'setOverrideFrameRate(' + seqFps.toFixed(3) + ')';
-                } else {
-                    fpsFixed = 'setOverrideFrameRate YOK';
-                }
-            } catch (e3) {
-                fpsFixed = 'hata: ' + String(e3.message || e3);
-            }
-        }
-
-        var fpsAfter = '';
-        try { fpsAfter = String(item.getFootageInterpretation().frameRate); } catch (e) { fpsAfter = 'okunamadi'; }
-
-        var placed = false;
-        var detail = '';
-        try {
-            placed = seq.createCaptionTrack(item, 0);
-        } catch (e2) {
-            detail = String(e2.message || e2);
-        }
 
         return ok([
             kv('imported', 'true', true),
             kv('itemName', item.name),
-            kv('placed', placed ? 'true' : 'false', true),
-            kv('detail', detail),
-            kv('seqFps', seqFps.toFixed(3), true),
-            kv('itemFpsBefore', fpsBefore),
-            kv('itemFpsAfter', fpsAfter),
-            kv('fpsFix', fpsFixed)
+            kv('usedFile', new File(usedPath).name),
+            kv('attempts', arrToJson(attempts), true),
+            kv('placed', 'true', true),
+            kv('seqFps', seqFps.toFixed(3), true)
         ]);
     } catch (e) {
         return err('Altyazi yerlestirilemedi', e);

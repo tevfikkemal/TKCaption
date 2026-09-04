@@ -324,6 +324,7 @@
 
   var running = false;
   var cancelFn = null;
+  var lastResult = null;
 
   function cancelRun() {
     if (cancelFn) {
@@ -383,7 +384,9 @@
       seqInfo = d;
       // SRT'yi proje klasorune kalici olarak yaz
       var fmt = $('optFormat') ? $('optFormat').value : 'ttml';
-      var uzanti = fmt === 'ttml' ? '.xml' : '.srt';
+      // .xml KULLANMA: Premiere'de .xml Final Cut Pro XML demek ve dosya
+      // altyazi olarak degil proje degisim dosyasi olarak yorumlanabiliyor.
+      var uzanti = fmt === 'ttml' ? '.ttml' : '.srt';
       return CEP.call('trSuggestSrtPath("' + esPath(d.name) + '", "' + uzanti + '")')
         .then(function (s) { srtPath = s.path; })
         .catch(function () { /* gecici yolda kalir */ })
@@ -464,6 +467,7 @@
         }
       });
     }).then(function (res) {
+      lastResult = res;
       setBar(0.95);
       appendRun('<span class="ok">' + res.blocks + ' blok, ' + res.words + ' kelime</span>  ' +
                 res.elapsedSec + ' sn (' + res.speedRealtime + 'x)');
@@ -493,20 +497,25 @@
       } catch (err) { /* kapsam bilgisi kritik degil */ }
 
       // 5) Sekansa yerlestir
-      return CEP.call('trPlaceCaptions("' + esPath(srtPath) + '")');
+      // Iki bicimi de sirayla dene. TTML kare hizini tasir ama Premiere'in
+      // hangi uzantiyi altyazi olarak kabul ettigi belirsiz; SRT calisiyor
+      // ama kare hizi tasimiyor. Tahmin etmek yerine ikisini de veriyoruz.
+      var adaylar = [srtPath];
+      if (lastResult && lastResult.secondaryOutput) adaylar.push(lastResult.secondaryOutput);
+      return CEP.call('trPlaceCaptions("' + esPath(adaylar.join(';')) + '")');
     }).then(function (pl) {
       setBar(1);
-      // Kare hizi uyusmazligi kaymanin ana sebebi — gorunur olsun
-      if (pl.seqFps) {
-        appendRun('<span class="dim">kare hızı:</span> sekans ' + esc(pl.seqFps) +
-          '  ·  öğe ' + esc(pl.itemFpsBefore) + ' → ' + esc(pl.itemFpsAfter) +
-          '  (' + esc(pl.fpsFix) + ')');
+      // Hangi bicimin kabul edildigi kritik bilgi — tahmin etmeyelim
+      var denemeler = asArray(pl.attempts);
+      for (var di = 0; di < denemeler.length; di++) {
+        var dcls = denemeler[di].indexOf('OK ') === 0 ? 'ok' : 'dim';
+        appendRun('<span class="' + dcls + '">' + esc(denemeler[di]) + '</span>');
       }
       if (String(pl.placed) === 'true') {
-        appendRun('<span class="ok">Altyazı pisti oluşturuldu.</span>');
+        appendRun('<span class="ok">Altyazı pisti oluşturuldu' + (pl.usedFile ? ' — ' + esc(pl.usedFile) : '') + '</span>');
         appendRun('<span class="dim">Dosya:</span> ' + esc(srtPath));
       } else {
-        appendRun('<span class="warn">SRT projeye alındı ama piste yerleştirilemedi' +
+        appendRun('<span class="warn">Dosya projeye alındı ama piste yerleştirilemedi' +
                   (pl.detail ? ': ' + esc(pl.detail) : '') + '</span>');
         appendRun('<span class="dim">Proje panelinden zaman çizelgesine sürükleyebilirsiniz.</span>');
       }
