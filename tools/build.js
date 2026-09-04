@@ -79,10 +79,32 @@ $Hedef  = Join-Path $CepDir $ExtId
 if ($Kaldir) {
     Write-Host ""
     Write-Host "TK Caption kaldiriliyor..." -ForegroundColor Yellow
+
+    # Premiere acikken dosyalar kilitli olur ve silme SESSIZCE yarim kalir.
+    # Once uyariyoruz; kullanici neden silinemedigini bilsin.
+    if (Get-Process 'Adobe Premiere Pro' -ErrorAction SilentlyContinue) {
+        Write-Host ""
+        Write-Host "  Premiere Pro acik. Dosyalar kilitli oldugu icin silme" -ForegroundColor Red
+        Write-Host "  basarisiz olabilir. Premiere'i kapatip tekrar deneyin." -ForegroundColor Red
+        Write-Host ""
+    }
+
     if (Test-Path $Hedef) {
         $item = Get-Item $Hedef -Force
-        if ($item.LinkType -eq 'Junction') { $item.Delete() } else { Remove-Item $Hedef -Recurse -Force }
-        Write-Host "  Eklenti silindi."
+        try {
+            if ($item.LinkType -eq 'Junction') { $item.Delete() } else { Remove-Item $Hedef -Recurse -Force -ErrorAction Stop }
+        } catch {
+            Write-Host "  HATA: $($_.Exception.Message)" -ForegroundColor Red
+        }
+        # Silme cagrisinin donmesi silindigi anlamina gelmiyor — sayarak dogrula
+        if (Test-Path $Hedef) {
+            $kalan = (Get-ChildItem $Hedef -Recurse -File -ErrorAction SilentlyContinue).Count
+            Write-Host "  SILINEMEDI: $kalan dosya duruyor." -ForegroundColor Red
+            Write-Host "  $Hedef" -ForegroundColor DarkGray
+            Write-Host "  Premiere'i kapatip tekrar calistirin." -ForegroundColor Yellow
+            exit 1
+        }
+        Write-Host "  Eklenti silindi." -ForegroundColor Green
     } else {
         Write-Host "  Eklenti zaten yok."
     }
