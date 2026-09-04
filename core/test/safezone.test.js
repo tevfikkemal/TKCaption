@@ -69,6 +69,33 @@ console.log('\n=== YATAY YOUTUBE: IKI SEVIYE ===');
      'dikey preset’lerde ikinci seviye yok');
 }
 
+console.log('\n=== ARAYUZ ELEMANLARI ===');
+{
+  const W = 1080, H = 1920;
+  for (const id of ['instagram-reels', 'tiktok', 'youtube-shorts', 'instagram-story']) {
+    const r = sz.toRect(id, W, H);
+    const els = sz.uiElements(id, W, H);
+    ok(els.length > 0, id + ': ' + els.length + ' eleman tanımlı');
+    // Elemanlar guvenli alanin DISINDA olmali — yasak bolgeyi temsil ediyorlar
+    const icerde = els.filter((e) => e.x > r.x && e.x < r.x + r.w && e.y > r.y && e.y < r.y + r.h);
+    ok(icerde.length === 0, id + ': hiçbiri güvenli alanın içinde değil');
+    const tasan = els.filter((e) => e.x < 0 || e.x > W || e.y < 0 || e.y > H);
+    ok(tasan.length === 0, id + ': hiçbiri kare dışına taşmıyor');
+  }
+}
+{
+  const a = sz.uiElements('instagram-reels', 1080, 1920);
+  const b = sz.uiElements('instagram-reels', 540, 960);
+  ok(a.length === b.length, 'eleman sayısı çözünürlükten bağımsız');
+  ok(Math.abs(a[0].x / 1080 - b[0].x / 540) < 0.01, 'eleman konumu oransal');
+}
+{
+  ok(sz.uiElements('youtube-16x9', 1920, 1080).length === 0,
+     'yatay YouTube’da arayüz elemanı yok (doğru)');
+  ok(sz.uiElements('olmayan', 1080, 1920).length === 0,
+     'bilinmeyen preset boş dizi döndürür');
+}
+
 console.log('\n=== SINIR DURUMLARI ===');
 {
   const r = sz.toRect('instagram-reels', 100, 100);

@@ -39,6 +39,22 @@ function card(id, x) {
     g += `<rect x="${s(t.x)}" y="${s(t.y)}" width="${s(t.w)}" height="${s(t.h)}" ` +
          `fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1" stroke-dasharray="4 3"/>`;
   }
+  // Arayuz elemanlari — cizgi tek basina "burasi neden yasak?" demiyor
+  const els = sz.uiElements(id, W, H);
+  for (const e of els) {
+    if (e.type === 'text' || e.type === 'music') {
+      const hh = Math.max(2, e.h * scale).toFixed(1);
+      g += `<rect x="${s(e.x)}" y="${s(e.y)}" width="${s(e.w)}" height="${hh}" ` +
+           `rx="1.5" fill="rgba(255,255,255,0.28)"/>`;
+    } else if (e.type === 'box') {
+      g += `<rect x="${s(e.x)}" y="${s(e.y)}" width="${s(e.w)}" height="${s(e.h)}" ` +
+           `rx="3" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>`;
+    } else {
+      const rr = Math.max(1.5, e.size * scale / 2).toFixed(1);
+      g += `<circle cx="${s(e.x)}" cy="${s(e.y)}" r="${rr}" ` +
+           `fill="rgba(255,255,255,0.22)" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>`;
+    }
+  }
   g += `</g>`;
   // Baslik
   g += `<text x="${x}" y="14" fill="#e8e8e8" font-family="sans-serif" font-size="12" ` +

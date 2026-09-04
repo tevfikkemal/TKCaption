@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.5.1';
+var TR_ALTYAZI_VERSION = '0.6.0';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -1016,6 +1016,22 @@ function findSafeZoneClips(seq) {
     return found;
 }
 
+/** Projedeki safe zone ogelerini siler. Kullanicinin kliplerine dokunmaz. */
+function cleanSafeZoneBin() {
+    var silinen = 0;
+    try {
+        var hepsi = collectAllItems(app.project.rootItem, [], 0);
+        for (var i = 0; i < hepsi.length; i++) {
+            var nm = '';
+            try { nm = String(hepsi[i].name); } catch (e) { continue; }
+            if (nm.indexOf(SAFEZONE_PREFIX) === 0) {
+                try { hepsi[i].deleteBin(); silinen++; } catch (e) {}
+            }
+        }
+    } catch (e) {}
+    return silinen;
+}
+
 function trHasSafeZone() {
     try {
         var seq = app.project.activeSequence;
@@ -1047,12 +1063,17 @@ function trPlaceSafeZone(pngPath, label) {
 
         var adimlar = [];
 
-        // Once varsa eskisini kaldir ki ust uste binmesin
+        /* Once eskiyi TAMAMEN temizle — hem sekanstaki klip hem PROJE OGESI.
+         * Sadece klibi silmek yetmiyor: her acilista projeye bir oge daha
+         * ekleniyor ve bin doluyordu. */
         var eski = findSafeZoneClips(seq);
         for (var i = eski.length - 1; i >= 0; i--) {
-            try { eski[i].item.remove(false, true); adimlar.push('eski katman kaldirildi'); }
-            catch (e) { adimlar.push('eski katman kaldirilamadi: ' + String(e.message || e)); }
+            try { eski[i].item.remove(false, true); } catch (e) {}
         }
+        if (eski.length) adimlar.push(eski.length + ' eski klip kaldirildi');
+
+        var temiz = cleanSafeZoneBin();
+        if (temiz) adimlar.push(temiz + ' eski proje ogesi silindi');
 
         var before = snapshotItems();
         var bin = null;
@@ -1119,18 +1140,8 @@ function trRemoveSafeZone() {
             try { clips[i].item.remove(false, true); silinen++; } catch (e) {}
         }
 
-        // Projedeki oge de temizlensin ki bin dolmasin
-        var temizlenen = 0;
-        try {
-            var hepsi = collectAllItems(app.project.rootItem, [], 0);
-            for (var j = 0; j < hepsi.length; j++) {
-                var nm = '';
-                try { nm = String(hepsi[j].name); } catch (e) { continue; }
-                if (nm.indexOf(SAFEZONE_PREFIX) === 0) {
-                    try { hepsi[j].deleteBin(); temizlenen++; } catch (e) {}
-                }
-            }
-        } catch (e) {}
+        // Proje ogeleri de temizlensin ki bin dolmasin
+        var temizlenen = cleanSafeZoneBin();
 
         return ok([
             kv('removed', String(silinen), true),

@@ -326,6 +326,100 @@
   var safeSeq = 0;
 
   /**
+   * Platform arayuz elemanlarini ciz.
+   *
+   * Bunlar TEMSILIDIR — gercek ikonlarin kopyasi degil, "buraya kalp gelecek"
+   * diyen yer tutuculardir. Kurgucu boylece neyin nereyi kapatacagini goruyor.
+   */
+  function drawUI(g, els, width) {
+    var stroke = 'rgba(255,255,255,0.55)';
+    var fill = 'rgba(255,255,255,0.22)';
+    var lw = Math.max(2, Math.round(width / 500));
+
+    function heart(x, y, s) {
+      var r = s / 2;
+      g.beginPath();
+      g.moveTo(x, y + r * 0.75);
+      g.bezierCurveTo(x - r * 1.4, y - r * 0.4, x - r * 0.45, y - r * 1.15, x, y - r * 0.35);
+      g.bezierCurveTo(x + r * 0.45, y - r * 1.15, x + r * 1.4, y - r * 0.4, x, y + r * 0.75);
+      g.closePath();
+      g.fill(); g.stroke();
+    }
+    function comment(x, y, s) {
+      var r = s / 2;
+      g.beginPath();
+      g.moveTo(x - r, y - r * 0.7);
+      g.lineTo(x + r, y - r * 0.7);
+      g.lineTo(x + r, y + r * 0.35);
+      g.lineTo(x - r * 0.25, y + r * 0.35);
+      g.lineTo(x - r * 0.6, y + r * 0.85);   // kuyruk
+      g.lineTo(x - r * 0.6, y + r * 0.35);
+      g.lineTo(x - r, y + r * 0.35);
+      g.closePath();
+      g.fill(); g.stroke();
+    }
+    function share(x, y, s) {
+      var r = s / 2;
+      g.beginPath();                          // kagit ucak
+      g.moveTo(x - r, y - r * 0.35);
+      g.lineTo(x + r, y - r * 0.8);
+      g.lineTo(x + r * 0.15, y + r * 0.8);
+      g.lineTo(x - r * 0.1, y + r * 0.1);
+      g.closePath();
+      g.fill(); g.stroke();
+    }
+    function more(x, y, s) {
+      var r = Math.max(1.5, s / 9);
+      for (var i = -1; i <= 1; i++) {
+        g.beginPath();
+        g.arc(x, y + i * s * 0.32, r, 0, Math.PI * 2);
+        g.fill();
+      }
+    }
+    function circle(x, y, s, inner) {
+      g.beginPath(); g.arc(x, y, s / 2, 0, Math.PI * 2); g.fill(); g.stroke();
+      if (inner) { g.beginPath(); g.arc(x, y, s / 6, 0, Math.PI * 2); g.stroke(); }
+    }
+    function bar(x, y, w, h, round) {
+      var r = round ? h / 2 : Math.min(h / 2, width / 300);
+      g.beginPath();
+      g.moveTo(x + r, y);
+      g.lineTo(x + w - r, y);
+      g.quadraticCurveTo(x + w, y, x + w, y + r);
+      g.lineTo(x + w, y + h - r);
+      g.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      g.lineTo(x + r, y + h);
+      g.quadraticCurveTo(x, y + h, x, y + h - r);
+      g.lineTo(x, y + r);
+      g.quadraticCurveTo(x, y, x + r, y);
+      g.closePath();
+      g.fill();
+    }
+
+    g.lineWidth = lw;
+    g.strokeStyle = stroke;
+    g.fillStyle = fill;
+
+    for (var i = 0; i < els.length; i++) {
+      var e = els[i];
+      switch (e.type) {
+        case 'heart': heart(e.x, e.y, e.size); break;
+        case 'comment': comment(e.x, e.y, e.size); break;
+        case 'share': share(e.x, e.y, e.size); break;
+        case 'more': more(e.x, e.y, e.size); break;
+        case 'avatar': circle(e.x, e.y, e.size, false); break;
+        case 'disc': circle(e.x, e.y, e.size, true); break;
+        case 'text': bar(e.x, e.y, e.w, e.h, true); break;
+        case 'music': bar(e.x, e.y, e.w, e.h, true); break;
+        case 'box':
+          g.strokeRect(e.x, e.y, e.w, e.h);
+          break;
+        default: break;
+      }
+    }
+  }
+
+  /**
    * Kilavuz katmanini canvas'ta cizip PNG olarak yazar.
    *
    * Program Monitor'e dogrudan cizim yapmak betikle mumkun degil; bu yuzden
@@ -362,6 +456,9 @@
       g.strokeRect(title.x, title.y, title.w, title.h);
       g.setLineDash([]);
     }
+
+    // Platform arayuz elemanlari — "burasi neden yasak?" sorusunu cevaplar
+    drawUI(g, sz.uiElements(preset, width, height), width);
 
     // Etiket
     var fs = Math.max(14, Math.round(width / 34));
