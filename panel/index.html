@@ -76,18 +76,23 @@
       Sekansın en üstüne saydam bir kılavuz katmanı koyar. Program
       Monitor'de görünür — <strong>dışa aktarmadan önce kapatın.</strong>
     </p>
+    <ul class="platforms" id="platformList">
+      <li><label><input type="checkbox" id="safeAll"> <span>Tümü</span></label></li>
+      <li><label><input type="checkbox" class="sf" value="instagram-reels" checked>
+        <span>Instagram Reels</span></label></li>
+      <li><label><input type="checkbox" class="sf" value="instagram-story">
+        <span>Instagram Story</span></label></li>
+      <li><label><input type="checkbox" class="sf" value="instagram-feed">
+        <span>Instagram Feed (4:5)</span></label></li>
+      <li><label><input type="checkbox" class="sf" value="tiktok">
+        <span>TikTok</span></label></li>
+      <li><label><input type="checkbox" class="sf" value="youtube-shorts">
+        <span>YouTube Shorts</span></label></li>
+      <li><label><input type="checkbox" class="sf" value="youtube-16x9">
+        <span>YouTube (yatay)</span></label></li>
+    </ul>
+    <p class="note" id="safeMulti" hidden></p>
     <div class="opts">
-      <label>
-        Platform
-        <select id="optSafe">
-          <option value="instagram-reels">Instagram Reels</option>
-          <option value="instagram-story">Instagram Story</option>
-          <option value="instagram-feed">Instagram Feed (4:5)</option>
-          <option value="tiktok">TikTok</option>
-          <option value="youtube-shorts">YouTube Shorts</option>
-          <option value="youtube-16x9">YouTube (yatay)</option>
-        </select>
-      </label>
       <label>
         Karartma
         <input id="optSafeDim" type="range" min="0" max="80" value="45">

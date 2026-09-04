@@ -115,9 +115,9 @@ function toTitleRect(preset, width, height) {
  */
 const UI = {
   'instagram-reels': [
-    { t: 'heart',   x: 0.90, y: 0.585, s: 0.075 },
-    { t: 'comment', x: 0.90, y: 0.670, s: 0.075 },
-    { t: 'share',   x: 0.90, y: 0.755, s: 0.075 },
+    { t: 'heart',   x: 0.90, y: 0.585, s: 0.075, n: '950B' },
+    { t: 'comment', x: 0.90, y: 0.670, s: 0.075, n: '1.2B' },
+    { t: 'share',   x: 0.90, y: 0.755, s: 0.075, n: '150B' },
     { t: 'more',    x: 0.90, y: 0.838, s: 0.055 },
     { t: 'avatar',  x: 0.09, y: 0.862, s: 0.085 },
     { t: 'text',    x: 0.15, y: 0.855, w: 0.30, h: 0.016 },   // kullanıcı adı
@@ -140,9 +140,9 @@ const UI = {
   ],
   'tiktok': [
     { t: 'avatar',  x: 0.91, y: 0.520, s: 0.095 },
-    { t: 'heart',   x: 0.91, y: 0.625, s: 0.080 },
-    { t: 'comment', x: 0.91, y: 0.712, s: 0.080 },
-    { t: 'share',   x: 0.91, y: 0.798, s: 0.080 },
+    { t: 'heart',   x: 0.91, y: 0.625, s: 0.080, n: '1.4M' },
+    { t: 'comment', x: 0.91, y: 0.712, s: 0.080, n: '8.9B' },
+    { t: 'share',   x: 0.91, y: 0.798, s: 0.080, n: '22B' },
     { t: 'disc',    x: 0.91, y: 0.888, s: 0.090 },
     { t: 'text',    x: 0.05, y: 0.800, w: 0.32, h: 0.018 },   // @kullanıcı
     { t: 'text',    x: 0.05, y: 0.842, w: 0.60, h: 0.014 },
@@ -150,9 +150,9 @@ const UI = {
     { t: 'music',   x: 0.05, y: 0.905, w: 0.42, h: 0.014 }
   ],
   'youtube-shorts': [
-    { t: 'heart',   x: 0.92, y: 0.590, s: 0.075 },
-    { t: 'comment', x: 0.92, y: 0.690, s: 0.075 },
-    { t: 'share',   x: 0.92, y: 0.785, s: 0.075 },
+    { t: 'heart',   x: 0.92, y: 0.590, s: 0.075, n: '12B' },
+    { t: 'comment', x: 0.92, y: 0.690, s: 0.075, n: '340' },
+    { t: 'share',   x: 0.92, y: 0.785, s: 0.075, n: 'Paylaş' },
     { t: 'more',    x: 0.92, y: 0.870, s: 0.055 },
     { t: 'avatar',  x: 0.08, y: 0.845, s: 0.075 },
     { t: 'text',    x: 0.15, y: 0.838, w: 0.28, h: 0.016 },   // kanal
@@ -171,8 +171,50 @@ function uiElements(preset, width, height) {
     if (e.s !== undefined) out.size = Math.round(width * e.s);
     if (e.w !== undefined) out.w = Math.round(width * e.w);
     if (e.h !== undefined) out.h = Math.round(height * e.h);
+    if (e.n !== undefined) out.label = e.n;
     return out;
   });
+}
+
+/**
+ * Birden fazla platforma ayni anda yayin yapiliyorsa gercek guvenli alan,
+ * hepsinin KESISIMIDIR — en kisitlayici olan hangisiyse o gecerlidir.
+ *
+ * @param {string[]} presets
+ * @returns {{x,y,w,h}|null} kesisim; ortak alan kalmazsa null
+ */
+function intersectRects(presets, width, height) {
+  const ids = [].concat(presets || []).filter(Boolean);
+  if (!ids.length) return null;
+
+  let acc = null;
+  for (const id of ids) {
+    const r = toRect(id, width, height);
+    if (!acc) { acc = { x: r.x, y: r.y, w: r.w, h: r.h }; continue; }
+    const x1 = Math.max(acc.x, r.x);
+    const y1 = Math.max(acc.y, r.y);
+    const x2 = Math.min(acc.x + acc.w, r.x + r.w);
+    const y2 = Math.min(acc.y + acc.h, r.y + r.h);
+    acc = { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
+  }
+  if (!acc || acc.w <= 0 || acc.h <= 0) return null;
+  return acc;
+}
+
+/** Secilen platformlarin arayuz elemanlarini birlestirir (tekrarsiz). */
+function mergedUi(presets, width, height) {
+  const ids = [].concat(presets || []).filter(Boolean);
+  const out = [];
+  const gorulen = {};
+  for (const id of ids) {
+    for (const e of uiElements(id, width, height)) {
+      const key = e.type + '@' + e.x + ',' + e.y;
+      if (gorulen[key]) continue;
+      gorulen[key] = true;
+      out.push(e);
+    }
+  }
+  return out;
 }
 
 function list() {
@@ -184,4 +226,7 @@ function list() {
   }));
 }
 
-module.exports = { PRESETS, UI, toRect, toTitleRect, uiElements, list };
+module.exports = {
+  PRESETS, UI, toRect, toTitleRect, uiElements,
+  intersectRects, mergedUi, list
+};

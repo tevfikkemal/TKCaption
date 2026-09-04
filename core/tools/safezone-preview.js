@@ -70,8 +70,8 @@ function card(id, x) {
 
   let g = `<g transform="translate(${x},${LABEL_H})">`;
   g += `<rect width="${cw}" height="${ch}" fill="#2b2b2b" stroke="#555"/>`;
-  // Guvenli alan disi karartma
-  g += `<path fill="rgba(0,0,0,0.45)" fill-rule="evenodd" d="M0,0 H${cw} V${ch} H0 Z ` +
+  // Kirpilan alanlar kirmizi — notr karartma "burasi neden onemli" demiyor
+  g += `<path fill="rgba(214,38,78,0.40)" fill-rule="evenodd" d="M0,0 H${cw} V${ch} H0 Z ` +
        `M${s(r.x)},${s(r.y)} h${s(r.w)} v${s(r.h)} h-${s(r.w)} Z"/>`;
   g += `<rect x="${s(r.x)}" y="${s(r.y)}" width="${s(r.w)}" height="${s(r.h)}" ` +
        `fill="none" stroke="#fff" stroke-width="1.5"/>`;
@@ -92,6 +92,11 @@ function card(id, x) {
     } else {
       // Panelde cizilen sekillerin AYNISI olmali; onizleme yaniltmasin
       g += iconPath(e.type, e.x * scale, e.y * scale, e.size * scale);
+      if (e.label) {
+        g += `<text x="${s(e.x)}" y="${(e.y * scale + e.size * scale * 0.75).toFixed(1)}" ` +
+             `fill="rgba(255,255,255,0.6)" font-family="sans-serif" font-size="5" ` +
+             `text-anchor="middle">${e.label}</text>`;
+      }
     }
   }
   g += `</g>`;

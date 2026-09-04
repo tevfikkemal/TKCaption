@@ -324,6 +324,16 @@
 
   var safeOn = false;
 
+  /** Isaretli platformlar. Bos birakilirsa Reels varsayilir. */
+  function selectedPresets() {
+    var out = [];
+    var boxes = document.querySelectorAll('.platforms input.sf');
+    for (var i = 0; i < boxes.length; i++) {
+      if (boxes[i].checked) out.push(boxes[i].value);
+    }
+    return out.length ? out : ['instagram-reels'];
+  }
+
   /**
    * Platform arayuz elemanlarini ciz.
    *
@@ -399,8 +409,22 @@
     g.strokeStyle = stroke;
     g.fillStyle = fill;
 
+    // Ikonun altindaki sayi da yer kaplar; onu da gostermek daha dogru
+    var nfs2 = Math.max(9, Math.round(width / 60));
+
     for (var i = 0; i < els.length; i++) {
       var e = els[i];
+      if (e.label) {
+        var eski = g.fillStyle;
+        g.font = '600 ' + nfs2 + 'px sans-serif';
+        g.fillStyle = 'rgba(255,255,255,0.6)';
+        g.textAlign = 'center';
+        g.textBaseline = 'top';
+        g.fillText(e.label, e.x, e.y + (e.size || 0) * 0.55);
+        g.textAlign = 'left';
+        g.textBaseline = 'alphabetic';
+        g.fillStyle = eski;
+      }
       switch (e.type) {
         case 'heart': heart(e.x, e.y, e.size); break;
         case 'comment': comment(e.x, e.y, e.size); break;
@@ -424,47 +448,82 @@
    * Program Monitor'e dogrudan cizim yapmak betikle mumkun degil; bu yuzden
    * sekansin ustune saydam bir goruntu katmani koyuyoruz.
    */
-  function drawSafeZone(preset, width, height, dim) {
+  function drawSafeZone(presets, width, height, dim) {
     var sz = nodeReq(npath.join(resolveCore(), 'src', 'safezone.js'));
-    var rect = sz.toRect(preset, width, height);
-    var title = sz.toTitleRect(preset, width, height);
-    var spec = sz.PRESETS[preset];
+    var ids = [].concat(presets).filter(Boolean);
+    var rect = sz.intersectRects(ids, width, height);
+    if (!rect) throw new Error('Seçilen platformların ortak güvenli alanı yok.');
+
+    var etiket = ids.map(function (i) { return sz.PRESETS[i].label; }).join(' + ');
+    var title = ids.length === 1 ? sz.toTitleRect(ids[0], width, height) : null;
 
     var cv = document.createElement('canvas');
     cv.width = width;
     cv.height = height;
     var g = cv.getContext('2d');
 
-    // Guvenli alan DISINI karart — dort dikdortgen, ortasi bos kalir
-    g.fillStyle = 'rgba(0,0,0,' + (dim / 100) + ')';
-    g.fillRect(0, 0, width, rect.y);                                  // üst
-    g.fillRect(0, rect.y + rect.h, width, height - rect.y - rect.h);  // alt
-    g.fillRect(0, rect.y, rect.x, rect.h);                            // sol
+    /* KIRPILAN ALANLAR KIRMIZI.
+     * Notr karartma "burasi neden onemli?" demiyor; kirmizi dogrudan
+     * "buraya bir sey koyma" diyor. */
+    var a = Math.max(0.12, dim / 100 * 0.8);
+    g.fillStyle = 'rgba(214, 38, 78, ' + a + ')';
+    g.fillRect(0, 0, width, rect.y);                                   // üst
+    g.fillRect(0, rect.y + rect.h, width, height - rect.y - rect.h);   // alt
+    g.fillRect(0, rect.y, rect.x, rect.h);                             // sol
     g.fillRect(rect.x + rect.w, rect.y, width - rect.x - rect.w, rect.h); // sağ
 
-    // Sinir cizgisi — kalinligi cozunurluge gore olceklensin
-    var lw = Math.max(2, Math.round(width / 400));
-    g.strokeStyle = 'rgba(255,255,255,0.9)';
+    var lw = Math.max(2, Math.round(width / 380));
+
+    // Uyari metni — ust ve alt bantlarda, bant yeterince yuksekse
+    var uyari = 'BU ALAN ÇOĞU CİHAZDA KIRPILIR';
+    var us = Math.max(10, Math.round(width / 52));
+    g.font = '700 ' + us + 'px sans-serif';
+    g.fillStyle = 'rgba(255,255,255,0.92)';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    if (rect.y > us * 2.2) g.fillText(uyari, width / 2, rect.y / 2);
+    var altBant = height - (rect.y + rect.h);
+    if (altBant > us * 2.2) {
+      g.fillText(uyari, width / 2, rect.y + rect.h + altBant / 2);
+    }
+    g.textAlign = 'left';
+    g.textBaseline = 'alphabetic';
+
+    // Guvenli alan siniri
+    g.strokeStyle = 'rgba(255,255,255,0.95)';
     g.lineWidth = lw;
     g.strokeRect(rect.x + lw / 2, rect.y + lw / 2, rect.w - lw, rect.h - lw);
+
+    // Tek platform secildiyse o platformun kendi siniri da ayrica gorunsun
+    if (ids.length > 1) {
+      g.lineWidth = Math.max(1, lw / 2);
+      g.setLineDash([lw * 3, lw * 3]);
+      for (var q = 0; q < ids.length; q++) {
+        var rq = sz.toRect(ids[q], width, height);
+        g.strokeStyle = 'rgba(255,255,255,0.30)';
+        g.strokeRect(rq.x, rq.y, rq.w, rq.h);
+      }
+      g.setLineDash([]);
+    }
 
     // Yatay YouTube'da ikinci seviye: baslik guvenli alani
     if (title) {
       g.strokeStyle = 'rgba(255,255,255,0.45)';
+      g.lineWidth = Math.max(1, lw / 2);
       g.setLineDash([lw * 4, lw * 3]);
       g.strokeRect(title.x, title.y, title.w, title.h);
       g.setLineDash([]);
     }
 
     // Platform arayuz elemanlari — "burasi neden yasak?" sorusunu cevaplar
-    drawUI(g, sz.uiElements(preset, width, height), width);
+    drawUI(g, sz.mergedUi(ids, width, height), width);
 
     // Etiket
-    var fs = Math.max(14, Math.round(width / 34));
+    var fs = Math.max(14, Math.round(width / 36));
     g.font = '600 ' + fs + 'px sans-serif';
-    g.fillStyle = 'rgba(255,255,255,0.85)';
+    g.fillStyle = 'rgba(255,255,255,0.9)';
     g.textBaseline = 'top';
-    g.fillText(spec.label, rect.x + lw * 2, rect.y + lw * 2);
+    g.fillText(etiket, rect.x + lw * 2, rect.y + lw * 2);
 
     // PNG olarak diske yaz
     var data = cv.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
@@ -477,16 +536,52 @@
      * kalir), ayar degisince de yeni dosya uretilir. Eski dosyalari SILMIYORUZ:
      * Premiere projeye aldigi dosyayi acik tutuyor ve hala kullaniliyor
      * olabilir — silmek ogeyi cevrimdisi birakir. */
-    var file = npath.join(dir, 'TKSafeZone_' + preset + '_' + width + 'x' + height +
+    var file = npath.join(dir, 'TKSafeZone_' + ids.join('-') + '_' + width + 'x' + height +
       '_d' + dim + '.png');
     if (!nfs.existsSync(file)) {
       nfs.writeFileSync(file, Buffer.from(data, 'base64'));
     }
-    return { path: file, rect: rect, label: spec.label, note: spec.note };
+    return {
+      path: file,
+      rect: rect,
+      label: etiket,
+      note: ids.length === 1 ? sz.PRESETS[ids[0]].note
+        : ids.length + ' platformun ortak alanı — en kısıtlayıcı kenarlar geçerli.'
+    };
+  }
+
+  /**
+   * Secim degisince aciklamayi tazele.
+   * Birden fazla platform secilirse ortak alanin daralacagini soylemek onemli:
+   * kullanici "neden bu kadar dar?" diye sormasin.
+   */
+  function refreshPlatformNote() {
+    var ids = selectedPresets();
+    var el = $('safeMulti');
+    try {
+      var sz = nodeReq(npath.join(resolveCore(), 'src', 'safezone.js'));
+      if (ids.length === 1) {
+        setText('safeNote', sz.PRESETS[ids[0]].note);
+        if (el) el.hidden = true;
+      } else {
+        setText('safeNote', '');
+        if (el) {
+          el.hidden = false;
+          el.textContent = ids.length + ' platform seçili — gösterilen alan ' +
+            'hepsinin ortak (en dar) bölgesidir.';
+        }
+      }
+    } catch (e) {}
+
+    // "Tümü" kutusu gercek durumu yansitsin
+    var boxes = document.querySelectorAll('.platforms input.sf');
+    var hepsi = true;
+    for (var i = 0; i < boxes.length; i++) if (!boxes[i].checked) hepsi = false;
+    if ($('safeAll')) $('safeAll').checked = hepsi;
   }
 
   function safeZoneOn() {
-    var preset = $('optSafe').value;
+    var presets = selectedPresets();
     var dim = parseInt($('optSafeDim').value, 10);
 
     return CEP.call('trGetSequenceInfo()').then(function (d) {
@@ -496,7 +591,7 @@
 
       /* Ayni preset+cozunurluk icin katman zaten projedeyse yeni PNG
        * URETME. Her acilista dosya uretmek hem diski hem projeyi sisiriyordu. */
-      var key = preset + '_' + w + 'x' + h + '_d' + dim;
+      var key = presets.join('-') + '_' + w + 'x' + h + '_d' + dim;
       return CEP.call('trFindSafeZoneItem("' + esPath(key) + '")')
         .then(function (f) {
           return { w: w, h: h, reuse: String(f.found) === 'true', name: f.name };
@@ -507,17 +602,17 @@
       if (ctx.reuse) {
         // Mevcut oge kullanilacak; dosya adini ondan turetiyoruz
         var szm = nodeReq(npath.join(resolveCore(), 'src', 'safezone.js'));
-        var rr = szm.toRect(preset, w, h);
+        var rr = szm.intersectRects(presets, w, h);
         drawn = {
           path: npath.join(nos.tmpdir(), 'tkcaption-safezone', ctx.name +
                  (/.png$/i.test(ctx.name) ? '' : '.png')),
           rect: rr,
-          label: szm.PRESETS[preset].label,
-          note: szm.PRESETS[preset].note
+          label: presets.map(function (i) { return szm.PRESETS[i].label; }).join(' + '),
+          note: ''
         };
-        if (!nfs.existsSync(drawn.path)) drawn = drawSafeZone(preset, w, h, dim);
+        if (!nfs.existsSync(drawn.path)) drawn = drawSafeZone(presets, w, h, dim);
       } else {
-        drawn = drawSafeZone(preset, w, h, dim);
+        drawn = drawSafeZone(presets, w, h, dim);
       }
       show('safeOut', '<span class="dim">' + esc(drawn.label) + '  ' + w + '×' + h +
         '  — güvenli alan ' + drawn.rect.w + '×' + drawn.rect.h + ' px</span>');
@@ -949,12 +1044,18 @@
     refreshSafeState();  // sekans ozeti dugme beklemeden gorunsun
     $('btnRun').addEventListener('click', generate);
     $('btnSafe').addEventListener('click', toggleSafeZone);
-    $('optSafe').addEventListener('change', function () {
-      try {
-        var sz = nodeReq(npath.join(resolveCore(), 'src', 'safezone.js'));
-        setText('safeNote', sz.PRESETS[$('optSafe').value].note);
-      } catch (e) {}
+    // "Tümü" kutusu digerlerini surukler
+    $('safeAll').addEventListener('change', function () {
+      var on = $('safeAll').checked;
+      var boxes = document.querySelectorAll('.platforms input.sf');
+      for (var i = 0; i < boxes.length; i++) boxes[i].checked = on;
+      refreshPlatformNote();
     });
+    var sfBoxes = document.querySelectorAll('.platforms input.sf');
+    for (var b = 0; b < sfBoxes.length; b++) {
+      sfBoxes[b].addEventListener('change', refreshPlatformNote);
+    }
+    refreshPlatformNote();
     $('btnCancel').addEventListener('click', cancelRun);
     $('btnSeq').addEventListener('click', function () { readSequence(false); });
     $('btnProbe').addEventListener('click', runProbe);
