@@ -319,6 +319,129 @@
   }
 
   /* ---------------------------------------------------------------- */
+  /*  GUVENLI ALAN katmani                                             */
+  /* ---------------------------------------------------------------- */
+
+  var safeOn = false;
+
+  /**
+   * Kilavuz katmanini canvas'ta cizip PNG olarak yazar.
+   *
+   * Program Monitor'e dogrudan cizim yapmak betikle mumkun degil; bu yuzden
+   * sekansin ustune saydam bir goruntu katmani koyuyoruz.
+   */
+  function drawSafeZone(preset, width, height, dim) {
+    var sz = nodeReq(npath.join(resolveCore(), 'src', 'safezone.js'));
+    var rect = sz.toRect(preset, width, height);
+    var title = sz.toTitleRect(preset, width, height);
+    var spec = sz.PRESETS[preset];
+
+    var cv = document.createElement('canvas');
+    cv.width = width;
+    cv.height = height;
+    var g = cv.getContext('2d');
+
+    // Guvenli alan DISINI karart — dort dikdortgen, ortasi bos kalir
+    g.fillStyle = 'rgba(0,0,0,' + (dim / 100) + ')';
+    g.fillRect(0, 0, width, rect.y);                                  // üst
+    g.fillRect(0, rect.y + rect.h, width, height - rect.y - rect.h);  // alt
+    g.fillRect(0, rect.y, rect.x, rect.h);                            // sol
+    g.fillRect(rect.x + rect.w, rect.y, width - rect.x - rect.w, rect.h); // sağ
+
+    // Sinir cizgisi — kalinligi cozunurluge gore olceklensin
+    var lw = Math.max(2, Math.round(width / 400));
+    g.strokeStyle = 'rgba(255,255,255,0.9)';
+    g.lineWidth = lw;
+    g.strokeRect(rect.x + lw / 2, rect.y + lw / 2, rect.w - lw, rect.h - lw);
+
+    // Yatay YouTube'da ikinci seviye: baslik guvenli alani
+    if (title) {
+      g.strokeStyle = 'rgba(255,255,255,0.45)';
+      g.setLineDash([lw * 4, lw * 3]);
+      g.strokeRect(title.x, title.y, title.w, title.h);
+      g.setLineDash([]);
+    }
+
+    // Etiket
+    var fs = Math.max(14, Math.round(width / 34));
+    g.font = '600 ' + fs + 'px sans-serif';
+    g.fillStyle = 'rgba(255,255,255,0.85)';
+    g.textBaseline = 'top';
+    g.fillText(spec.label, rect.x + lw * 2, rect.y + lw * 2);
+
+    // PNG olarak diske yaz
+    var data = cv.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
+    var dir = npath.join(nos.tmpdir(), 'tkcaption-safezone');
+    try { nfs.mkdirSync(dir, { recursive: true }); } catch (e) {}
+    // Dosya adi koprudeki onekle eslesmeli: kaldirirken bundan taniyoruz
+    var file = npath.join(dir, 'TKSafeZone_' + preset + '_' + width + 'x' + height + '.png');
+    nfs.writeFileSync(file, Buffer.from(data, 'base64'));
+    return { path: file, rect: rect, label: spec.label, note: spec.note };
+  }
+
+  function safeZoneOn() {
+    var preset = $('optSafe').value;
+    var dim = parseInt($('optSafeDim').value, 10);
+
+    return CEP.call('trGetSequenceInfo()').then(function (d) {
+      var w = parseInt(d.width, 10);
+      var h = parseInt(d.height, 10);
+      if (!w || !h) throw new Error('Sekans çözünürlüğü okunamadı.');
+
+      var drawn = drawSafeZone(preset, w, h, dim);
+      show('safeOut', '<span class="dim">' + esc(drawn.label) + '  ' + w + '×' + h +
+        '  — güvenli alan ' + drawn.rect.w + '×' + drawn.rect.h + ' px</span>');
+      setText('safeNote', drawn.note);
+
+      return CEP.call('trPlaceSafeZone("' + esPath(drawn.path) + '", "' +
+                      esPath(drawn.label) + '")');
+    }).then(function (r) {
+      var steps = asArray(r.steps);
+      for (var i = 0; i < steps.length; i++) {
+        $('safeOut').innerHTML += NL + '<span class="dim">' + esc(steps[i]) + '</span>';
+      }
+      $('safeOut').innerHTML += NL +
+        '<span class="ok">Katman eklendi (video ' + esc(r.track) + ').</span>' + NL +
+        '<span class="warn">Dışa aktarmadan önce kapatmayı unutmayın.</span>';
+      safeOn = true;
+      $('btnSafe').textContent = 'Kapat';
+      $('btnSafe').className = 'btn primary';
+    });
+  }
+
+  function safeZoneOff() {
+    return CEP.call('trRemoveSafeZone()').then(function (r) {
+      show('safeOut', '<span class="ok">Katman kaldırıldı' +
+        (Number(r.removed) ? ' (' + esc(r.removed) + ' klip)' : '') + '.</span>');
+      safeOn = false;
+      $('btnSafe').textContent = 'Aç';
+      $('btnSafe').className = 'btn';
+    });
+  }
+
+  function toggleSafeZone() {
+    var btn = $('btnSafe');
+    btn.disabled = true;
+    setStatus(safeOn ? 'kaldırılıyor…' : 'ekleniyor…');
+    var work = safeOn ? safeZoneOff() : safeZoneOn();
+    work.catch(function (e) {
+      show('safeOut', '<span class="err">' + esc(e.message) + '</span>');
+    }).then(function () {
+      btn.disabled = false;
+      setStatus('');
+    });
+  }
+
+  /** Panel acilinca katman zaten duruyor mu? Dugme durumu dogru olsun. */
+  function refreshSafeState() {
+    CEP.call('trHasSafeZone()').then(function (r) {
+      safeOn = String(r.present) === 'true';
+      $('btnSafe').textContent = safeOn ? 'Kapat' : 'Aç';
+      $('btnSafe').className = safeOn ? 'btn primary' : 'btn';
+    }).catch(function () { /* sekans yoksa onemli degil */ });
+  }
+
+  /* ---------------------------------------------------------------- */
   /*  ASIL AKIS: sekans -> ses -> altyazi -> pist                       */
   /* ---------------------------------------------------------------- */
 
@@ -681,8 +804,16 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     checkEnvironment();
-    readSequence(true);  // sekans ozeti dugme beklemeden gorunsun
+    readSequence(true);
+    refreshSafeState();  // sekans ozeti dugme beklemeden gorunsun
     $('btnRun').addEventListener('click', generate);
+    $('btnSafe').addEventListener('click', toggleSafeZone);
+    $('optSafe').addEventListener('change', function () {
+      try {
+        var sz = nodeReq(npath.join(resolveCore(), 'src', 'safezone.js'));
+        setText('safeNote', sz.PRESETS[$('optSafe').value].note);
+      } catch (e) {}
+    });
     $('btnCancel').addEventListener('click', cancelRun);
     $('btnSeq').addEventListener('click', function () { readSequence(false); });
     $('btnProbe').addEventListener('click', runProbe);

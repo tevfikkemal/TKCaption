@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.4.0';
+var TR_ALTYAZI_VERSION = '0.5.0';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -110,9 +110,16 @@ function trGetSequenceInfo() {
         var projPath = '';
         try { projPath = app.project.path; } catch (e) {}
 
+        // Safe zone katmani sekansla ayni cozunurlukte uretilmeli
+        var w = 0, h = 0;
+        try { w = parseInt(seq.frameSizeHorizontal, 10) || 0; } catch (e) {}
+        try { h = parseInt(seq.frameSizeVertical, 10) || 0; } catch (e) {}
+
         return ok([
             kv('name', seq.name),
             kv('sequenceID', seq.sequenceID),
+            kv('width', String(w), true),
+            kv('height', String(h), true),
             kv('fps', fps.toFixed(6), true),
             kv('zeroPointSec', zeroSec.toFixed(6), true),
             kv('endSec', endSec.toFixed(6), true),
@@ -979,6 +986,158 @@ function trTestCaptionTrack(srtPath) {
         ]);
     } catch (e) {
         return err('createCaptionTrack denemesi basarisiz', e);
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/*  SAFE ZONE katmani                                                  */
+/* ------------------------------------------------------------------ */
+
+// Kendi kattigimiz klibi bu onekten taniyoruz — kaldirirken kullanicinin
+// kendi kliplerine dokunmamak icin sart.
+var SAFEZONE_PREFIX = 'TKSafeZone';
+
+/** Sekanstaki safe zone kliplerini bulur. */
+function findSafeZoneClips(seq) {
+    var found = [];
+    try {
+        for (var t = 0; t < seq.videoTracks.numTracks; t++) {
+            var track = seq.videoTracks[t];
+            for (var c = 0; c < track.clips.numItems; c++) {
+                var clip = track.clips[c];
+                var nm = '';
+                try { nm = String(clip.name); } catch (e) {}
+                if (nm.indexOf(SAFEZONE_PREFIX) === 0) {
+                    found.push({ track: t, clip: c, name: nm, item: clip });
+                }
+            }
+        }
+    } catch (e) {}
+    return found;
+}
+
+function trHasSafeZone() {
+    try {
+        var seq = app.project.activeSequence;
+        if (!seq) return err('Aktif sekans yok.');
+        var f = findSafeZoneClips(seq);
+        return ok([
+            kv('present', f.length ? 'true' : 'false', true),
+            kv('count', String(f.length), true),
+            kv('name', f.length ? f[0].name : '')
+        ]);
+    } catch (e) {
+        return err('Safe zone durumu okunamadi', e);
+    }
+}
+
+/**
+ * Safe zone PNG'sini sekansin EN USTUNE, tum sekans boyunca yerlestirir.
+ *
+ * Program Monitor'e dogrudan cizim yapmak betikle mumkun degil; bu yuzden
+ * ustte saydam bir katman olarak duruyor. Disa aktarmadan once kapatilmali
+ * — panel bunu hatirlatiyor.
+ */
+function trPlaceSafeZone(pngPath, label) {
+    try {
+        var seq = app.project.activeSequence;
+        if (!seq) return err('Aktif sekans yok.');
+        pngPath = toNativePath(pngPath);
+        if (!fileExists(pngPath)) return err('Katman dosyasi bulunamadi: ' + pngPath);
+
+        var adimlar = [];
+
+        // Once varsa eskisini kaldir ki ust uste binmesin
+        var eski = findSafeZoneClips(seq);
+        for (var i = eski.length - 1; i >= 0; i--) {
+            try { eski[i].item.remove(false, true); adimlar.push('eski katman kaldirildi'); }
+            catch (e) { adimlar.push('eski katman kaldirilamadi: ' + String(e.message || e)); }
+        }
+
+        var before = snapshotItems();
+        var bin = null;
+        try { bin = app.project.getInsertionBin(); } catch (e) { bin = app.project.rootItem; }
+        if (!app.project.importFiles([pngPath], true, bin, false)) {
+            return err('Katman projeye alinamadi.');
+        }
+        var item = findNewItem(before, pngPath);
+        if (!item) return err('Katman iceri alindi ama proje ogesi bulunamadi.');
+        adimlar.push('oge: ' + item.name);
+
+        // En uste yeni bir video pisti ac (mevcut kliplerin uzerini ortmesin)
+        var hedefIndex = seq.videoTracks.numTracks;
+        try {
+            seq.addTracks(1, hedefIndex, 0);
+            adimlar.push('yeni video pisti eklendi (' + (hedefIndex + 1) + ')');
+        } catch (e) {
+            hedefIndex = seq.videoTracks.numTracks - 1;
+            adimlar.push('pist eklenemedi, en ust mevcut pist kullanilacak: ' + String(e.message || e));
+        }
+
+        var track = seq.videoTracks[hedefIndex];
+        if (!track) return err('Hedef video pisti bulunamadi.', adimlar.join(' | '));
+
+        try {
+            track.overwriteClip(item, 0);
+            adimlar.push('klip yerlestirildi');
+        } catch (e) {
+            return err('Klip piste konulamadi', String(e.message || e) + ' | ' + adimlar.join(' | '));
+        }
+
+        // Klibi sekansin sonuna kadar uzat (hareketsiz goruntunun varsayilan
+        // suresi kisadir; safe zone tum sekans boyunca gorunmeli)
+        var uzatildi = 'denenmedi';
+        try {
+            var clip = track.clips[track.clips.numItems - 1];
+            clip.end = seq.end;
+            uzatildi = 'sekans sonuna uzatildi';
+        } catch (e) {
+            uzatildi = 'uzatilamadi: ' + String(e.message || e);
+        }
+        adimlar.push(uzatildi);
+
+        return ok([
+            kv('placed', 'true', true),
+            kv('track', String(hedefIndex + 1), true),
+            kv('label', label || ''),
+            kv('steps', arrToJson(adimlar), true)
+        ]);
+    } catch (e) {
+        return err('Safe zone yerlestirilemedi', e);
+    }
+}
+
+/** Safe zone katmanini kaldirir. Kullanicinin kendi kliplerine dokunmaz. */
+function trRemoveSafeZone() {
+    try {
+        var seq = app.project.activeSequence;
+        if (!seq) return err('Aktif sekans yok.');
+
+        var clips = findSafeZoneClips(seq);
+        var silinen = 0;
+        for (var i = clips.length - 1; i >= 0; i--) {
+            try { clips[i].item.remove(false, true); silinen++; } catch (e) {}
+        }
+
+        // Projedeki oge de temizlensin ki bin dolmasin
+        var temizlenen = 0;
+        try {
+            var hepsi = collectAllItems(app.project.rootItem, [], 0);
+            for (var j = 0; j < hepsi.length; j++) {
+                var nm = '';
+                try { nm = String(hepsi[j].name); } catch (e) { continue; }
+                if (nm.indexOf(SAFEZONE_PREFIX) === 0) {
+                    try { hepsi[j].deleteBin(); temizlenen++; } catch (e) {}
+                }
+            }
+        } catch (e) {}
+
+        return ok([
+            kv('removed', String(silinen), true),
+            kv('binCleaned', String(temizlenen), true)
+        ]);
+    } catch (e) {
+        return err('Safe zone kaldirilamadi', e);
     }
 }
 

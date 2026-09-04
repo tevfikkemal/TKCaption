@@ -66,6 +66,37 @@
     </details>
   </section>
 
+  <!-- Guvenli alan katmani -->
+  <section class="card">
+    <div class="row spread">
+      <h2>Güvenli Alan</h2>
+      <button id="btnSafe" class="btn">Aç</button>
+    </div>
+    <p class="desc">
+      Sekansın en üstüne saydam bir kılavuz katmanı koyar. Program
+      Monitor'de görünür — <strong>dışa aktarmadan önce kapatın.</strong>
+    </p>
+    <div class="opts">
+      <label>
+        Platform
+        <select id="optSafe">
+          <option value="instagram-reels">Instagram Reels</option>
+          <option value="instagram-story">Instagram Story</option>
+          <option value="instagram-feed">Instagram Feed (4:5)</option>
+          <option value="tiktok">TikTok</option>
+          <option value="youtube-shorts">YouTube Shorts</option>
+          <option value="youtube-16x9">YouTube (yatay)</option>
+        </select>
+      </label>
+      <label>
+        Karartma
+        <input id="optSafeDim" type="range" min="0" max="80" value="45">
+      </label>
+    </div>
+    <p class="note" id="safeNote"></p>
+    <div id="safeOut" class="out" hidden></div>
+  </section>
+
   <!-- Sekans ozeti: calistirmadan once ne islenecegi belli olsun -->
   <section class="card">
     <div class="row spread">
