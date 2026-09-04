@@ -1,7 +1,7 @@
 {
   "version": "0.8.4",
-  "updated": "2026-09-04T23:47:32.187Z",
-  "notes": "panel basligindaki surum artik manifest ile ayni",
+  "updated": "2026-09-04T23:50:05.700Z",
+  "notes": "panel basligindaki surum manifest ile ayni; yayilma bekleme mesaji",
   "files": [
     {
       "path": "core/package.json",
@@ -71,7 +71,7 @@
     {
       "path": "core/src/updater.js",
       "source": "core/src/updater.js",
-      "sha": "ae0a0285b839357c478c56b531fc3d4930602362bd6b046f5bde5451a7eb6290"
+      "sha": "ffd43bdde82f78b87598bb55ded118dac35f793aa92ca8c6424991e79ffeba75"
     },
     {
       "path": "core/src/vad.js",

@@ -267,8 +267,13 @@ async function apply(extensionDir, manifest, onProgress) {
 
     const buf = await fetchBuffer(RAW_BASE + '/' + f.source + '?t=' + Date.now());
     if (f.sha && sha256(buf) !== f.sha) {
-      throw new Error('Dosya doğrulaması başarısız: ' + f.path +
-        ' (indirilen içerik beklenenden farklı)');
+      // OLCULEN: raw.githubusercontent.com dosyalari 5 dakika onbellekliyor
+      // (max-age=300) ve query string ile de no-cache basligiyla da
+      // atlatilamiyor. Surum bildirimi yenilenmisken bir dosya hala eski
+      // kopyadan gelebiliyor. Bu, bozulmus indirmeden ayirt edilemez ama
+      // en olasi sebep budur; kullaniciyi bosuna telaslandirmayalim.
+      throw new Error('Güncelleme henüz yayılıyor. Birkaç dakika sonra ' +
+        'tekrar deneyin.\n(' + f.path + ' beklenen sürümle eşleşmedi)');
     }
     const dest = path.join(staging, f.path);
     fs.mkdirSync(path.dirname(dest), { recursive: true });
