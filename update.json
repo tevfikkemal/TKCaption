@@ -1,7 +1,7 @@
 {
-  "version": "0.8.4",
-  "updated": "2026-09-04T23:50:05.700Z",
-  "notes": "panel basligindaki surum manifest ile ayni; yayilma bekleme mesaji",
+  "version": "0.8.5",
+  "updated": "2026-09-04T23:55:46.491Z",
+  "notes": "guncelleme durumu tanilamada gorunuyor",
   "files": [
     {
       "path": "core/package.json",
@@ -91,7 +91,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "12b094ae039618c452bc7851a78964bc79ac0f9d4caaa4b5d4bade983bdaa0f0"
+      "sha": "438e9c5fe3c031c39ad67592a923afa27cb90b2055319dbb6b39f1917a2ef006"
     },
     {
       "path": "index.html",
@@ -106,12 +106,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "d77dc2a07254fa24ec14b8463ee2abe8d2b7a888f230d6ed613cb77c81646e04"
+      "sha": "294bc4abbd1b259b906903e4325d3c71ecfe287554108295a96f008346b6f7de"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "23adbe5ec79e64b984567e26c3219289b960fd859e845ab06ef992bf333aa792"
+      "sha": "230a76281848699d2cfa1d9d5bd7483e18a510b421d64aa880a91e82cf7987f9"
     },
     {
       "path": "LICENSE",
