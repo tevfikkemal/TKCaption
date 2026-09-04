@@ -14,6 +14,46 @@ const CARD_W = 200;
 const GAP = 24;
 const LABEL_H = 34;
 
+/**
+ * Ikon sekilleri — panel/js/main.js icindeki drawUI ile AYNI geometri.
+ * Onizleme panelden farkli cizerse yanlis onay alinir.
+ */
+function iconPath(type, x, y, s) {
+  const F = 'rgba(255,255,255,0.22)';
+  const S = 'rgba(255,255,255,0.6)';
+  const st = `fill="${F}" stroke="${S}" stroke-width="1"`;
+  const r = s / 2;
+  const n = (v) => v.toFixed(1);
+
+  switch (type) {
+    case 'heart':
+      return `<path ${st} d="M ${n(x)},${n(y + r * 0.75)} ` +
+        `C ${n(x - r * 1.4)},${n(y - r * 0.4)} ${n(x - r * 0.45)},${n(y - r * 1.15)} ${n(x)},${n(y - r * 0.35)} ` +
+        `C ${n(x + r * 0.45)},${n(y - r * 1.15)} ${n(x + r * 1.4)},${n(y - r * 0.4)} ${n(x)},${n(y + r * 0.75)} Z"/>`;
+    case 'comment':
+      return `<path ${st} d="M ${n(x - r)},${n(y - r * 0.7)} L ${n(x + r)},${n(y - r * 0.7)} ` +
+        `L ${n(x + r)},${n(y + r * 0.35)} L ${n(x - r * 0.25)},${n(y + r * 0.35)} ` +
+        `L ${n(x - r * 0.6)},${n(y + r * 0.85)} L ${n(x - r * 0.6)},${n(y + r * 0.35)} ` +
+        `L ${n(x - r)},${n(y + r * 0.35)} Z"/>`;
+    case 'share':
+      return `<path ${st} d="M ${n(x - r)},${n(y - r * 0.35)} L ${n(x + r)},${n(y - r * 0.8)} ` +
+        `L ${n(x + r * 0.15)},${n(y + r * 0.8)} L ${n(x - r * 0.1)},${n(y + r * 0.1)} Z"/>`;
+    case 'more': {
+      const rr = Math.max(0.8, s / 9);
+      let out = '';
+      for (let i = -1; i <= 1; i++) {
+        out += `<circle cx="${n(x)}" cy="${n(y + i * s * 0.32)}" r="${n(rr)}" fill="${S}"/>`;
+      }
+      return out;
+    }
+    case 'disc':
+      return `<circle cx="${n(x)}" cy="${n(y)}" r="${n(r)}" ${st}/>` +
+        `<circle cx="${n(x)}" cy="${n(y)}" r="${n(s / 6)}" fill="none" stroke="${S}" stroke-width="1"/>`;
+    default:
+      return `<circle cx="${n(x)}" cy="${n(y)}" r="${n(r)}" ${st}/>`;
+  }
+}
+
 function card(id, x) {
   const p = sz.PRESETS[id];
   const vertical = p.aspect === '9:16';
@@ -50,9 +90,8 @@ function card(id, x) {
       g += `<rect x="${s(e.x)}" y="${s(e.y)}" width="${s(e.w)}" height="${s(e.h)}" ` +
            `rx="3" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>`;
     } else {
-      const rr = Math.max(1.5, e.size * scale / 2).toFixed(1);
-      g += `<circle cx="${s(e.x)}" cy="${s(e.y)}" r="${rr}" ` +
-           `fill="rgba(255,255,255,0.22)" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>`;
+      // Panelde cizilen sekillerin AYNISI olmali; onizleme yaniltmasin
+      g += iconPath(e.type, e.x * scale, e.y * scale, e.size * scale);
     }
   }
   g += `</g>`;

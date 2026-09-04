@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.6.0';
+var TR_ALTYAZI_VERSION = '0.6.1';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -1032,6 +1032,29 @@ function cleanSafeZoneBin() {
     return silinen;
 }
 
+/**
+ * Bu preset+cozunurluk icin projede zaten bir katman ogesi var mi?
+ *
+ * Silmek yerine YENIDEN KULLANIYORUZ. Sebebi: deleteBin() medya ogelerinde
+ * guvenilir calismiyor ve her acilista projeye bir dosya daha ekleniyordu.
+ * Ayni preset acilip kapandiginda tek oge yeter.
+ */
+function trFindSafeZoneItem(key) {
+    try {
+        var hepsi = collectAllItems(app.project.rootItem, [], 0);
+        for (var i = 0; i < hepsi.length; i++) {
+            var nm = '';
+            try { nm = String(hepsi[i].name); } catch (e) { continue; }
+            if (nm.indexOf(SAFEZONE_PREFIX) === 0 && nm.indexOf(key) >= 0) {
+                return ok([kv('found', 'true', true), kv('name', nm)]);
+            }
+        }
+        return ok([kv('found', 'false', true), kv('name', '')]);
+    } catch (e) {
+        return err('Katman ogesi aranamadi', e);
+    }
+}
+
 function trHasSafeZone() {
     try {
         var seq = app.project.activeSequence;
@@ -1075,15 +1098,34 @@ function trPlaceSafeZone(pngPath, label) {
         var temiz = cleanSafeZoneBin();
         if (temiz) adimlar.push(temiz + ' eski proje ogesi silindi');
 
-        var before = snapshotItems();
-        var bin = null;
-        try { bin = app.project.getInsertionBin(); } catch (e) { bin = app.project.rootItem; }
-        if (!app.project.importFiles([pngPath], true, bin, false)) {
-            return err('Katman projeye alinamadi.');
+        /* Ayni katman zaten projedeyse TEKRAR IMPORT ETME.
+         * Her acilista yeni dosya eklemek projeyi sisiriyordu; deleteBin()
+         * medya ogelerinde guvenilir calismadigi icin silmek yerine
+         * mevcut ogeyi yeniden kullaniyoruz. */
+        var item = null;
+        var wantedName = new File(pngPath).name;
+        var mevcut = collectAllItems(app.project.rootItem, [], 0);
+        for (var m = 0; m < mevcut.length; m++) {
+            var mn = '';
+            try { mn = String(mevcut[m].name); } catch (e) { continue; }
+            if (mn === wantedName || mn === wantedName.replace(/\.png$/i, '')) {
+                item = mevcut[m];
+                adimlar.push('mevcut oge kullanildi: ' + mn);
+                break;
+            }
         }
-        var item = findNewItem(before, pngPath);
-        if (!item) return err('Katman iceri alindi ama proje ogesi bulunamadi.');
-        adimlar.push('oge: ' + item.name);
+
+        if (!item) {
+            var before = snapshotItems();
+            var bin = null;
+            try { bin = app.project.getInsertionBin(); } catch (e) { bin = app.project.rootItem; }
+            if (!app.project.importFiles([pngPath], true, bin, false)) {
+                return err('Katman projeye alinamadi.');
+            }
+            item = findNewItem(before, pngPath);
+            if (!item) return err('Katman iceri alindi ama proje ogesi bulunamadi.');
+            adimlar.push('oge iceri alindi: ' + item.name);
+        }
 
         // En uste yeni bir video pisti ac (mevcut kliplerin uzerini ortmesin)
         var hedefIndex = seq.videoTracks.numTracks;

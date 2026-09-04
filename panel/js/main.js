@@ -323,7 +323,6 @@
   /* ---------------------------------------------------------------- */
 
   var safeOn = false;
-  var safeSeq = 0;
 
   /**
    * Platform arayuz elemanlarini ciz.
@@ -472,26 +471,17 @@
     var dir = npath.join(nos.tmpdir(), 'tkcaption-safezone');
     try { nfs.mkdirSync(dir, { recursive: true }); } catch (e) {}
 
-    /* Kullanilmayan eski katmanlari temizle.
-     * Premiere projeye aldigi dosyayi ACIK TUTUYOR; kilitli olanlar
-     * silinemez, onlari sessizce atliyoruz. */
-    try {
-      nfs.readdirSync(dir).forEach(function (f) {
-        if (f.indexOf('TKSafeZone_') === 0) {
-          try { nfs.unlinkSync(npath.join(dir, f)); } catch (e) { /* kilitli */ }
-        }
-      });
-    } catch (e) {}
-
-    /* HER SEFERINDE BENZERSIZ AD.
-     * Ayni ada yeniden yazmak "EBUSY: resource busy or locked" veriyordu:
-     * katman bir kez eklendikten sonra Premiere dosyayi birakmiyor, ikinci
-     * acilista uzerine yazilamiyor. Benzersiz ad bu kilidi tamamen atlatir.
-     * Onek ayni kaliyor — kopru katmani ondan taniyor. */
-    safeSeq++;   // ayni milisaniyede iki cagri olursa (cift tiklama) ad yine ayrissin
+    /* Dosya adi AYARLARI ICERIR: preset, cozunurluk ve karartma.
+     *
+     * Boylece ayni gorunum icin hep ayni dosya kullanilir (projede tek oge
+     * kalir), ayar degisince de yeni dosya uretilir. Eski dosyalari SILMIYORUZ:
+     * Premiere projeye aldigi dosyayi acik tutuyor ve hala kullaniliyor
+     * olabilir — silmek ogeyi cevrimdisi birakir. */
     var file = npath.join(dir, 'TKSafeZone_' + preset + '_' + width + 'x' + height +
-      '_' + Date.now().toString(36) + safeSeq.toString(36) + '.png');
-    nfs.writeFileSync(file, Buffer.from(data, 'base64'));
+      '_d' + dim + '.png');
+    if (!nfs.existsSync(file)) {
+      nfs.writeFileSync(file, Buffer.from(data, 'base64'));
+    }
     return { path: file, rect: rect, label: spec.label, note: spec.note };
   }
 
@@ -504,7 +494,31 @@
       var h = parseInt(d.height, 10);
       if (!w || !h) throw new Error('Sekans çözünürlüğü okunamadı.');
 
-      var drawn = drawSafeZone(preset, w, h, dim);
+      /* Ayni preset+cozunurluk icin katman zaten projedeyse yeni PNG
+       * URETME. Her acilista dosya uretmek hem diski hem projeyi sisiriyordu. */
+      var key = preset + '_' + w + 'x' + h + '_d' + dim;
+      return CEP.call('trFindSafeZoneItem("' + esPath(key) + '")')
+        .then(function (f) {
+          return { w: w, h: h, reuse: String(f.found) === 'true', name: f.name };
+        });
+    }).then(function (ctx) {
+      var w = ctx.w, h = ctx.h;
+      var drawn;
+      if (ctx.reuse) {
+        // Mevcut oge kullanilacak; dosya adini ondan turetiyoruz
+        var szm = nodeReq(npath.join(resolveCore(), 'src', 'safezone.js'));
+        var rr = szm.toRect(preset, w, h);
+        drawn = {
+          path: npath.join(nos.tmpdir(), 'tkcaption-safezone', ctx.name +
+                 (/.png$/i.test(ctx.name) ? '' : '.png')),
+          rect: rr,
+          label: szm.PRESETS[preset].label,
+          note: szm.PRESETS[preset].note
+        };
+        if (!nfs.existsSync(drawn.path)) drawn = drawSafeZone(preset, w, h, dim);
+      } else {
+        drawn = drawSafeZone(preset, w, h, dim);
+      }
       show('safeOut', '<span class="dim">' + esc(drawn.label) + '  ' + w + '×' + h +
         '  — güvenli alan ' + drawn.rect.w + '×' + drawn.rect.h + ' px</span>');
       setText('safeNote', drawn.note);
