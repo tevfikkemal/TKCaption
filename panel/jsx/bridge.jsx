@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.2.0';
+var TR_ALTYAZI_VERSION = '0.2.1';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -512,6 +512,34 @@ function trImportSrt(srtPath) {
         ]);
     } catch (e) {
         return err('SRT projeye alinamadi', e);
+    }
+}
+
+/**
+ * Uretilen SRT'nin kalici olarak kaydedilecegi yer.
+ *
+ * Gecici klasore yazip silmek, "altyazi kayiyor" gibi bir sikayette
+ * SRT'nin mi yoksa Premiere'e yerlestirmenin mi hatali oldugunu
+ * ayirt etmeyi imkansiz kiliyordu. Artik dosya duruyor: kullanici
+ * elle surukleyip karsilastirabilir.
+ */
+function trSuggestSrtPath(sequenceName) {
+    try {
+        var dir = null;
+        try {
+            if (app.project.path) dir = new File(app.project.path).parent.fsName;
+        } catch (e) {}
+        if (!dir) { try { dir = Folder.myDocuments.fsName; } catch (e) {} }
+        if (!dir) return err('Kaydedilecek klasor bulunamadi.');
+
+        var safe = String(sequenceName || 'altyazi').replace(/[\\\/:*?"<>|]/g, '_');
+        var base = dir + '\\' + safe;
+        var p = base + '.srt';
+        var n = 2;
+        while (fileExists(p) && n < 100) { p = base + '-' + n + '.srt'; n++; }
+        return ok([kv('path', toNativePath(p)), kv('folder', dir)]);
+    } catch (e) {
+        return err('SRT yolu belirlenemedi', e);
     }
 }
 

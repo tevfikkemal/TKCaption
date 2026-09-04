@@ -372,6 +372,8 @@
     var tmp = npath.join(nos.tmpdir(), 'tkcaption-' + Date.now().toString(36));
     try { nfs.mkdirSync(tmp, { recursive: true }); } catch (e) {}
     var wav = npath.join(tmp, 'sekans.wav');
+    // SRT gecici degil KALICI: zamanlama sikayetlerinde SRT'nin mi yoksa
+    // Premiere'e yerlestirmenin mi hatali oldugunu ancak boyle ayirabiliyoruz.
     var srtPath = npath.join(tmp, 'altyazi.srt');
 
     var seqInfo = null;
@@ -379,6 +381,12 @@
     // 1) Sekans bilgisi — kare hizi ve baslangic zaman kodu
     CEP.call('trGetSequenceInfo()').then(function (d) {
       seqInfo = d;
+      // SRT'yi proje klasorune kalici olarak yaz
+      return CEP.call('trSuggestSrtPath("' + esPath(d.name) + '")')
+        .then(function (s) { srtPath = s.path; })
+        .catch(function () { /* gecici yolda kalir */ })
+        .then(function () { return d; });
+    }).then(function (d) {
       appendRun('<span class="dim">sekans:</span> ' + esc(d.name) + '  ' +
                 Number(d.fps).toFixed(3) + ' fps  ' +
                 Number(d.durationSec).toFixed(1) + ' sn');
@@ -485,6 +493,7 @@
       setBar(1);
       if (String(pl.placed) === 'true') {
         appendRun('<span class="ok">Altyazı pisti oluşturuldu.</span>');
+        appendRun('<span class="dim">SRT kaydedildi:</span> ' + esc(srtPath));
       } else {
         appendRun('<span class="warn">SRT projeye alındı ama piste yerleştirilemedi' +
                   (pl.detail ? ': ' + esc(pl.detail) : '') + '</span>');
