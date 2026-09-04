@@ -1,7 +1,7 @@
 {
-  "version": "0.8.3",
-  "updated": "2026-09-04T23:39:13.484Z",
-  "notes": "guncelleme: sistem klasorune kurulumda yonetici izniyle uygulanir",
+  "version": "0.8.4",
+  "updated": "2026-09-04T23:47:32.187Z",
+  "notes": "panel basligindaki surum artik manifest ile ayni",
   "files": [
     {
       "path": "core/package.json",
@@ -91,7 +91,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "f6bea6f52a3af54ceb8576ba710d01420f08a00e075f21a09f940ea40a71a12b"
+      "sha": "12b094ae039618c452bc7851a78964bc79ac0f9d4caaa4b5d4bade983bdaa0f0"
     },
     {
       "path": "index.html",
@@ -111,7 +111,7 @@
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "99e7d4f2e6a8b31a0edf55640277ea4e74f2196015ee3bab2f686cd381727603"
+      "sha": "23adbe5ec79e64b984567e26c3219289b960fd859e845ab06ef992bf333aa792"
     },
     {
       "path": "LICENSE",

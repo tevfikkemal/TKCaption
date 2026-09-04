@@ -33,6 +33,25 @@ function readVersion() {
   return m ? m[1] : '0.0.0';
 }
 
+/**
+ * Surum sayisi iki yerde duruyordu: manifest.xml ve bridge.jsx.
+ * Panel basligindaki sayiyi bridge.jsx veriyor, guncelleme kontrolunu
+ * manifest yapiyor. Ikisi ayrisinca panel "0.8.2" yazarken gercekte
+ * 0.8.3 kurulu oluyordu — kullanici hakli olarak "guncelleme olmadi"
+ * diye okudu. Tek dogruluk kaynagi manifest; bridge.jsx ona uyduruluyor.
+ */
+function syncBridgeVersion(version) {
+  const p = path.join(ROOT, 'panel', 'jsx', 'bridge.jsx');
+  const src = fs.readFileSync(p, 'utf8');
+  const re = /(var TR_ALTYAZI_VERSION = ')([^']+)(';)/;
+  const m = re.exec(src);
+  if (!m) throw new Error('bridge.jsx icinde TR_ALTYAZI_VERSION bulunamadi');
+  if (m[2] === version) return false;
+  fs.writeFileSync(p, src.replace(re, '$1' + version + '$3'));
+  console.log('  bridge.jsx  -> ' + m[2] + ' yerine ' + version);
+  return true;
+}
+
 function rmrf(p) {
   try { fs.rmSync(p, { recursive: true, force: true }); } catch (_) {}
 }
@@ -324,6 +343,10 @@ function writeUpdateManifest(version, notes) {
 function build(notes) {
   const version = readVersion();
   console.log(`TK Caption ${version} paketleniyor\n`);
+
+  // Panel basligindaki sayi bridge.jsx'ten geliyor; kopyalamadan ONCE
+  // manifest'e uyduruluyor ki dagitilan pakette ayrisma olmasin.
+  syncBridgeVersion(version);
 
   rmrf(DIST);
   fs.mkdirSync(OUT, { recursive: true });
