@@ -60,8 +60,37 @@ node tools/build.js
 iner). İçindeki `KUR.ps1` `PlayerDebugMode` bayrağını açar ve eklentiyi
 kullanıcının CEP klasörüne kopyalar.
 
-Paket **imzasız** dağıtılır. Resmî ZXP imzalama sertifika gerektirir;
-Adobe Exchange'e koymak isterseniz ayrı bir adımdır.
+### ZXP paketi (imzalı, tek dosya)
+
+```bash
+node tools/build.js "sürüm notu"
+node tools/make-zxp.js
+```
+
+`dist/TKCaption-<sürüm>.zxp` üretir. Kullanıcı
+[ZXP Installer](https://zxpinstaller.com) ile açıp kurar — PowerShell
+betiği çalıştırmaya gerek kalmaz.
+
+Sertifika ilk çalıştırmada üretilip `tools/.cert/` altına yazılır ve
+depoya **girmez**; özel anahtar oradadır.
+
+**Sınır:** sertifika kendinden imzalıdır (self-signed). Adobe'un güvendiği
+bir sağlayıcıdan alınmadığı için Creative Cloud uygulaması üzerinden
+kurulamaz; ZXP Installer gibi araçlar gerekir ve Premiere imzayı
+tanımazsa `PlayerDebugMode` yine gerekebilir. Güvenilir sertifika ücretli
+ve yıllık yenilenir — ücretsiz dağıtılan bir araç için self-signed yaygın
+ve kabul gören yoldur.
+
+### Otomatik güncelleme
+
+Panel açılışta depodaki `update.json` dosyasını okuyup kendi sürümüyle
+karşılaştırır; yeni sürüm varsa dosyaları indirip yerine koyar. Kullanıcıya
+düşen tek iş Premiere'i yeniden başlatmaktır.
+
+`update.json` her derlemede otomatik üretilir — ayrıca yayın oluşturmak
+gerekmez, `git push` yeterlidir. Her dosyanın SHA-256 özeti bildirimde
+yazılıdır ve indirme sonrası doğrulanır; tamamı doğrulanmadan hiçbir dosya
+yerine konmaz.
 
 ### Paneli kurmak (geliştirme)
 
@@ -201,6 +230,8 @@ node core/test/postprocess.test.js
 node core/test/espath.test.js
 node core/test/vad.test.js
 node core/test/ttml.test.js
+node core/test/safezone.test.js
+node core/test/updater.test.js
 ```
 
 ## Lisans

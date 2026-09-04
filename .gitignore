@@ -15,3 +15,7 @@ video/
 
 # dagitim ciktisi
 dist/
+
+# imzalama: ozel anahtar ve indirilen arac depoya girmez
+tools/.cert/
+tools/.bin/
