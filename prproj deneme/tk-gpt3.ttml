@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tt xmlns="http://www.w3.org/ns/ttml"
+    xmlns:tts="http://www.w3.org/ns/ttml#styling"
+    xmlns:ttp="http://www.w3.org/ns/ttml#parameter"
+    ttp:timeBase="media"
+    ttp:frameRate="60"
+    ttp:frameRateMultiplier="1 1"
+    xml:lang="tr">
+  <head>
+    <styling>
+      <style xml:id="tk" tts:fontFamily="sansSerif" tts:fontSize="80%"
+             tts:color="white" tts:textAlign="center"/>
+    </styling>
+    <layout>
+      <region xml:id="alt" tts:origin="10% 80%" tts:extent="80% 20%"
+              tts:displayAlign="after"/>
+    </layout>
+  </head>
+  <body>
+    <div>
+      <p region="alt" style="tk" begin="00:00:00.017" end="00:00:03.417">ChatGPT&apos;ye slash toughweb yazdım,<br/>aynı sahneyi bana tepeten oluştu.</p>
+      <p region="alt" style="tk" begin="00:00:03.450" end="00:00:07.100">Ardından slash zoomout yazdım,<br/>kadrajın dışında kalanları tamamladı.</p>
+      <p region="alt" style="tk" begin="00:00:07.133" end="00:00:10.550">Son olarak slash reverse angel yazdım,<br/>kamerayı karşı tarafa geçirdi.</p>
+      <p region="alt" style="tk" begin="00:00:10.583" end="00:00:12.633">Bu yeni komutları da<br/>profilimdeki linki ekledim.</p>
+      <p region="alt" style="tk" begin="00:00:12.667" end="00:00:13.667">Takip et, kaydet.</p>
+    </div>
+  </body>
+</tt>

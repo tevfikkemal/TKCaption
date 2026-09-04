@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.8.1';
+var TR_ALTYAZI_VERSION = '0.8.2';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -538,6 +538,15 @@ function trSuggestSrtPath(sequenceName, ext) {
         } catch (e) {}
         if (!dir) { try { dir = Folder.myDocuments.fsName; } catch (e) {} }
         if (!dir) return err('Kaydedilecek klasor bulunamadi.');
+
+        /* Altyazilar proje klasorunun KOKUNE degil, kendi klasorune yazilir.
+         * Her calistirmada koke bir dosya birakmak kurgu klasorunu kirletiyor.
+         * Klasor adi proje panelindeki bin ile ayni: "TK Caption". */
+        try {
+            var alt = new Folder(dir + '/TK Caption');
+            if (!alt.exists) alt.create();
+            if (alt.exists) dir = alt.fsName;
+        } catch (e) { /* olusturulamazsa koke yazmaya devam */ }
 
         var uzanti = (ext && String(ext).charAt(0) === '.') ? String(ext) : '.srt';
         var safe = String(sequenceName || 'altyazi').replace(/[\\\/:*?"<>|]/g, '_');

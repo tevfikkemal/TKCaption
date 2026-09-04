@@ -1,7 +1,7 @@
 {
-  "version": "0.8.1",
-  "updated": "2026-09-04T22:58:12.162Z",
-  "notes": "Otomatik güncelleme testi. Sürüm notları artık burada görünüyor.",
+  "version": "0.8.2",
+  "updated": "2026-09-04T23:14:12.513Z",
+  "notes": "Altyazı dosyaları artık proje klasörünün kökü yerine 'TK Caption' alt klasörüne yazılıyor.",
   "files": [
     {
       "path": "core/package.json",
@@ -91,7 +91,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "486efa347bfee0807f98936aad73039a3e6db9487db70dfce149e65874101598"
+      "sha": "1d43196fc1c53ebfd0babb927af436156f7177da4abcbcd5fafc6ef28136077b"
     },
     {
       "path": "index.html",
@@ -111,7 +111,7 @@
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "729dedefa36519ceb8b618b9783b95fe236fe3c2b758e2af316e31e62d3d844e"
+      "sha": "99e7d4f2e6a8b31a0edf55640277ea4e74f2196015ee3bab2f686cd381727603"
     },
     {
       "path": "LICENSE",
