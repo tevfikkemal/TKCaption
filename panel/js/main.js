@@ -319,6 +319,73 @@
   }
 
   /* ---------------------------------------------------------------- */
+  /*  Otomatik guncelleme                                              */
+  /* ---------------------------------------------------------------- */
+
+  var pendingUpdate = null;
+
+  /** Eklentinin kurulu oldugu gercek klasor (junction cozulmus hali) */
+  function extensionRoot() {
+    var ext = CEP.extensionPath();
+    if (!ext) return null;
+    try { return nfs.realpathSync(ext); } catch (e) { return ext; }
+  }
+
+  /**
+   * Sessizce guncelleme kontrolu.
+   *
+   * Hata durumunda SESSIZ kaliyoruz: internet yoksa ya da GitHub
+   * erisilemiyorsa kullaniciyi uyarmanin anlami yok — eklenti zaten
+   * calisiyor. Guncelleme bir kolaylik, zorunluluk degil.
+   */
+  function checkUpdate() {
+    var core = resolveCore();
+    if (!core || !nodeReq) return;
+    var root = extensionRoot();
+    if (!root) return;
+
+    var updater;
+    try { updater = nodeReq(npath.join(core, 'src', 'updater.js')); } catch (e) { return; }
+
+    updater.check(root).then(function (r) {
+      if (!r.available) return;
+      pendingUpdate = { root: root, updater: updater, manifest: r };
+      var box = $('updateBox');
+      if (box) box.hidden = false;
+      setText('updateTitle', 'Yeni sürüm: v' + r.latest);
+      setText('updateNote', r.notes ||
+        ('Şu an v' + r.current + ' kullanıyorsunuz. Güncelleme ' +
+         r.files.length + ' dosyayı yeniler; Premiere’i yeniden başlatmanız gerekir.'));
+    }).catch(function () {
+      /* internet yok / erisilemiyor — sessiz gec */
+    });
+  }
+
+  function runUpdate() {
+    if (!pendingUpdate) return;
+    var btn = $('btnUpdate');
+    btn.disabled = true;
+    $('updateBar').hidden = false;
+    setText('updateNote', 'İndiriliyor…');
+
+    var u = pendingUpdate;
+    u.updater.apply(u.root, u.manifest, function (p) {
+      var pct = p.total ? p.done / p.total : 0;
+      $('updateFill').style.width = Math.round(pct * 100) + '%';
+      if (p.file) setText('updateNote', 'İndiriliyor: ' + p.file);
+    }).then(function (res) {
+      setText('updateTitle', 'v' + res.version + ' kuruldu');
+      setText('updateNote',
+        res.updated + ' dosya güncellendi. Değişikliklerin geçerli olması için ' +
+        'Premiere’i kapatıp yeniden açın.');
+      btn.hidden = true;
+    }).catch(function (e) {
+      setText('updateNote', e.message);
+      btn.disabled = false;
+    });
+  }
+
+  /* ---------------------------------------------------------------- */
   /*  GUVENLI ALAN katmani                                             */
   /* ---------------------------------------------------------------- */
 
@@ -1042,7 +1109,9 @@
   document.addEventListener('DOMContentLoaded', function () {
     checkEnvironment();
     readSequence(true);
-    refreshSafeState();  // sekans ozeti dugme beklemeden gorunsun
+    refreshSafeState();
+    checkUpdate();  // sekans ozeti dugme beklemeden gorunsun
+    $('btnUpdate').addEventListener('click', runUpdate);
     $('btnRun').addEventListener('click', generate);
     $('btnSafe').addEventListener('click', toggleSafeZone);
     // "Tümü" kutusu digerlerini surukler

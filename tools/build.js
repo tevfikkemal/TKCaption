@@ -154,6 +154,64 @@ Panel gorunmuyorsa:
 
 /* ------------------------------------------------------------------ */
 
+/**
+ * update.json uretir — panelin kendi kendini guncellemesi icin.
+ *
+ * Liste ELLE tutulmuyor: uretilen eklenti klasoru taranip yaziliyor.
+ * Elle tutulan bir liste zamanla gerceklikle uyusmaz ve eksik dosya
+ * guncellemeyi bozar.
+ *
+ * Her dosyanin SHA-256'si yaziliyor; panel indirdikten SONRA dogruluyor.
+ */
+function writeUpdateManifest(version) {
+  const crypto = require('crypto');
+
+  // Eklenti icindeki yol -> depodaki kaynak yol
+  const kaynak = (rel) => {
+    const p = rel.split(path.sep).join('/');
+    if (p.startsWith('core/')) return p;          // core/src/... depoda ayni yerde
+    if (p === 'LICENSE') return 'LICENSE';        // depo kokunde
+    return 'panel/' + p;                          // gerisi panel/ altinda
+  };
+
+  const files = [];
+  const gez = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) { gez(full); continue; }
+      const rel = path.relative(OUT, full);
+      // Uretilen dosyalar depoda yok; guncellemeye dahil edilmez
+      if (e.name === 'SURUM.txt') continue;
+      const buf = fs.readFileSync(full);
+      files.push({
+        path: rel.split(path.sep).join('/'),
+        source: kaynak(rel),
+        sha: crypto.createHash('sha256').update(buf).digest('hex')
+      });
+    }
+  };
+  gez(OUT);
+
+  // Depoda gercekten var mi? Yoksa guncelleme 404 alir.
+  const eksik = files.filter((f) => !fs.existsSync(path.join(ROOT, f.source)));
+  if (eksik.length) {
+    console.log('  UYARI: ' + eksik.length + ' dosya depoda bulunamadi, ' +
+                'guncelleme listesinden cikarildi:');
+    for (const f of eksik) console.log('    ' + f.source);
+  }
+  const gecerli = files.filter((f) => fs.existsSync(path.join(ROOT, f.source)));
+
+  const manifest = {
+    version,
+    updated: new Date().toISOString(),
+    notes: '',
+    files: gecerli
+  };
+  fs.writeFileSync(path.join(ROOT, 'update.json'),
+                   JSON.stringify(manifest, null, 2) + '\n');
+  console.log('  update.json   -> ' + gecerli.length + ' dosya');
+}
+
 function build() {
   const version = readVersion();
   console.log(`TK Caption ${version} paketleniyor\n`);
@@ -215,6 +273,9 @@ SORUN OLURSA
 
   https://github.com/tevfikkemal/TKCaption
 `);
+
+  // --- Guncelleme bildirimi ---
+  writeUpdateManifest(version);
 
   // --- Zip ---
   const zipName = `TKCaption-${version}.zip`;

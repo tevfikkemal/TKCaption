@@ -482,3 +482,28 @@ details > summary:hover { color: var(--text-2); }
 
 /* Coklu secim notu ile karartma birbirine yapismasin */
 #safeMulti { margin-bottom: 10px; }
+
+/* Guncelleme bildirimi — dikkat cekmeli ama isi bolmemeli */
+.update-box {
+  margin: 0 0 10px;
+  padding: 9px 11px;
+  background: rgba(61, 140, 224, 0.10);
+  border: 1px solid rgba(61, 140, 224, 0.3);
+  border-radius: var(--r-sm);
+}
+.update-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #cfe0f4;
+}
+.update-note {
+  margin: 6px 0 0;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.update-box .bar { margin-top: 8px; }

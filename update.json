@@ -1,0 +1,122 @@
+{
+  "version": "0.8.0",
+  "updated": "2026-09-04T22:55:04.135Z",
+  "notes": "",
+  "files": [
+    {
+      "path": "core/package.json",
+      "source": "core/package.json",
+      "sha": "d0b4fbcc222da542cecb3ea84ce516668edffd43250a00076acdf7b4a1794c3f"
+    },
+    {
+      "path": "core/src/audio.js",
+      "source": "core/src/audio.js",
+      "sha": "60c4f2bef15bc126d3b478dfe15c21ea4482e857e9b7ee915a0d8c7614b5841e"
+    },
+    {
+      "path": "core/src/config.js",
+      "source": "core/src/config.js",
+      "sha": "90c3fe3f05d5aa5c313dd2e8740f7837bb327fed9d7274482a9ea115962137a3"
+    },
+    {
+      "path": "core/src/hallucination.js",
+      "source": "core/src/hallucination.js",
+      "sha": "4e7f6ce703592fa972b8d3408818a0111cdfdd63d5fb832bdbe9f23cac51917d"
+    },
+    {
+      "path": "core/src/index.js",
+      "source": "core/src/index.js",
+      "sha": "de38bc7b417a60a716f646dd73dd776285e067a2a1bb33aa6cd8f93b8e1b8cb5"
+    },
+    {
+      "path": "core/src/models.js",
+      "source": "core/src/models.js",
+      "sha": "41d189b9ba75db0958b9d924d2cd10ff04a16f221fcc8a4181f8329d25601d90"
+    },
+    {
+      "path": "core/src/pipeline.js",
+      "source": "core/src/pipeline.js",
+      "sha": "5a6b2e54eec1c6b9f10819cdf29ee884034d9cd981f249861c8c56c182db2817"
+    },
+    {
+      "path": "core/src/postprocess.js",
+      "source": "core/src/postprocess.js",
+      "sha": "2267ec830899963e465f033dfc91741ec6d26998c3dfeff3574b7adc101b7b1f"
+    },
+    {
+      "path": "core/src/safezone.js",
+      "source": "core/src/safezone.js",
+      "sha": "febb60df0ec3b24f8986d7f051cebaecf3ef0df091a683fe23abf9bdfb8db166"
+    },
+    {
+      "path": "core/src/segmenter.js",
+      "source": "core/src/segmenter.js",
+      "sha": "cf90675a3a297fe0fb0b8d07d614ef924298c7d6158e0a4ef6f3f17e79879d70"
+    },
+    {
+      "path": "core/src/srt.js",
+      "source": "core/src/srt.js",
+      "sha": "e974faa912846205c54a4370ab448ef99b12716b928c267059655dd7c9e09836"
+    },
+    {
+      "path": "core/src/tokens.js",
+      "source": "core/src/tokens.js",
+      "sha": "f49291b46ee12d24613873c6ca09d0b7a9ddcbf436f07301be08414c12d10a3c"
+    },
+    {
+      "path": "core/src/ttml.js",
+      "source": "core/src/ttml.js",
+      "sha": "89ba4797421bad7313b64cc24a4020044e48755523e65da92b86881fd89e943f"
+    },
+    {
+      "path": "core/src/updater.js",
+      "source": "core/src/updater.js",
+      "sha": "4b6254bfc166994eea710eb050a4165252e97c2d169f502059b703c7811e6943"
+    },
+    {
+      "path": "core/src/vad.js",
+      "source": "core/src/vad.js",
+      "sha": "103115141905b8d9a00e5eca3eadb238aac06e8b8adeb0f6edde511a443a1c22"
+    },
+    {
+      "path": "core/src/whisper.js",
+      "source": "core/src/whisper.js",
+      "sha": "a31a72cb25acec5d2711a4375f77eba58c66ccd7c2b09a6025744172a33b95a4"
+    },
+    {
+      "path": "css/style.css",
+      "source": "panel/css/style.css",
+      "sha": "1d2df2d23b1a87abf1a5e0d53c6c2ffae76b71aee0bae2368d2947d9e9a5797b"
+    },
+    {
+      "path": "CSXS/manifest.xml",
+      "source": "panel/CSXS/manifest.xml",
+      "sha": "7f1ce84193525300ed94363b3bf2afa2d9e17727946ac89690fa5d66a73bd05b"
+    },
+    {
+      "path": "index.html",
+      "source": "panel/index.html",
+      "sha": "184c354109bfedfdc6b002751fb8d1ffd030bb0371904c15ad98d24ad151ac5b"
+    },
+    {
+      "path": "js/cep.js",
+      "source": "panel/js/cep.js",
+      "sha": "7ff54f1eac9ffa4c39b9a083597be06bc2dff39a17a8d1f5e514aa38bbd02921"
+    },
+    {
+      "path": "js/main.js",
+      "source": "panel/js/main.js",
+      "sha": "1dd6dcdeb834224f72fcc28971bf89668553d21422da224d3c7dd79f0da39557"
+    },
+    {
+      "path": "jsx/bridge.jsx",
+      "source": "panel/jsx/bridge.jsx",
+      "sha": "f7469a99484c6aab64780e374efddea3707cf8ed515562c9cdd798aeee9785b2"
+    },
+    {
+      "path": "LICENSE",
+      "source": "LICENSE",
+      "sha": "1c6307b23ff7ec15b7ca73ec8922da90890a3bad74039ee48cd2dc2df32dc71b"
+    }
+  ]
+}
