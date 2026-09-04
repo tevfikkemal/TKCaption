@@ -353,9 +353,13 @@
       var box = $('updateBox');
       if (box) box.hidden = false;
       setText('updateTitle', 'Yeni sürüm: v' + r.latest);
-      setText('updateNote', r.notes ||
+      var not = r.notes ||
         ('Şu an v' + r.current + ' kullanıyorsunuz. Güncelleme ' +
-         r.files.length + ' dosyayı yeniler; Premiere’i yeniden başlatmanız gerekir.'));
+         r.files.length + ' dosyayı yeniler; Premiere’i yeniden başlatmanız gerekir.');
+      // ZXP ile sistem klasorune kurulduysa yazma yetkisi yok; kullanici
+      // UAC istemiyle karsilasacagini onceden bilsin.
+      if (r.writable === false) not += ' Windows yönetici izni isteyecek.';
+      setText('updateNote', not);
     }).catch(function () {
       /* internet yok / erisilemiyor — sessiz gec */
     });
@@ -372,7 +376,12 @@
     u.updater.apply(u.root, u.manifest, function (p) {
       var pct = p.total ? p.done / p.total : 0;
       $('updateFill').style.width = Math.round(pct * 100) + '%';
-      if (p.file) setText('updateNote', 'İndiriliyor: ' + p.file);
+      if (p.phase === 'yetki') {
+        // UAC penceresi acilirken panel donmus gorunur; ne bekledigini yaz.
+        setText('updateNote', 'Windows yetki penceresi açılıyor — “Evet” deyin.');
+      } else if (p.file) {
+        setText('updateNote', 'İndiriliyor: ' + p.file);
+      }
     }).then(function (res) {
       setText('updateTitle', 'v' + res.version + ' kuruldu');
       setText('updateNote',

@@ -1,7 +1,7 @@
 {
-  "version": "0.8.2",
-  "updated": "2026-09-04T23:28:09.041Z",
-  "notes": "kaldirma: tum CEP konumlari + onbellek",
+  "version": "0.8.3",
+  "updated": "2026-09-04T23:39:13.484Z",
+  "notes": "guncelleme: sistem klasorune kurulumda yonetici izniyle uygulanir",
   "files": [
     {
       "path": "core/package.json",
@@ -71,7 +71,7 @@
     {
       "path": "core/src/updater.js",
       "source": "core/src/updater.js",
-      "sha": "4b6254bfc166994eea710eb050a4165252e97c2d169f502059b703c7811e6943"
+      "sha": "ae0a0285b839357c478c56b531fc3d4930602362bd6b046f5bde5451a7eb6290"
     },
     {
       "path": "core/src/vad.js",
@@ -91,7 +91,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "1d43196fc1c53ebfd0babb927af436156f7177da4abcbcd5fafc6ef28136077b"
+      "sha": "f6bea6f52a3af54ceb8576ba710d01420f08a00e075f21a09f940ea40a71a12b"
     },
     {
       "path": "index.html",
@@ -106,7 +106,7 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "1dd6dcdeb834224f72fcc28971bf89668553d21422da224d3c7dd79f0da39557"
+      "sha": "d77dc2a07254fa24ec14b8463ee2abe8d2b7a888f230d6ed613cb77c81646e04"
     },
     {
       "path": "jsx/bridge.jsx",

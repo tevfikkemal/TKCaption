@@ -92,6 +92,14 @@ gerekmez, `git push` yeterlidir. Her dosyanın SHA-256 özeti bildirimde
 yazılıdır ve indirme sonrası doğrulanır; tamamı doğrulanmadan hiçbir dosya
 yerine konmaz.
 
+**ZXP ile kurulduysa:** ZXP Installer eklentiyi `Program Files (x86)\Common
+Files\Adobe\CEP\extensions` altına kurar; orası normal kullanıcının
+yazamadığı bir konumdur. Panel bunu güncelleme öncesi ölçer ve yazamıyorsa
+Windows'tan yönetici izni ister (UAC penceresi çıkar, "Evet" demek
+yeterlidir). Yedekleme ve hata halinde geri alma yükseltilmiş adımın
+içinde yapılır. `KUR.ps1` ile kurulduğunda dosyalar kullanıcı klasöründe
+olduğu için izin sorulmaz.
+
 ### Paneli kurmak (geliştirme)
 
 ```powershell
@@ -232,6 +240,7 @@ node core/test/vad.test.js
 node core/test/ttml.test.js
 node core/test/safezone.test.js
 node core/test/updater.test.js
+node core/test/updater-elevated.test.js
 ```
 
 ## Lisans
