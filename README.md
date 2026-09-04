@@ -129,7 +129,6 @@ node core/src/index.js --list-models
 | Bileşen | Boyut | Not |
 |---|---|---|
 | `large-v3-turbo-q5_0` | 547 MB | Varsayılan model |
-
 | whisper.cpp (blas) | 20 MB | Her makinede çalışır |
 | whisper.cpp (cuda12) | 640 MB | NVIDIA kartı varsa, çok daha hızlı |
 
