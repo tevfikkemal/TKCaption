@@ -323,6 +323,7 @@
   /* ---------------------------------------------------------------- */
 
   var safeOn = false;
+  var safeSeq = 0;
 
   /**
    * Kilavuz katmanini canvas'ta cizip PNG olarak yazar.
@@ -373,8 +374,26 @@
     var data = cv.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
     var dir = npath.join(nos.tmpdir(), 'tkcaption-safezone');
     try { nfs.mkdirSync(dir, { recursive: true }); } catch (e) {}
-    // Dosya adi koprudeki onekle eslesmeli: kaldirirken bundan taniyoruz
-    var file = npath.join(dir, 'TKSafeZone_' + preset + '_' + width + 'x' + height + '.png');
+
+    /* Kullanilmayan eski katmanlari temizle.
+     * Premiere projeye aldigi dosyayi ACIK TUTUYOR; kilitli olanlar
+     * silinemez, onlari sessizce atliyoruz. */
+    try {
+      nfs.readdirSync(dir).forEach(function (f) {
+        if (f.indexOf('TKSafeZone_') === 0) {
+          try { nfs.unlinkSync(npath.join(dir, f)); } catch (e) { /* kilitli */ }
+        }
+      });
+    } catch (e) {}
+
+    /* HER SEFERINDE BENZERSIZ AD.
+     * Ayni ada yeniden yazmak "EBUSY: resource busy or locked" veriyordu:
+     * katman bir kez eklendikten sonra Premiere dosyayi birakmiyor, ikinci
+     * acilista uzerine yazilamiyor. Benzersiz ad bu kilidi tamamen atlatir.
+     * Onek ayni kaliyor — kopru katmani ondan taniyor. */
+    safeSeq++;   // ayni milisaniyede iki cagri olursa (cift tiklama) ad yine ayrissin
+    var file = npath.join(dir, 'TKSafeZone_' + preset + '_' + width + 'x' + height +
+      '_' + Date.now().toString(36) + safeSeq.toString(36) + '.png');
     nfs.writeFileSync(file, Buffer.from(data, 'base64'));
     return { path: file, rect: rect, label: spec.label, note: spec.note };
   }
