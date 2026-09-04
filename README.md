@@ -50,7 +50,18 @@ Ayrıca konuşma tanıma motorlarının Türkçe'de sessiz bölümlerde üretti�
 basıyorsunuz; ses çıkarılıyor, yerelde çözümleniyor, Türkçe kurallara göre
 bölünüyor ve sekansa altyazı pisti olarak yerleştiriliyor. Sürükle-bırak yok.
 
-Henüz yapılmadı: ZXP paketleme ve dağıtım. Şu an geliştirme kurulumu gerekiyor.
+### Kurulum paketi
+
+```bash
+node tools/build.js
+```
+
+`dist/TKCaption-<sürüm>.zip` üretir (~70 KB; model ve motor ilk çalıştırmada
+iner). İçindeki `KUR.ps1` `PlayerDebugMode` bayrağını açar ve eklentiyi
+kullanıcının CEP klasörüne kopyalar.
+
+Paket **imzasız** dağıtılır. Resmî ZXP imzalama sertifika gerektirir;
+Adobe Exchange'e koymak isterseniz ayrı bir adımdır.
 
 ### Paneli kurmak (geliştirme)
 
@@ -93,14 +104,6 @@ senkron (sync-check.js):
 
 Zamanlama doğruluğu `core/tools/sync-check.js` ile ölçülür — göz kararıyla
 değil, konuşma başlangıçlarıyla altyazı başlangıçları karşılaştırılarak.
-88.0 sn ses / 3.7 sn işlem  (23.6x gerçek zaman)
-31 altyazı bloğu, 171 kelime
-
-satır uzunluğu ihlali : 0
-2'den fazla satır     : 0
-süre ihlali           : 0
-çakışma               : 0
-```
 
 ## Kurulum
 
@@ -126,7 +129,7 @@ node core/src/index.js --list-models
 | Bileşen | Boyut | Not |
 |---|---|---|
 | `large-v3-turbo-q5_0` | 547 MB | Varsayılan model |
-| Silero VAD | 1 MB | Sessizlik tespiti |
+
 | whisper.cpp (blas) | 20 MB | Her makinede çalışır |
 | whisper.cpp (cuda12) | 640 MB | NVIDIA kartı varsa, çok daha hızlı |
 
@@ -197,6 +200,8 @@ node core/test/segmenter.test.js
 node core/test/srt-hallucination.test.js
 node core/test/postprocess.test.js
 node core/test/espath.test.js
+node core/test/vad.test.js
+node core/test/ttml.test.js
 ```
 
 ## Lisans
