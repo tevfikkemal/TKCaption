@@ -274,6 +274,9 @@
       html += 'QE DOM: ' + (String(d.qeAvailable) === 'true'
         ? '<span class="ok">açık</span>' : '<span class="dim">kapalı</span>') + '\n';
 
+      html += '<h3>Güncelleme</h3>';
+      html += esc(updateDurum) + '\n';
+
       html += '<h3>Bulunan API üyeleri (' + found.length + ')</h3>';
       if (found.length) {
         for (var i = 0; i < found.length; i++) {
@@ -323,6 +326,8 @@
   /* ---------------------------------------------------------------- */
 
   var pendingUpdate = null;
+  /* Son guncelleme kontrolunun sonucu — tanilamada gosteriliyor. */
+  var updateDurum = 'henüz kontrol edilmedi';
 
   /** Eklentinin kurulu oldugu gercek klasor (junction cozulmus hali) */
   function extensionRoot() {
@@ -340,14 +345,23 @@
    */
   function checkUpdate() {
     var core = resolveCore();
-    if (!core || !nodeReq) return;
+    if (!core || !nodeReq) { updateDurum = 'çekirdek bulunamadı'; return; }
     var root = extensionRoot();
-    if (!root) return;
+    if (!root) { updateDurum = 'eklenti klasörü bulunamadı'; return; }
 
     var updater;
-    try { updater = nodeReq(npath.join(core, 'src', 'updater.js')); } catch (e) { return; }
+    try {
+      updater = nodeReq(npath.join(core, 'src', 'updater.js'));
+    } catch (e) {
+      updateDurum = 'updater yüklenemedi: ' + e.message;
+      return;
+    }
 
+    updateDurum = 'kontrol ediliyor…';
     updater.check(root).then(function (r) {
+      updateDurum = 'kurulu v' + r.current + ' / depoda v' + r.latest +
+        (r.available ? ' — güncelleme var' : ' — güncel') +
+        (r.writable === false ? ' (klasör yazılamıyor, yetki istenecek)' : '');
       if (!r.available) return;
       pendingUpdate = { root: root, updater: updater, manifest: r };
       var box = $('updateBox');
@@ -360,8 +374,11 @@
       // UAC istemiyle karsilasacagini onceden bilsin.
       if (r.writable === false) not += ' Windows yönetici izni isteyecek.';
       setText('updateNote', not);
-    }).catch(function () {
-      /* internet yok / erisilemiyor — sessiz gec */
+    }).catch(function (e) {
+      // Sessizce yutmak, "guncelleme cikmadi" dendiginde sebebi
+      // gormemize engel oluyordu. Kutuyu acmiyoruz (internetsiz makinede
+      // her acilista hata gostermek dogru degil) ama tanilamaya yaziyoruz.
+      updateDurum = 'kontrol edilemedi: ' + (e && e.message ? e.message : e);
     });
   }
 
