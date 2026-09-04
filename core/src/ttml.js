@@ -52,6 +52,7 @@ function frameRateParts(fps) {
 
 function toTtml(blocks, cfg) {
   const offset = (cfg && cfg.output && cfg.output.timecodeOffsetSec) || 0;
+  const scale = (cfg && cfg.output && cfg.output.timeScale) || 1;
   const fps = (cfg && cfg.layout && cfg.layout.fps) || 25;
   const fr = frameRateParts(fps);
   const lang = (cfg && cfg.whisper && cfg.whisper.language) || 'tr';
@@ -82,8 +83,8 @@ function toTtml(blocks, cfg) {
     const lines = b.lines ? b.lines : String(b.text || '').split('\n');
     const text = lines.filter(Boolean).map(escapeXml).join('<br/>');
     if (!text) continue;
-    out.push(`      <p region="alt" style="tk" begin="${formatTime(b.start + offset)}" ` +
-             `end="${formatTime(b.end + offset)}">${text}</p>`);
+    out.push(`      <p region="alt" style="tk" begin="${formatTime(b.start * scale + offset)}" ` +
+             `end="${formatTime(b.end * scale + offset)}">${text}</p>`);
   }
 
   out.push('    </div>');

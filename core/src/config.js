@@ -103,7 +103,19 @@ const DEFAULTS = {
     format: 'srt',
     encoding: 'utf8',
     bom: false,
-    timecodeOffsetSec: 0      // sekans baslangic TC'si (Premiere'den gelir)
+    timecodeOffsetSec: 0,     // sekans baslangic TC'si (Premiere'den gelir)
+
+    /**
+     * Zaman damgasi carpani — Premiere'in kare hizi varsayimini telafi eder.
+     *
+     * SRT kare hizi tasimaz; Premiere iceri alirken kendi varsayimini
+     * uygular. Varsayim sekansla uyusmazsa altyazi olceklenir. Gercek
+     * carpan olculdukten sonra buraya yazilir; 1 = telafi yok.
+     *
+     * Ornek: Premiere 30 fps varsayiyor, sekans 60 fps ise ve altyazi
+     * 2 kat uzuyorsa timeScale 0.5 yapilir.
+     */
+    timeScale: 1
   }
 };
 

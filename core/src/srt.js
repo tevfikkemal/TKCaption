@@ -53,6 +53,8 @@ function timecodeToSeconds(tc, fps) {
 
 function toSrt(blocks, cfg) {
   const offset = (cfg && cfg.output && cfg.output.timecodeOffsetSec) || 0;
+  // Premiere'in kare hizi varsayimini telafi eden carpan (bkz. config.js)
+  const scale = (cfg && cfg.output && cfg.output.timeScale) || 1;
   const out = [];
   let n = 0;
   for (const b of blocks) {
@@ -60,7 +62,7 @@ function toSrt(blocks, cfg) {
     if (!text) continue;
     n++;
     out.push(String(n));
-    out.push(`${formatTime(b.start + offset)} --> ${formatTime(b.end + offset)}`);
+    out.push(`${formatTime(b.start * scale + offset)} --> ${formatTime(b.end * scale + offset)}`);
     out.push(text);
     out.push('');
   }
