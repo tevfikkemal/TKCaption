@@ -78,6 +78,21 @@ node tools/serve-panel.js
 88 saniyelik Türkçe atölye videosu, RTX 4070 Ti:
 
 ```
+88.0 sn ses / 3.2 sn işlem  (27x gerçek zaman)
+32 altyazı bloğu, 169 kelime
+
+satır uzunluğu ihlali : 0
+2'den fazla satır     : 0
+süre ihlali           : 0
+çakışma               : 0
+
+senkron (sync-check.js):
+  medyan kayma        : +0.00 sn
+  en erken sapma      : -0.05 sn
+```
+
+Zamanlama doğruluğu `core/tools/sync-check.js` ile ölçülür — göz kararıyla
+değil, konuşma başlangıçlarıyla altyazı başlangıçları karşılaştırılarak.
 88.0 sn ses / 3.7 sn işlem  (23.6x gerçek zaman)
 31 altyazı bloğu, 171 kelime
 
@@ -148,6 +163,12 @@ node core/src/index.js -i video.mp4 --dict sozluk.json
 ```
 
 Düz metin olarak yazılan isimler kesme işareti düzeltmesine dahil edilir (`Kadıköyde` → `Kadıköy'de`).
+
+### Altyazı biçimi
+
+Panel varsayılan olarak **TTML** üretir çünkü kare hızını dosyanın içinde
+taşır; SRT taşımaz ve Premiere içe alırken kendi varsayımını uygular.
+Her iki dosya da proje klasörüne yazılır, ikisini de kullanabilirsiniz.
 
 ### Ayarlar
 
