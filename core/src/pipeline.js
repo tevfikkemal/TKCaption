@@ -133,7 +133,24 @@ async function run(opts) {
 
     // --- 7. Segmentasyon ---
     const blocks = segmenter.segment(words, cfg);
-    phase('bölme', `${blocks.length} altyazı bloğu`);
+
+    // --- 7b. Blok baslangiclarini GERCEK sese hizala ---
+    // Whisper segment baslangicini erken verir; olculdu: blok 0.16 sn,
+    // gercek konusma 1.38 sn. Bu sabit bir kayma degil, her kayitta
+    // degisir — o yuzden sesin kendisine bakarak duzeltiyoruz.
+    if (cfg.vad && cfg.vad.maxSnapShiftSec > 0) {
+      try {
+        const dec = audio.decodeWav(prepared.path);
+        const snap = vad.snapBlocksToSpeech(blocks, dec.samples, dec.sampleRate, cfg.vad);
+        if (snap.moved) {
+          phase('hizalama', snap.moved + ' blok gerçek konuşma başlangıcına çekildi' +
+            ' (ortalama ' + (snap.totalShift / snap.moved).toFixed(2) + ' sn)');
+        }
+      } catch (e) {
+        phase('uyarı', 'Ses hizalaması yapılamadı: ' + e.message);
+      }
+    }
+    phase('bölme', blocks.length + ' altyazı bloğu');
 
     // --- 8. Yazma ---
     // Bicim secimi. TTML KARE HIZINI dosyanin icinde tasir; SRT tasimaz

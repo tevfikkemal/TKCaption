@@ -137,6 +137,50 @@ console.log('\n=== GUVENLIK: SADECE UZUN SESSIZLIK ATILIR ===');
      'bastaki 10 sn sessizlik atildi (bas: ' + start.toFixed(2) + ' sn)');
 }
 
+console.log('\n=== BLOK BASINI GERCEK KONUSMAYA CEKME ===');
+{
+  // Konusma 5. saniyede basliyor; blok yanlislikla 2. saniyede aciliyor
+  const audio = makeAudio([[5, 12]], 15);
+  const blocks = [{ start: 2.0, end: 7.0, lines: ['erken açılmış blok'] }];
+  const r = vad.snapBlocksToSpeech(blocks, audio, RATE, { maxSnapShiftSec: 5 });
+  ok(r.moved === 1, '1 blok tasindi (' + r.moved + ')');
+  ok(near(blocks[0].start, 5.0, 0.4),
+     'blok basi konusmaya cekildi: ' + blocks[0].start.toFixed(2) + ' sn (beklenen ~5.0)');
+  ok(blocks[0].end === 7.0, 'blok sonu degismedi');
+}
+{
+  // Zaten konusmanin icinde basliyorsa dokunulmamali
+  const audio = makeAudio([[0, 10]], 12);
+  const blocks = [{ start: 3.0, end: 5.0, lines: ['dogru blok'] }];
+  const r = vad.snapBlocksToSpeech(blocks, audio, RATE);
+  ok(r.moved === 0, 'konusma icindeki blok tasinmadi');
+  ok(blocks[0].start === 3.0, 'baslangic korundu');
+}
+{
+  // Kaydirma sinirini asiyorsa DOKUNMA — emin degilsek oynatma
+  const audio = makeAudio([[10, 15]], 18);
+  const blocks = [{ start: 1.0, end: 12.0, lines: ['cok uzak'] }];
+  const r = vad.snapBlocksToSpeech(blocks, audio, RATE, { maxSnapShiftSec: 2.0 });
+  ok(r.moved === 0, 'sinir asildigi icin tasinmadi (' + r.moved + ')');
+  ok(blocks[0].start === 1.0, 'baslangic korundu');
+}
+{
+  // Blogun sonunu asmamali
+  const audio = makeAudio([[5, 12]], 15);
+  const blocks = [{ start: 2.0, end: 5.2, lines: ['kisa blok'] }];
+  vad.snapBlocksToSpeech(blocks, audio, RATE, { maxSnapShiftSec: 5 });
+  ok(blocks[0].start <= blocks[0].end - 0.5,
+     'blok en az 0.5 sn ekranda kaliyor (' +
+     (blocks[0].end - blocks[0].start).toFixed(2) + ' sn)');
+}
+{
+  // Sessiz seste hicbir sey yapilmamali
+  const silent = new Float32Array(10 * RATE);
+  const blocks = [{ start: 1.0, end: 3.0, lines: ['x'] }];
+  const r = vad.snapBlocksToSpeech(blocks, silent, RATE);
+  ok(r.moved === 0 && blocks[0].start === 1.0, 'sessiz seste bloklara dokunulmadi');
+}
+
 console.log('\n=== SINIR DURUMLARI ===');
 {
   const silent = new Float32Array(10 * RATE);

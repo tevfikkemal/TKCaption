@@ -70,6 +70,7 @@ const DEFAULTS = {
     padMs: 400,            // konusmanin bas/sonunu kirpmamak icin pay
     energyRatio: 2.0,      // gurultu tabaninin kac kati konusma sayilir
     minRemovableSilenceMs: 2000,  // SADECE bundan uzun sessizlikler atilir
+    maxSnapShiftSec: 2.0,  // blok basini gercek konusmaya cekerken azami kaydirma
     absoluteFloor: 0.0016
   },
 
@@ -112,8 +113,11 @@ const DEFAULTS = {
      * uygular. Varsayim sekansla uyusmazsa altyazi olceklenir. Gercek
      * carpan olculdukten sonra buraya yazilir; 1 = telafi yok.
      *
-     * Ornek: Premiere 30 fps varsayiyor, sekans 60 fps ise ve altyazi
-     * 2 kat uzuyorsa timeScale 0.5 yapilir.
+     * OLCULDU: Premiere 26.3.0 + 60 fps sekansta olcekleme YOK; sorun
+     * kare hizi degil, whisper segment baslangicinin erken olmasiydi
+     * (bkz. vad.snapBlocksToSpeech). Bu ayar simdilik gerekmiyor ama
+     * baska bir surumde olcekleme cikarsa tek satirla telafi edilebilsin
+     * diye duruyor.
      */
     timeScale: 1
   }

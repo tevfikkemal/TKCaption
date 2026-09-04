@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.3.2';
+var TR_ALTYAZI_VERSION = '0.4.0';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */

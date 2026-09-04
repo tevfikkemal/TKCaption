@@ -16,7 +16,7 @@ const segmenter = require('./segmenter.js');
 const srt = require('./srt.js');
 const pipeline = require('./pipeline.js');
 
-const VERSION = '0.3.0';
+const VERSION = '0.4.0';
 
 /* ------------------------------------------------------------------ */
 /*  Argumanlar                                                         */

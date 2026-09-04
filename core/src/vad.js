@@ -34,7 +34,11 @@ const DEFAULTS = {
    * riski var — sessiz konusulan bir cumlenin basi kirpilabiliyor.
    * (Olculdu: 2.0 esikle gercek konusmanin ilk 0.88 sn'si kesiliyordu.)
    */
-  minRemovableSilenceMs: 2000
+  minRemovableSilenceMs: 2000,
+
+  // Blok baslangicini gercek konusmaya cekerken izin verilen azami kaydirma.
+  // Emin olmadigimiz yerde altyaziyi oynatmaktansa oldugu gibi birakiyoruz.
+  maxSnapShiftSec: 2.0
 };
 
 /** Kare basina RMS enerjisi */
@@ -200,6 +204,78 @@ function remapWords(words, map, rate) {
   return words;
 }
 
+/**
+ * Blok baslangiclarini GERCEK ses baslangicina hizalar.
+ *
+ * NEDEN: Whisper segment baslangicini erken verir. Olculdu (60 fps sekans):
+ *   uretilen blok  0.16 sn
+ *   gercek konusma 1.38 sn   -> 1.22 sn erken aciliyor
+ * Bu sabit bir kayma degildir; her kayitta degisir, cunku whisper'in
+ * segment sinirlari icerige gore oynar. Dolayisiyla sabit bir carpan ya da
+ * offset ile duzeltilemez — sesin kendisine bakmak gerekir.
+ *
+ * Blok bir sessizligin icinde basliyorsa, sonraki konusma baslangicina
+ * cekilir. Kaydirma maxShiftSec ile sinirlidir: emin olmadigimiz yerde
+ * altyaziyi oynatmaktansa oldugu gibi birakmak daha guvenli.
+ *
+ * @returns {{moved:number, totalShift:number}}
+ */
+function snapBlocksToSpeech(blocks, samples, rate, options) {
+  const o = Object.assign({}, DEFAULTS, options || {});
+  const maxShift = (o.maxSnapShiftSec === undefined) ? 2.0 : o.maxSnapShiftSec;
+  if (!blocks.length || !samples.length || maxShift <= 0) return { moved: 0, totalShift: 0 };
+
+  // Pay VERMEDEN tespit: konusmanin gercek basladigi ani istiyoruz
+  const regions = detectSpeech(samples, rate, Object.assign({}, o, {
+    padMs: 0,
+    minSilenceMs: 200,
+    minRemovableSilenceMs: 0
+  }));
+  if (!regions.length) return { moved: 0, totalShift: 0 };
+
+  const onsets = regions.map((r) => r.start / rate);
+  const ends = regions.map((r) => r.end / rate);
+
+  /** t aninda konusma var mi? */
+  function inSpeech(t) {
+    for (let i = 0; i < onsets.length; i++) {
+      if (t >= onsets[i] && t <= ends[i]) return true;
+      if (onsets[i] > t) break;
+    }
+    return false;
+  }
+
+  /** t'den sonraki ilk konusma baslangici */
+  function nextOnset(t) {
+    for (let i = 0; i < onsets.length; i++) if (onsets[i] >= t) return onsets[i];
+    return null;
+  }
+
+  let moved = 0;
+  let totalShift = 0;
+
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    if (inSpeech(b.start)) continue;          // zaten konusmanin icinde
+
+    const onset = nextOnset(b.start);
+    if (onset === null) continue;
+
+    const shift = onset - b.start;
+    if (shift <= 0.05 || shift > maxShift) continue;   // ya onemsiz ya da supheli
+
+    // Blogun sonunu asma; en az yarim saniye ekranda kalsin
+    const yeniStart = Math.min(onset, b.end - 0.5);
+    if (yeniStart <= b.start) continue;
+
+    b.start = yeniStart;
+    moved++;
+    totalShift += shift;
+  }
+
+  return { moved, totalShift };
+}
+
 /** Ozet bilgi (gunluge yazmak icin) */
 function summarize(regions, totalSamples, rate) {
   let speech = 0;
@@ -215,4 +291,7 @@ function summarize(regions, totalSamples, rate) {
   };
 }
 
-module.exports = { detectSpeech, buildTrimmed, toOriginalTime, remapWords, summarize, DEFAULTS };
+module.exports = {
+  detectSpeech, buildTrimmed, toOriginalTime, remapWords,
+  snapBlocksToSpeech, summarize, DEFAULTS
+};
