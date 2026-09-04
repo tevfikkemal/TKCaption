@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.6.1';
+var TR_ALTYAZI_VERSION = '0.6.2';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -1086,34 +1086,41 @@ function trPlaceSafeZone(pngPath, label) {
 
         var adimlar = [];
 
-        /* Once eskiyi TAMAMEN temizle — hem sekanstaki klip hem PROJE OGESI.
-         * Sadece klibi silmek yetmiyor: her acilista projeye bir oge daha
-         * ekleniyor ve bin doluyordu. */
+        // Sekanstaki eski klipleri kaldir (ust uste binmesin)
         var eski = findSafeZoneClips(seq);
         for (var i = eski.length - 1; i >= 0; i--) {
             try { eski[i].item.remove(false, true); } catch (e) {}
         }
         if (eski.length) adimlar.push(eski.length + ' eski klip kaldirildi');
 
-        var temiz = cleanSafeZoneBin();
-        if (temiz) adimlar.push(temiz + ' eski proje ogesi silindi');
-
-        /* Ayni katman zaten projedeyse TEKRAR IMPORT ETME.
-         * Her acilista yeni dosya eklemek projeyi sisiriyordu; deleteBin()
-         * medya ogelerinde guvenilir calismadigi icin silmek yerine
-         * mevcut ogeyi yeniden kullaniyoruz. */
+        /* PROJE OGESINI SILMIYORUZ — yeniden kullaniyoruz.
+         *
+         * Onceki surumde burada cleanSafeZoneBin() cagriliyordu ve KENDI
+         * mantigimizla celisiyordu: oge siliniyor, hemen ardindan "mevcut
+         * oge var mi" aramasi bos donuyor ve dosya yeniden import ediliyordu.
+         * Projeye dosya eklenmesinin surmesinin sebebi buydu. */
         var item = null;
         var wantedName = new File(pngPath).name;
+        var wantedPath = String(pngPath).toLowerCase();
         var mevcut = collectAllItems(app.project.rootItem, [], 0);
+        var safeSayisi = 0;
+
         for (var m = 0; m < mevcut.length; m++) {
             var mn = '';
             try { mn = String(mevcut[m].name); } catch (e) { continue; }
-            if (mn === wantedName || mn === wantedName.replace(/\.png$/i, '')) {
+            if (mn.indexOf(SAFEZONE_PREFIX) === 0) safeSayisi++;
+
+            // Ada guvenmek yetmez: Premiere ogeyi yeniden adlandirabilir.
+            // Asil olcut medya YOLU.
+            var mp = '';
+            try { mp = String(mevcut[m].getMediaPath()).toLowerCase(); } catch (e) {}
+            if ((mp && mp === wantedPath) ||
+                mn === wantedName || mn === wantedName.replace(/\.png$/i, '')) {
                 item = mevcut[m];
-                adimlar.push('mevcut oge kullanildi: ' + mn);
-                break;
             }
         }
+        adimlar.push('projede ' + safeSayisi + ' katman ogesi var');
+        if (item) adimlar.push('mevcut oge kullanildi: ' + item.name);
 
         if (!item) {
             var before = snapshotItems();
