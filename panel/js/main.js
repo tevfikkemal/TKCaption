@@ -382,7 +382,9 @@
     CEP.call('trGetSequenceInfo()').then(function (d) {
       seqInfo = d;
       // SRT'yi proje klasorune kalici olarak yaz
-      return CEP.call('trSuggestSrtPath("' + esPath(d.name) + '")')
+      var fmt = $('optFormat') ? $('optFormat').value : 'ttml';
+      var uzanti = fmt === 'ttml' ? '.xml' : '.srt';
+      return CEP.call('trSuggestSrtPath("' + esPath(d.name) + '", "' + uzanti + '")')
         .then(function (s) { srtPath = s.path; })
         .catch(function () { /* gecici yolda kalir */ })
         .then(function () { return d; });
@@ -445,6 +447,9 @@
       // ikinci argümaninin anlami belgelenmemis; 0 her durumda gecerli
       // oldugu icin bu yol o belirsizlige bagimli degil.
       cfg.output.timecodeOffsetSec = Number(seqInfo.zeroPointSec) || 0;
+      // TTML kare hizini dosyanin icinde tasir; SRT tasimadigi icin Premiere
+      // 30 fps varsayiyor ve 60 fps sekansta altyazi kayiyor.
+      cfg.output.format = $('optFormat') ? $('optFormat').value : 'ttml';
 
       return pipeline.run({
         input: wav,
@@ -491,9 +496,15 @@
       return CEP.call('trPlaceCaptions("' + esPath(srtPath) + '")');
     }).then(function (pl) {
       setBar(1);
+      // Kare hizi uyusmazligi kaymanin ana sebebi — gorunur olsun
+      if (pl.seqFps) {
+        appendRun('<span class="dim">kare hızı:</span> sekans ' + esc(pl.seqFps) +
+          '  ·  öğe ' + esc(pl.itemFpsBefore) + ' → ' + esc(pl.itemFpsAfter) +
+          '  (' + esc(pl.fpsFix) + ')');
+      }
       if (String(pl.placed) === 'true') {
         appendRun('<span class="ok">Altyazı pisti oluşturuldu.</span>');
-        appendRun('<span class="dim">SRT kaydedildi:</span> ' + esc(srtPath));
+        appendRun('<span class="dim">Dosya:</span> ' + esc(srtPath));
       } else {
         appendRun('<span class="warn">SRT projeye alındı ama piste yerleştirilemedi' +
                   (pl.detail ? ': ' + esc(pl.detail) : '') + '</span>');

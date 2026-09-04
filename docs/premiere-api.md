@@ -198,3 +198,47 @@ ENCODE_ENTIRE, ENCODE_IN_TO_OUT, ENCODE_WORKAREA, bind(), setTimeout(), unbind()
 `encodeSequence` doğrudan erişimle **mevcut** (yine `for...in` dökümünde
 görünmüyor). `exportAsMediaDirect` çalıştığı için şimdilik gerekmiyor, ancak
 senkron olmayan alternatif olarak dururd — Premiere'i dondurmama avantajı var.
+
+---
+
+## SRT içe aktarma — KARE HIZI kaybı
+
+`app.project.importFiles()` ile içe alınan bir `.srt` dosyasına Premiere
+**kendi kare hızı varsayımını atar**. Ölçülen: 60 fps'lik bir sekansta
+SRT öğesi **30 fps** olarak geliyor.
+
+SRT formatı zaman bazlıdır (`HH:MM:SS,mmm`) ve kare hızı taşımaz. Premiere
+bu boşluğu tahminle doldurur; tahmin sekansla uyuşmazsa altyazı kayar.
+
+Belirti: altyazılar doğru sırada ama sesle senkron değil; kayma sekans
+boyunca birikir.
+
+### Çözüm: TTML
+
+TTML kare hızını dosyanın **içinde** taşır:
+
+```xml
+<tt ttp:timeBase="media" ttp:frameRate="60" ttp:frameRateMultiplier="1 1">
+```
+
+NTSC kare hızları tam sayı + çarpan olarak yazılır — 29.97 için
+`frameRate="30" frameRateMultiplier="1000 1001"`. `core/src/ttml.js` bunu
+otomatik yapar.
+
+Premiere `.xml` uzantılı TTML dosyalarını altyazı olarak içe alır.
+
+### İkinci savunma: `setOverrideFrameRate`
+
+İçe alınan öğenin kare hızı `projectItem.setOverrideFrameRate(fps)` ile
+sekansınkine eşitlenmeye çalışılır. Desteklenmiyorsa sessizce geçilir;
+panel günlüğünde öğenin kare hızı öncesi/sonrası yazılır.
+
+### Ölçüm aracı
+
+```bash
+node core/tools/sync-check.js <ses|video> <altyazi.srt>
+```
+
+Konuşma başlangıçları ile altyazı başlangıçları arasındaki **sistematik
+kaymayı** sayıyla verir. "Göz kararı kayıyor gibi" yerine ölçülebilir
+bir sayı üretir.

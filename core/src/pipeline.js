@@ -12,6 +12,7 @@ const postprocess = require('./postprocess.js');
 const segmenter = require('./segmenter.js');
 const srt = require('./srt.js');
 const vad = require('./vad.js');
+const ttml = require('./ttml.js');
 
 /**
  * Ses -> altyazi boru hatti.
@@ -135,12 +136,27 @@ async function run(opts) {
     phase('bölme', `${blocks.length} altyazı bloğu`);
 
     // --- 8. Yazma ---
-    const content = cfg.output.format === 'vtt' ? srt.toVtt(blocks, cfg) : srt.toSrt(blocks, cfg);
+    // Bicim secimi. TTML KARE HIZINI dosyanin icinde tasir; SRT tasimaz
+    // ve Premiere 30 fps varsayip 60 fps sekansta altyaziyi kaydiriyor.
+    let content;
+    if (cfg.output.format === 'ttml') content = ttml.toTtml(blocks, cfg);
+    else if (cfg.output.format === 'vtt') content = srt.toVtt(blocks, cfg);
+    else content = srt.toSrt(blocks, cfg);
     srt.write(opts.out, content, cfg);
+
+    // Ikincil bicim: kullanicinin elle karsilastirabilmesi icin SRT de yazilir.
+    // "Altyazi kayiyor" sikayetlerinde TTML mi SRT mi dogru calisiyor,
+    // ancak ikisi de elde olunca ayirt edilebiliyor.
+    let secondary = null;
+    if (cfg.output.format === 'ttml' && opts.alsoSrt !== false) {
+      secondary = String(opts.out).replace(/\.[^.]+$/, '') + '.srt';
+      try { srt.write(secondary, srt.toSrt(blocks, cfg), cfg); } catch (e) { secondary = null; }
+    }
 
     const elapsed = (Date.now() - t0) / 1000;
     return {
       output: opts.out,
+      secondaryOutput: secondary,
       blocks: blocks.length,
       words: words.length,
       removed: filtered.removed.length,

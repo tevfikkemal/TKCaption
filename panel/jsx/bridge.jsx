@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.2.1';
+var TR_ALTYAZI_VERSION = '0.3.0';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -523,7 +523,7 @@ function trImportSrt(srtPath) {
  * ayirt etmeyi imkansiz kiliyordu. Artik dosya duruyor: kullanici
  * elle surukleyip karsilastirabilir.
  */
-function trSuggestSrtPath(sequenceName) {
+function trSuggestSrtPath(sequenceName, ext) {
     try {
         var dir = null;
         try {
@@ -589,6 +589,38 @@ function trPlaceCaptions(srtPath) {
         } catch (e) {}
         if (!item) return err('SRT iceri alindi ama proje ogesi bulunamadi.');
 
+        /* KARE HIZI UYUSMAZLIGI
+         *
+         * SRT zaman bazlidir, kare hizi tasimaz. Premiere iceri alirken
+         * ogeye bir kare hizi ATAR ve genelde 30 fps varsayar. Sekans
+         * 60 fps ise altyazi kayar.
+         *
+         * setOverrideFrameRate ile ogenin kare hizini sekansinkine
+         * esitlemeyi deniyoruz. Desteklenmiyorsa sessizce geciyoruz —
+         * durumu rapora yaziyoruz ki neyin ise yaradigi olculebilsin. */
+        var seqFps = 0;
+        try { seqFps = TICKS_PER_SECOND / parseFloat(seq.timebase); } catch (e) {}
+
+        var fpsBefore = '';
+        try { fpsBefore = String(item.getFootageInterpretation().frameRate); } catch (e) { fpsBefore = 'okunamadi'; }
+
+        var fpsFixed = 'denenmedi';
+        if (seqFps > 0) {
+            try {
+                if (typeof item.setOverrideFrameRate === 'function') {
+                    item.setOverrideFrameRate(seqFps);
+                    fpsFixed = 'setOverrideFrameRate(' + seqFps.toFixed(3) + ')';
+                } else {
+                    fpsFixed = 'setOverrideFrameRate YOK';
+                }
+            } catch (e3) {
+                fpsFixed = 'hata: ' + String(e3.message || e3);
+            }
+        }
+
+        var fpsAfter = '';
+        try { fpsAfter = String(item.getFootageInterpretation().frameRate); } catch (e) { fpsAfter = 'okunamadi'; }
+
         var placed = false;
         var detail = '';
         try {
@@ -601,7 +633,11 @@ function trPlaceCaptions(srtPath) {
             kv('imported', 'true', true),
             kv('itemName', item.name),
             kv('placed', placed ? 'true' : 'false', true),
-            kv('detail', detail)
+            kv('detail', detail),
+            kv('seqFps', seqFps.toFixed(3), true),
+            kv('itemFpsBefore', fpsBefore),
+            kv('itemFpsAfter', fpsAfter),
+            kv('fpsFix', fpsFixed)
         ]);
     } catch (e) {
         return err('Altyazi yerlestirilemedi', e);
