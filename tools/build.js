@@ -163,7 +163,7 @@ Panel gorunmuyorsa:
  *
  * Her dosyanin SHA-256'si yaziliyor; panel indirdikten SONRA dogruluyor.
  */
-function writeUpdateManifest(version) {
+function writeUpdateManifest(version, notes) {
   const crypto = require('crypto');
 
   // Eklenti icindeki yol -> depodaki kaynak yol
@@ -204,7 +204,7 @@ function writeUpdateManifest(version) {
   const manifest = {
     version,
     updated: new Date().toISOString(),
-    notes: '',
+    notes: notes || '',
     files: gecerli
   };
   fs.writeFileSync(path.join(ROOT, 'update.json'),
@@ -212,7 +212,7 @@ function writeUpdateManifest(version) {
   console.log('  update.json   -> ' + gecerli.length + ' dosya');
 }
 
-function build() {
+function build(notes) {
   const version = readVersion();
   console.log(`TK Caption ${version} paketleniyor\n`);
 
@@ -275,7 +275,7 @@ SORUN OLURSA
 `);
 
   // --- Guncelleme bildirimi ---
-  writeUpdateManifest(version);
+  writeUpdateManifest(version, notes);
 
   // --- Zip ---
   const zipName = `TKCaption-${version}.zip`;
@@ -299,5 +299,8 @@ SORUN OLURSA
   console.log(`\nArkadaslariniza ${zipName} dosyasini verin.`);
 }
 
-if (require.main === module) build();
+if (require.main === module) {
+  // node tools/build.js "Guvenli alan ikonlari yenilendi"
+  build(process.argv.slice(2).join(' ').trim());
+}
 module.exports = { build };

@@ -1,7 +1,7 @@
 {
-  "version": "0.8.0",
-  "updated": "2026-09-04T22:55:04.135Z",
-  "notes": "",
+  "version": "0.8.1",
+  "updated": "2026-09-04T22:58:12.162Z",
+  "notes": "Otomatik güncelleme testi. Sürüm notları artık burada görünüyor.",
   "files": [
     {
       "path": "core/package.json",
@@ -91,7 +91,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "7f1ce84193525300ed94363b3bf2afa2d9e17727946ac89690fa5d66a73bd05b"
+      "sha": "486efa347bfee0807f98936aad73039a3e6db9487db70dfce149e65874101598"
     },
     {
       "path": "index.html",
@@ -111,7 +111,7 @@
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "f7469a99484c6aab64780e374efddea3707cf8ed515562c9cdd798aeee9785b2"
+      "sha": "729dedefa36519ceb8b618b9783b95fe236fe3c2b758e2af316e31e62d3d844e"
     },
     {
       "path": "LICENSE",
