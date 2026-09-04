@@ -199,6 +199,7 @@
 
     // Kopru yuklu mu? bridge.jsx ScriptPath uzerinden otomatik yuklenmeli.
     CEP.call('trPing()').then(function (d) {
+      setText('ver', 'v' + d.bridgeVersion);
       field('envBridge', 'v' + d.bridgeVersion +
         (d.hasSequence === true || d.hasSequence === 'true' ? ' · sekans var' : ' · sekans yok'),
         'ok');
@@ -399,6 +400,28 @@
       appendRun('<span class="ok">ses hazır</span> ' + esc(e.preset) + '  ' +
                 (Number(e.bytes) / 1048576).toFixed(1) + ' MB, ' +
                 Number(e.elapsedSec).toFixed(1) + ' sn');
+
+      /* SES SEKANSIN TAMAMINI KAPSIYOR MU?
+       *
+       * Yanlis aralik turu ile disari aktarilirsa (in/out veya work area)
+       * ses sekanstan kisa cikar ve altyazi sekansin bastaki kucuk bir
+       * bolumune sikisir. Bu sessizce gecerse sebebi bulmak cok zor —
+       * bu yuzden WAV'in gercek suresini okuyup karsilastiriyoruz. */
+      try {
+        var au = nodeReq(npath.join(core, 'src', 'audio.js'));
+        var dec = au.decodeWav(wav);
+        var seqSec = Number(seqInfo.durationSec) || 0;
+        appendRun('<span class="dim">ses süresi:</span> ' + dec.durationSec.toFixed(1) +
+                  ' sn / sekans ' + seqSec.toFixed(1) + ' sn');
+        if (seqSec > 1 && dec.durationSec < seqSec * 0.9) {
+          appendRun('<span class="err">UYARI: ses sekanstan ' +
+            (seqSec - dec.durationSec).toFixed(1) + ' sn kısa. ' +
+            'Sekansta in/out işareti veya work area sınırı olabilir — ' +
+            'altyazı yalnızca bu bölümü kapsayacak.</span>');
+        }
+      } catch (err) {
+        appendRun('<span class="dim">ses süresi okunamadı: ' + esc(err.message) + '</span>');
+      }
       setBar(0.15);
 
       // 4) Boru hattini CEP'in Node'unda calistir
@@ -436,6 +459,25 @@
         appendRun('<span class="warn">' + res.cpsViolations + ' blok okuma hızını aşıyor</span> ' +
                   '<span class="dim">— konuşma hızlıysa bu kaçınılmazdır</span>');
       }
+
+      /* Uretilen altyazinin KAPSAMI — zamanlama hatalarini gormenin
+       * en hizli yolu. Sekans 10 dakikayken altyazi 1 dakikada bitiyorsa
+       * burada aninda gorulur. */
+      try {
+        var srtMod = nodeReq(npath.join(core, 'src', 'srt.js'));
+        var parsed = srtMod.parseSrt(nfs.readFileSync(srtPath, 'utf8'));
+        if (parsed.length) {
+          var ilk = parsed[0].start;
+          var son = parsed[parsed.length - 1].end;
+          var seqSec2 = Number(seqInfo.durationSec) || 0;
+          appendRun('<span class="dim">altyazı kapsamı:</span> ' +
+            ilk.toFixed(1) + ' - ' + son.toFixed(1) + ' sn');
+          if (seqSec2 > 5 && son < seqSec2 * 0.7) {
+            appendRun('<span class="err">UYARI: altyazı sekansın yalnızca ilk %' +
+              Math.round(son / seqSec2 * 100) + "'ini kapsıyor.</span>");
+          }
+        }
+      } catch (err) { /* kapsam bilgisi kritik degil */ }
 
       // 5) Sekansa yerlestir
       return CEP.call('trPlaceCaptions("' + esPath(srtPath) + '")');

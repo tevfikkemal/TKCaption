@@ -227,3 +227,5 @@ details > summary:hover { color: var(--text); }
 .advanced { margin-bottom: 9px; }
 .advanced > summary { padding: 6px 2px; }
 .advanced .card { margin-top: 8px; }
+
+.ver { margin-left: auto; font-size: 10px; color: var(--dim); font-family: var(--mono); }

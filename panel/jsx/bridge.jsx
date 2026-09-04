@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.1.0';
+var TR_ALTYAZI_VERSION = '0.2.0';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -295,8 +295,27 @@ function trExportAudioAuto(outPath, rangeType) {
         var list = collectPresets();
         if (!list.length) return err('Kullanilabilir ses disa aktarma preset bulunamadi.');
 
-        var range = (rangeType === undefined || rangeType === null) ? 0 : parseInt(rangeType, 10);
+        /* ARALIK TURU — sabit sayi YAZMA.
+         *
+         * "0 = tum sekans" varsayimi belgelenmemis bir tahmindi. Premiere'in
+         * kendi sabitini okuyup kullaniyoruz; yanlis aralik verilirse yalnizca
+         * in/out veya work area disari aktarilir ve altyazi sekansin bastaki
+         * kucuk bir bolumune sikisir. */
+        var range;
+        if (rangeType === undefined || rangeType === null || rangeType === '') {
+            try {
+                range = app.encoder.ENCODE_ENTIRE;
+            } catch (e) { range = 0; }
+            if (range === undefined || range === null || isNaN(range)) range = 0;
+        } else {
+            range = parseInt(rangeType, 10);
+        }
+
         var attempts = [];
+        attempts.push('aralik turu = ' + range +
+            ' (ENCODE_ENTIRE=' + String(app.encoder && app.encoder.ENCODE_ENTIRE) +
+            ', IN_TO_OUT=' + String(app.encoder && app.encoder.ENCODE_IN_TO_OUT) +
+            ', WORKAREA=' + String(app.encoder && app.encoder.ENCODE_WORKAREA) + ')');
 
         for (var i = 0; i < list.length; i++) {
             var preset = list[i];
