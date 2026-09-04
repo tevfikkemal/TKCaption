@@ -541,8 +541,19 @@
 
   function safeZoneOff() {
     return CEP.call('trRemoveSafeZone()').then(function (r) {
-      show('safeOut', '<span class="ok">Katman kaldırıldı' +
-        (Number(r.removed) ? ' (' + esc(r.removed) + ' klip)' : '') + '.</span>');
+      var msg = '<span class="ok">Katman kaldırıldı' +
+        (Number(r.removed) ? ' (' + esc(r.removed) + ' klip)' : '') + '.</span>';
+      // Silme gercekten oldu mu? Cagrinin donmesi silindigi anlamina gelmiyor.
+      if (r.binTried !== undefined) {
+        msg += NL + '<span class="dim">proje öğesi: ' + esc(r.binTried) + ' denendi, ' +
+               esc(r.binDeleted) + ' silindi, ' + esc(r.binLeft) + ' kaldı' +
+               ' (' + esc(r.binMethod) + ')</span>';
+        if (Number(r.binLeft) > 0) {
+          msg += NL + '<span class="warn">Premiere bu öğeleri silmeye izin vermiyor; ' +
+                 'proje panelinden elle silebilirsiniz.</span>';
+        }
+      }
+      show('safeOut', msg);
       safeOn = false;
       $('btnSafe').textContent = 'Aç';
       $('btnSafe').className = 'btn';

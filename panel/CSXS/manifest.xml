@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <ExtensionManifest ExtensionBundleId="com.tklabs.tkcaption"
                    ExtensionBundleName="TK Caption"
-                   ExtensionBundleVersion="0.6.2"
+                   ExtensionBundleVersion="0.6.3"
                    Version="11.0"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ExtensionList>
-    <Extension Id="com.tklabs.tkcaption.panel" Version="0.6.2"/>
+    <Extension Id="com.tklabs.tkcaption.panel" Version="0.6.3"/>
   </ExtensionList>
 
   <ExecutionEnvironment>

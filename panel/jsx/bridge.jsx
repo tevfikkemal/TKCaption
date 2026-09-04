@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.6.2';
+var TR_ALTYAZI_VERSION = '0.6.3';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -1016,6 +1016,64 @@ function findSafeZoneClips(seq) {
     return found;
 }
 
+var SAFEZONE_BIN = 'TK Caption';
+
+/**
+ * Katman ogelerinin konacagi bin. Proje kokunu kirletmemek icin.
+ * Bulunamaz veya olusturulamazsa null doner; cagiran koke duser.
+ */
+function getSafeZoneBin() {
+    try {
+        var root = app.project.rootItem;
+        for (var i = 0; i < root.children.numItems; i++) {
+            var c = root.children[i];
+            var nm = '';
+            try { nm = String(c.name); } catch (e) { continue; }
+            if (nm === SAFEZONE_BIN) return c;
+        }
+        return root.createBin(SAFEZONE_BIN);
+    } catch (e) { return null; }
+}
+
+/**
+ * Projedeki safe zone ogelerini siler.
+ *
+ * deleteBin() medya ogelerinde guvenilmez — hata vermeden basarisiz
+ * olabiliyor. Bu yuzden birden fazla yol deneyip HANGISININ ise yaradigini
+ * raporluyoruz; tahmin etmek yerine olcuyoruz.
+ */
+function cleanSafeZoneBinDetailed() {
+    var rapor = { denendi: 0, silindi: 0, yontem: '', kalan: 0 };
+    try {
+        var hepsi = collectAllItems(app.project.rootItem, [], 0);
+        var hedef = [];
+        for (var i = 0; i < hepsi.length; i++) {
+            var nm = '';
+            try { nm = String(hepsi[i].name); } catch (e) { continue; }
+            if (nm.indexOf(SAFEZONE_PREFIX) === 0) hedef.push(hepsi[i]);
+        }
+        rapor.denendi = hedef.length;
+
+        for (var j = hedef.length - 1; j >= 0; j--) {
+            var oldu = false;
+            try { hedef[j].deleteBin(); oldu = true; rapor.yontem = 'deleteBin'; } catch (e) {}
+            if (!oldu) {
+                try { hedef[j].remove(); oldu = true; rapor.yontem = 'remove'; } catch (e) {}
+            }
+            if (oldu) rapor.silindi++;
+        }
+
+        // Gercekten gitti mi? Silme cagrisinin donmesi silindigi anlamina gelmiyor.
+        var sonra = collectAllItems(app.project.rootItem, [], 0);
+        for (var k = 0; k < sonra.length; k++) {
+            var n2 = '';
+            try { n2 = String(sonra[k].name); } catch (e) { continue; }
+            if (n2.indexOf(SAFEZONE_PREFIX) === 0) rapor.kalan++;
+        }
+    } catch (e) {}
+    return rapor;
+}
+
 /** Projedeki safe zone ogelerini siler. Kullanicinin kliplerine dokunmaz. */
 function cleanSafeZoneBin() {
     var silinen = 0;
@@ -1124,8 +1182,11 @@ function trPlaceSafeZone(pngPath, label) {
 
         if (!item) {
             var before = snapshotItems();
-            var bin = null;
-            try { bin = app.project.getInsertionBin(); } catch (e) { bin = app.project.rootItem; }
+            // Kendi bin'imize koy — proje koku kirlenmesin
+            var bin = getSafeZoneBin();
+            if (!bin) {
+                try { bin = app.project.getInsertionBin(); } catch (e) { bin = app.project.rootItem; }
+            }
             if (!app.project.importFiles([pngPath], true, bin, false)) {
                 return err('Katman projeye alinamadi.');
             }
@@ -1189,12 +1250,17 @@ function trRemoveSafeZone() {
             try { clips[i].item.remove(false, true); silinen++; } catch (e) {}
         }
 
-        // Proje ogeleri de temizlensin ki bin dolmasin
-        var temizlenen = cleanSafeZoneBin();
+        /* Proje ogeleri de temizlensin. Hangi yontemin ise yaradigini
+         * ve gercekten silinip silinmedigini raporluyoruz — "silindi"
+         * demek yetmiyor, sonradan sayip dogruluyoruz. */
+        var r = cleanSafeZoneBinDetailed();
 
         return ok([
             kv('removed', String(silinen), true),
-            kv('binCleaned', String(temizlenen), true)
+            kv('binTried', String(r.denendi), true),
+            kv('binDeleted', String(r.silindi), true),
+            kv('binLeft', String(r.kalan), true),
+            kv('binMethod', r.yontem || 'hicbiri')
         ]);
     } catch (e) {
         return err('Safe zone kaldirilamadi', e);
