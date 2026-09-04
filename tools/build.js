@@ -89,25 +89,79 @@ if ($Kaldir) {
         Write-Host ""
     }
 
-    if (Test-Path $Hedef) {
-        $item = Get-Item $Hedef -Force
-        try {
-            if ($item.LinkType -eq 'Junction') { $item.Delete() } else { Remove-Item $Hedef -Recurse -Force -ErrorAction Stop }
-        } catch {
-            Write-Host "  HATA: $($_.Exception.Message)" -ForegroundColor Red
+    # Eklenti UC ayri kokte olabilir ve klasor adi kurulum yontemine gore
+    # degisir: KUR.ps1 ID kullanir, ZXP Installer sistem geneli konuma
+    # kurup klasore "TK Caption" der. Klasor adiyla aramak bu yuzden
+    # yetmiyor — her adayin manifest'ini okuyup ID'ye bakiyoruz.
+    $Kokler = @(
+        (Join-Path $env:APPDATA 'Adobe\\CEP\\extensions'),
+        'C:\\Program Files (x86)\\Common Files\\Adobe\\CEP\\extensions',
+        'C:\\Program Files\\Common Files\\Adobe\\CEP\\extensions'
+    )
+    Get-ChildItem 'C:\\Program Files\\Adobe' -Directory -Filter 'Adobe Premiere Pro *' -ErrorAction SilentlyContinue |
+        ForEach-Object { $Kokler += (Join-Path $_.FullName 'CEP\\extensions') }
+
+    $Bulunan = @()
+    foreach ($kok in $Kokler) {
+        if (-not (Test-Path $kok)) { continue }
+        foreach ($d in (Get-ChildItem -LiteralPath $kok -Directory -Force -ErrorAction SilentlyContinue)) {
+            $mf = Join-Path $d.FullName 'CSXS\\manifest.xml'
+            if (-not (Test-Path $mf)) { continue }
+            $metin = Get-Content -LiteralPath $mf -Raw -ErrorAction SilentlyContinue
+            if ($metin -and $metin.Contains($ExtId)) { $Bulunan += $d.FullName }
         }
-        # Silme cagrisinin donmesi silindigi anlamina gelmiyor — sayarak dogrula
-        if (Test-Path $Hedef) {
-            $kalan = (Get-ChildItem $Hedef -Recurse -File -ErrorAction SilentlyContinue).Count
-            Write-Host "  SILINEMEDI: $kalan dosya duruyor." -ForegroundColor Red
-            Write-Host "  $Hedef" -ForegroundColor DarkGray
-            Write-Host "  Premiere'i kapatip tekrar calistirin." -ForegroundColor Yellow
-            exit 1
-        }
-        Write-Host "  Eklenti silindi." -ForegroundColor Green
-    } else {
+    }
+
+    if ($Bulunan.Count -eq 0) {
         Write-Host "  Eklenti zaten yok."
     }
+
+    $Kalan = @()
+    foreach ($yol in $Bulunan) {
+        $item = Get-Item -LiteralPath $yol -Force
+        try {
+            if ($item.LinkType -eq 'Junction') { $item.Delete() }
+            else { Remove-Item -LiteralPath $yol -Recurse -Force -ErrorAction Stop }
+        } catch { }
+        # Silme cagrisinin donmesi silindigi anlamina gelmiyor — dogrula
+        if (Test-Path $yol) {
+            $Kalan += $yol
+            Write-Host "  SILINEMEDI: $yol" -ForegroundColor Red
+        } else {
+            Write-Host "  silindi: $yol" -ForegroundColor Green
+        }
+    }
+
+    # CEP onbellegi: eklenti dosyalari gitse bile Premiere arayuzu buradan
+    # gosterebilir. "Kaldirdim ama panel duruyor" / "guncelledim ama eski
+    # surum goruniyor" sikayetlerinin sebebi budur.
+    $ObKok = Join-Path $env:LOCALAPPDATA 'Temp\\cep_cache'
+    if (Test-Path $ObKok) {
+        Get-ChildItem -LiteralPath $ObKok -Directory -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -like "*$ExtId*" } |
+            ForEach-Object {
+                Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+                if (-not (Test-Path $_.FullName)) { Write-Host "  onbellek silindi" -ForegroundColor Green }
+            }
+    }
+
+    if ($Kalan.Count -gt 0) {
+        Write-Host ""
+        $yonetici = $Kalan | Where-Object { $_ -like 'C:\\Program Files*' }
+        if ($yonetici) {
+            Write-Host "  Bu konum yonetici yetkisi istiyor." -ForegroundColor Yellow
+            Write-Host "  PowerShell'i YONETICI olarak acip su komutu calistirin:" -ForegroundColor Yellow
+            foreach ($y in $yonetici) {
+                Write-Host ""
+                Write-Host "    Remove-Item -LiteralPath '$y' -Recurse -Force" -ForegroundColor White
+            }
+        } else {
+            Write-Host "  Premiere'i kapatip tekrar calistirin." -ForegroundColor Yellow
+        }
+        Write-Host ""
+        exit 1
+    }
+
     Write-Host ""
     Write-Host "  Not: indirilen modeller silinmedi." -ForegroundColor DarkGray
     Write-Host "  Onlari da silmek isterseniz: $env:APPDATA\\TKCaption" -ForegroundColor DarkGray
@@ -154,6 +208,39 @@ if (Test-Path $Hedef) {
 }
 Copy-Item -Path $Kaynak -Destination $Hedef -Recurse -Force
 Write-Host "  $Hedef"
+
+# Onbellek durursa Premiere yeni dosyalari kopyalasak bile eski arayuzu
+# gosterebiliyor. Kurulumda temizlemek "guncelledim ama degismedi" sorununu
+# kaynaginda bitiriyor.
+$ObKok = Join-Path $env:LOCALAPPDATA 'Temp\\cep_cache'
+if (Test-Path $ObKok) {
+    Get-ChildItem -LiteralPath $ObKok -Directory -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -like "*$ExtId*" } |
+        ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }
+    Write-Host "  onbellek temizlendi"
+}
+
+# Ayni eklenti baska bir kokte de duruyorsa Premiere hangisini yukleyecegini
+# kendi secer; kullanici eski surumle karsilasir. Sessizce birakmak yerine
+# soyluyoruz.
+$Baska = @()
+foreach ($kok in @('C:\\Program Files (x86)\\Common Files\\Adobe\\CEP\\extensions',
+                   'C:\\Program Files\\Common Files\\Adobe\\CEP\\extensions')) {
+    if (-not (Test-Path $kok)) { continue }
+    foreach ($d in (Get-ChildItem -LiteralPath $kok -Directory -Force -ErrorAction SilentlyContinue)) {
+        $mf = Join-Path $d.FullName 'CSXS\\manifest.xml'
+        if (-not (Test-Path $mf)) { continue }
+        $metin = Get-Content -LiteralPath $mf -Raw -ErrorAction SilentlyContinue
+        if ($metin -and $metin.Contains($ExtId)) { $Baska += $d.FullName }
+    }
+}
+if ($Baska.Count -gt 0) {
+    Write-Host ""
+    Write-Host "  UYARI: ayni eklenti sistem klasorunde de kurulu:" -ForegroundColor Yellow
+    foreach ($b in $Baska) { Write-Host "    $b" -ForegroundColor DarkGray }
+    Write-Host "  Yonetici PowerShell'de silin, yoksa eski surum yuklenebilir:" -ForegroundColor Yellow
+    foreach ($b in $Baska) { Write-Host "    Remove-Item -LiteralPath '$b' -Recurse -Force" -ForegroundColor White }
+}
 
 Write-Host ""
 Write-Host ("-" * 44)
