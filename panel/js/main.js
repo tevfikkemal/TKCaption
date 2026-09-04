@@ -561,10 +561,11 @@
     try {
       var sz = nodeReq(npath.join(resolveCore(), 'src', 'safezone.js'));
       if (ids.length === 1) {
-        setText('safeNote', sz.PRESETS[ids[0]].note);
+        var nEl = $('safeNote');
+        if (nEl) { nEl.hidden = false; nEl.textContent = sz.PRESETS[ids[0]].note; }
         if (el) el.hidden = true;
       } else {
-        setText('safeNote', '');
+        if ($('safeNote')) $('safeNote').hidden = true;
         if (el) {
           el.hidden = false;
           el.textContent = ids.length + ' platform seçili — gösterilen alan ' +
@@ -1045,6 +1046,9 @@
     $('btnRun').addEventListener('click', generate);
     $('btnSafe').addEventListener('click', toggleSafeZone);
     // "Tümü" kutusu digerlerini surukler
+    $('optSafeDim').addEventListener('input', function () {
+      setText('safeDimVal', '%' + $('optSafeDim').value);
+    });
     $('safeAll').addEventListener('change', function () {
       var on = $('safeAll').checked;
       var boxes = document.querySelectorAll('.platforms input.sf');

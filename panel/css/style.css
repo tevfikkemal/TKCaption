@@ -1,17 +1,39 @@
-/* TK Caption — Premiere'in koyu arayuzune uyumlu panel stili */
+/* ==================================================================
+   TK Caption — panel arayuzu
+
+   Tasarim sinirlari:
+   - Panel Premiere'in ICINDE yasiyor. Kendi basina guzel olmasi yetmez,
+     ev sahibiyle ayni dili konusmali; fazla suslu olursa yabanci durur.
+   - Premiere koyu gri ve duz bir arayuz kullanir. Biz de oyle kaliyoruz;
+     rafine etme tipografi hiyerarsisi, bosluk duzeni ve ince derinlikle
+     yapiliyor — renk ve efektle degil.
+   - Renk yalnizca ANLAM tasidiginda kullanilir: mavi eylem, yesil basari,
+     kirmizi hata, kehribar uyari. Dekoratif renk yok.
+   ================================================================== */
 
 :root {
+  /* Yuzeyler — Premiere'in panel griligine yakin, bir tik derin */
   --bg: #1e1e1e;
-  --card: #262626;
-  --card-accent: #2a2f38;
-  --border: #383838;
-  --text: #d4d4d4;
-  --dim: #8a8a8a;
-  --accent: #4a9eff;
+  --surface: #262628;
+  --surface-2: #2d2d30;
+  --raised: #333336;
+  --line: #3a3a3d;
+  --line-soft: #2f2f32;
+
+  /* Metin — uc kademe yeterli; fazlasi hiyerarsiyi bulandirir */
+  --text: #dcdcdf;
+  --text-2: #9e9ea4;
+  --text-3: #6f6f76;
+
+  /* Anlam renkleri */
+  --accent: #3d8ce0;
   --ok: #5ac37d;
   --warn: #e0a33e;
   --err: #e05c5c;
+
   --mono: "Consolas", "SF Mono", "Menlo", monospace;
+  --r: 5px;
+  --r-sm: 3px;
 }
 
 * { box-sizing: border-box; }
@@ -23,254 +45,328 @@
 
 body {
   margin: 0;
-  padding: 10px;
+  padding: 11px;
   background: var(--bg);
   color: var(--text);
-  font: 12px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
+  font: 12px/1.55 "Segoe UI", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
   -webkit-user-select: none;
   user-select: none;
 }
+
+/* ---------------------------------------------------------------- */
+/*  Baslik                                                           */
+/* ---------------------------------------------------------------- */
 
 .head {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  padding: 2px 2px 10px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 10px;
+  padding: 0 2px 11px;
+  margin-bottom: 11px;
+  border-bottom: 1px solid var(--line-soft);
 }
-.head h1 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: .2px; }
-.by { color: var(--dim); font-size: 10px; }
+.head h1 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+  color: #f0f0f2;
+}
+.by {
+  font-size: 10px;
+  color: var(--text-3);
+  letter-spacing: 0.2px;
+}
+.ver {
+  margin-left: auto;
+  font: 400 9.5px/1 var(--mono);
+  color: var(--text-3);
+}
+
+/* ---------------------------------------------------------------- */
+/*  Kartlar                                                          */
+/* ---------------------------------------------------------------- */
 
 .card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 10px 11px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 11px;
   margin-bottom: 9px;
+  /* Ust kenardaki cok ince acik cizgi yuzeyi "kalkik" gosterir.
+     Golge yok — Premiere'in duz dilinde golge yabanci durur. */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
-.card.accent { background: var(--card-accent); border-color: #3a4553; }
-.card h2 { margin: 0 0 7px; font-size: 12px; font-weight: 600; color: #e8e8e8; }
 
-.desc { margin: 0 0 9px; color: var(--dim); font-size: 11px; line-height: 1.45; }
+/* Asil eylem karti hafifce one ciksin — ayri renk degil, ayri ton */
+.card.generate {
+  background: #26303a;
+  border-color: #37444f;
+}
+
+/* Bolum basliklari: kucuk, harf arali, sessiz.
+   Boylece iceriik on planda kalir. */
+.card h2 {
+  margin: 0 0 9px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.desc {
+  margin: 0 0 10px;
+  color: var(--text-2);
+  font-size: 11px;
+  line-height: 1.5;
+}
 .desc strong { color: var(--text); font-weight: 600; }
-.desc code { font-family: var(--mono); font-size: 10px; background: #1a1a1a; padding: 1px 4px; border-radius: 2px; }
+.desc code {
+  font: 10px var(--mono);
+  background: rgba(0, 0, 0, 0.28);
+  padding: 1px 4px;
+  border-radius: 2px;
+  color: var(--text-2);
+}
 
-.row { display: flex; gap: 6px; flex-wrap: wrap; }
+.row { display: flex; gap: 7px; flex-wrap: wrap; }
+.row.spread { justify-content: space-between; align-items: center; }
+.row.spread h2 { margin: 0; }
+
+/* ---------------------------------------------------------------- */
+/*  Dugmeler                                                         */
+/* ---------------------------------------------------------------- */
 
 .btn {
-  background: #3a3a3a;
+  background: var(--raised);
   color: var(--text);
-  border: 1px solid #4a4a4a;
-  border-radius: 3px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
   padding: 6px 12px;
-  font: inherit;
-  font-size: 11px;
+  font: 400 11px "Segoe UI", system-ui, sans-serif;
   cursor: pointer;
-  transition: background .12s;
+  transition: background .12s ease, border-color .12s ease;
 }
-.btn:hover:not(:disabled) { background: #464646; }
-.btn:active:not(:disabled) { background: #333; }
-.btn:disabled { opacity: .45; cursor: default; }
-.btn.primary { background: #2f5f96; border-color: #3d76b5; color: #fff; }
-.btn.primary:hover:not(:disabled) { background: #386ead; }
+.btn:hover:not(:disabled) { background: #3c3c40; border-color: #47474b; }
+.btn:active:not(:disabled) { background: #2b2b2e; }
+.btn:disabled { opacity: .42; cursor: default; }
+
+.btn.primary {
+  background: #2f6fb5;
+  border-color: #3a80cc;
+  color: #fff;
+  font-weight: 500;
+}
+.btn.primary:hover:not(:disabled) { background: #367cc8; border-color: #4a8fd8; }
+.btn.primary:active:not(:disabled) { background: #2a63a3; }
+
+.btn.big { padding: 8px 18px; font-size: 12px; }
+.btn.small { padding: 3px 9px; font-size: 10px; }
 
 .link {
-  background: none; border: none; color: var(--dim);
-  font: inherit; font-size: 10px; cursor: pointer; padding: 0;
+  background: none; border: none; padding: 0;
+  color: var(--text-3);
+  font: 10px "Segoe UI", system-ui, sans-serif;
+  cursor: pointer;
   text-decoration: underline;
+  text-underline-offset: 2px;
 }
-.link:hover { color: var(--text); }
+.link:hover { color: var(--text-2); }
 
-/* Etiket-deger listesi */
+/* ---------------------------------------------------------------- */
+/*  Etiket-deger listesi                                             */
+/* ---------------------------------------------------------------- */
+
 .env {
   display: grid;
   grid-template-columns: 84px 1fr;
-  gap: 3px 10px;
-  margin: 8px 0 0;
+  gap: 4px 10px;
+  margin: 9px 0 0;
   font-size: 11px;
 }
-.env dt { color: var(--dim); }
-.env dd { margin: 0; font-family: var(--mono); font-size: 10.5px; word-break: break-word; }
+.env dt { color: var(--text-3); }
+.env dd {
+  margin: 0;
+  font: 10.5px var(--mono);
+  color: var(--text-2);
+  word-break: break-word;
+}
 .env dd.ok { color: var(--ok); }
 .env dd.warn { color: var(--warn); }
 .env dd.err { color: var(--err); }
-.env dd.pending { color: var(--dim); font-style: italic; }
+.env dd.pending { color: var(--text-3); font-style: italic; }
 
-/* Cikti kutusu */
+/* ---------------------------------------------------------------- */
+/*  Cikti / gunluk                                                   */
+/* ---------------------------------------------------------------- */
+
 .out {
-  margin-top: 9px;
-  padding: 8px 9px;
-  background: #161616;
-  border: 1px solid #303030;
-  border-radius: 3px;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  line-height: 1.5;
+  margin-top: 10px;
+  padding: 9px 10px;
+  background: #19191b;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
+  font: 10.5px/1.6 var(--mono);
   white-space: pre-wrap;
   word-break: break-word;
-  max-height: 260px;
+  max-height: 280px;
   overflow-y: auto;
+  color: var(--text-2);
   -webkit-user-select: text;
   user-select: text;
 }
 .out .ok { color: var(--ok); }
 .out .warn { color: var(--warn); }
 .out .err { color: var(--err); }
-.out .dim { color: var(--dim); }
-.out h3 { margin: 8px 0 3px; font-size: 10.5px; color: var(--accent); font-weight: 600; }
+.out .dim { color: var(--text-3); }
+.out h3 {
+  margin: 9px 0 4px;
+  font: 600 10px "Segoe UI", system-ui, sans-serif;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
 .out h3:first-child { margin-top: 0; }
 
-.hint { margin: 8px 0 0; font-size: 10.5px; color: var(--warn); line-height: 1.45; }
+/* ---------------------------------------------------------------- */
+/*  Bilgi kutulari                                                   */
+/* ---------------------------------------------------------------- */
 
-.foot {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 6px;
-  border-top: 1px solid var(--border);
-  font-size: 10px;
-  color: var(--dim);
-}
-
-::-webkit-scrollbar { width: 9px; }
-::-webkit-scrollbar-track { background: #1a1a1a; }
-::-webkit-scrollbar-thumb { background: #3d3d3d; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #4d4d4d; }
-
+.first-run,
 .warn-box {
-  margin: 0 0 9px;
-  padding: 7px 9px;
-  background: #3a2f1e;
-  border-left: 2px solid var(--warn);
-  border-radius: 2px;
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
   font-size: 10.5px;
-  line-height: 1.45;
-  color: #e8d5b0;
+  line-height: 1.55;
+  border-left: 2px solid;
+}
+.first-run {
+  background: rgba(61, 140, 224, 0.08);
+  border-left-color: var(--accent);
+  color: #bcd0e6;
+}
+.first-run strong { color: #e2ecf7; font-weight: 600; }
+.warn-box {
+  background: rgba(224, 163, 62, 0.08);
+  border-left-color: var(--warn);
+  color: #ddc9a4;
 }
 .warn-box strong { color: var(--warn); font-weight: 600; }
 
-/* Asil is bolumu */
-.card.generate { background: #24303c; border-color: #35485c; }
-.btn.big { padding: 9px 18px; font-size: 12px; font-weight: 600; }
+.note {
+  margin: 9px 0 0;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+.hint {
+  margin: 9px 0 0;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--warn);
+}
+
+/* ---------------------------------------------------------------- */
+/*  Form ogeleri                                                     */
+/* ---------------------------------------------------------------- */
 
 .opts {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 7px 9px;
+  gap: 9px;
   margin-bottom: 10px;
 }
 .opts label {
-  display: flex; flex-direction: column; gap: 3px;
-  font-size: 10px; color: var(--dim);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--text-3);
 }
 .opts label:first-child { grid-column: 1 / -1; }
-.opts select, .opts input {
-  background: #1a1a1a; color: var(--text);
-  border: 1px solid #3d3d3d; border-radius: 3px;
-  padding: 4px 6px; font: inherit; font-size: 11px;
+
+.opts select,
+.opts input[type="number"] {
+  background: #1a1a1c;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 5px 7px;
+  font: 11px "Segoe UI", system-ui, sans-serif;
+  transition: border-color .12s ease;
 }
-.opts select:focus, .opts input:focus { outline: none; border-color: var(--accent); }
-
-.bar {
-  height: 4px; background: #1a1a1a; border-radius: 2px;
-  margin-top: 9px; overflow: hidden;
-}
-.fill {
-  height: 100%; width: 0; background: var(--accent);
-  transition: width .25s ease;
-}
-
-/* --- Dagitim surumu sadelestirmesi --- */
-
-.first-run {
-  margin: 0 0 9px;
-  padding: 8px 10px;
-  background: #2a3340;
-  border-left: 2px solid var(--accent);
-  border-radius: 2px;
-  font-size: 10.5px;
-  line-height: 1.5;
-  color: #c5d3e3;
-}
-.first-run strong { color: #e8f0f8; }
-
-.row.spread { justify-content: space-between; align-items: center; }
-.row.spread h2 { margin: 0; }
-
-.btn.small { padding: 3px 9px; font-size: 10px; }
-
-.note {
-  margin: 8px 0 0;
-  font-size: 10px;
-  line-height: 1.45;
-  color: var(--dim);
+.opts select:hover,
+.opts input[type="number"]:hover { border-color: #46464a; }
+.opts select:focus,
+.opts input[type="number"]:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
-/* Katlanabilir bolumler */
-details > summary {
-  cursor: pointer;
-  font-size: 11px;
-  color: var(--dim);
-  padding: 4px 0;
-  list-style: none;
-  user-select: none;
-}
-details > summary::-webkit-details-marker { display: none; }
-details > summary::before { content: '▸ '; }
-details[open] > summary::before { content: '▾ '; }
-details > summary:hover { color: var(--text); }
-
-.opts-wrap { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 4px; }
-.opts-wrap .opts { margin-top: 8px; }
-
-.advanced { margin-bottom: 9px; }
-.advanced > summary { padding: 6px 2px; }
-.advanced .card { margin-top: 8px; }
-
-.ver { margin-left: auto; font-size: 10px; color: var(--dim); font-family: var(--mono); }
-
-/* Guvenli alan kaydiricisi */
 .opts input[type="range"] {
-  padding: 0; height: 20px; background: transparent; border: none;
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0;
+  height: 18px;
+  background: transparent;
+  border: none;
 }
 .opts input[type="range"]::-webkit-slider-runnable-track {
-  height: 3px; background: #3d3d3d; border-radius: 2px;
+  height: 3px;
+  background: var(--line);
+  border-radius: 2px;
 }
 .opts input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 11px; height: 11px; margin-top: -4px;
-  background: var(--accent); border-radius: 50%;
+  -webkit-appearance: none;
+  width: 11px; height: 11px;
+  margin-top: -4px;
+  background: var(--accent);
+  border-radius: 50%;
+  border: none;
 }
 
-/* Platform secim listesi */
+/* ---------------------------------------------------------------- */
+/*  Platform secimi                                                  */
+/* ---------------------------------------------------------------- */
+
 .platforms {
   list-style: none;
   margin: 0 0 10px;
-  padding: 0;
+  padding: 3px;
+  background: #1c1c1e;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
 }
 .platforms li { margin: 0; }
 .platforms label {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 4px 2px;
+  gap: 8px;
+  padding: 5px 6px;
   font-size: 11px;
-  color: var(--text);
+  color: var(--text-2);
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 2px;
+  transition: background .1s ease, color .1s ease;
 }
-.platforms label:hover { background: #2e2e2e; }
+.platforms label:hover { background: var(--surface-2); color: var(--text); }
+
 .platforms input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
   width: 13px; height: 13px;
   margin: 0;
-  border: 1px solid #5a5a5a;
-  border-radius: 2px;
-  background: #1a1a1a;
-  position: relative;
   flex: none;
+  border: 1px solid #4d4d52;
+  border-radius: 2px;
+  background: #1a1a1c;
+  position: relative;
+  transition: background .12s ease, border-color .12s ease;
 }
+.platforms label:hover input[type="checkbox"] { border-color: #5c5c62; }
 .platforms input[type="checkbox"]:checked {
   background: var(--accent);
   border-color: var(--accent);
@@ -284,5 +380,105 @@ details > summary:hover { color: var(--text); }
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
-.platforms li:first-child label { border-bottom: 1px solid var(--border); margin-bottom: 3px; }
-.platforms li:first-child span { color: var(--dim); }
+.platforms li:first-child label {
+  border-bottom: 1px solid var(--line-soft);
+  margin-bottom: 2px;
+  padding-bottom: 7px;
+}
+.platforms li:first-child span {
+  color: var(--text-3);
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------------- */
+/*  Ilerleme                                                         */
+/* ---------------------------------------------------------------- */
+
+.bar {
+  height: 3px;
+  background: #1a1a1c;
+  border-radius: 2px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+.fill {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width .25s ease;
+}
+
+/* ---------------------------------------------------------------- */
+/*  Katlanabilir bolumler                                            */
+/* ---------------------------------------------------------------- */
+
+details > summary {
+  cursor: pointer;
+  font-size: 10.5px;
+  color: var(--text-3);
+  padding: 5px 2px;
+  list-style: none;
+  user-select: none;
+  transition: color .12s ease;
+}
+details > summary::-webkit-details-marker { display: none; }
+/* Ucgen isaret: metin oku yerine, Premiere'in kendi agac gostergesine yakin */
+details > summary::before {
+  content: '';
+  display: inline-block;
+  width: 0; height: 0;
+  margin-right: 6px;
+  border-left: 4px solid currentColor;
+  border-top: 3.5px solid transparent;
+  border-bottom: 3.5px solid transparent;
+  transition: transform .15s ease;
+  vertical-align: middle;
+}
+details[open] > summary::before { transform: rotate(90deg); }
+details > summary:hover { color: var(--text-2); }
+
+.opts-wrap {
+  margin-top: 11px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 4px;
+}
+.opts-wrap .opts { margin-top: 9px; }
+
+.advanced { margin-bottom: 9px; }
+.advanced > summary { padding: 7px 2px; }
+.advanced .card { margin-top: 9px; }
+
+/* ---------------------------------------------------------------- */
+/*  Alt bilgi                                                        */
+/* ---------------------------------------------------------------- */
+
+.foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 9px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 10px;
+  color: var(--text-3);
+}
+#status { font: 10px var(--mono); }
+
+/* ---------------------------------------------------------------- */
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #3c3c40;
+  border-radius: 5px;
+  border: 3px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover { background: #4a4a4e; }
+
+/* Etiket + deger ayni satirda */
+.lbl-row { display: flex; justify-content: space-between; align-items: baseline; }
+.lbl-row b { color: var(--text-2); font-weight: 500; font-family: var(--mono); font-size: 9.5px; }
+
+/* Coklu secim notu ile karartma birbirine yapismasin */
+#safeMulti { margin-bottom: 10px; }
