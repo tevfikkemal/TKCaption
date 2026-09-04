@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.3.1';
+var TR_ALTYAZI_VERSION = '0.3.2';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -532,12 +532,13 @@ function trSuggestSrtPath(sequenceName, ext) {
         if (!dir) { try { dir = Folder.myDocuments.fsName; } catch (e) {} }
         if (!dir) return err('Kaydedilecek klasor bulunamadi.');
 
+        var uzanti = (ext && String(ext).charAt(0) === '.') ? String(ext) : '.srt';
         var safe = String(sequenceName || 'altyazi').replace(/[\\\/:*?"<>|]/g, '_');
         var base = dir + '\\' + safe;
-        var p = base + '.srt';
+        var p = base + uzanti;
         var n = 2;
-        while (fileExists(p) && n < 100) { p = base + '-' + n + '.srt'; n++; }
-        return ok([kv('path', toNativePath(p)), kv('folder', dir)]);
+        while (fileExists(p) && n < 100) { p = base + '-' + n + uzanti; n++; }
+        return ok([kv('path', toNativePath(p)), kv('folder', dir), kv('ext', uzanti)]);
     } catch (e) {
         return err('SRT yolu belirlenemedi', e);
     }
@@ -559,19 +560,60 @@ function trSuggestSrtPath(sequenceName, ext) {
  * Boylece ikinci argümanin baslangic zamani mi pist indeksi mi oldugu
  * sorusuna bagimli kalmiyoruz.
  */
-/** Iceri alinan ogeyi dosya adiyla bulur. */
-function findImportedItem(filePath) {
-    var wanted = new File(filePath).name;
-    var stem = wanted.replace(/\.[^.]+$/, '');
-    var found = null;
+/**
+ * Projedeki TUM ogeleri toplar (bin'lerin icine de girerek).
+ *
+ * DIKKAT: import islemi getInsertionBin()'e — yani proje panelinde SECILI
+ * klasore — yapilir. Yalnizca rootItem.children'a bakmak, kullanici bir
+ * klasor secmisse ogeyi bulamamaya yol acar. Olculdu: "oge bulunamadi".
+ */
+function collectAllItems(node, out, depth) {
+    if (!node || depth > 12) return out;
     try {
-        var root = app.project.rootItem;
-        for (var i = 0; i < root.children.numItems; i++) {
-            var c = root.children[i];
-            if (c.name === wanted || c.name === stem) found = c;
+        for (var i = 0; i < node.children.numItems; i++) {
+            var c = node.children[i];
+            out.push(c);
+            try { if (c.children && c.children.numItems) collectAllItems(c, out, depth + 1); } catch (e) {}
         }
     } catch (e) {}
-    return found;
+    return out;
+}
+
+function snapshotItems() {
+    var list = collectAllItems(app.project.rootItem, [], 0);
+    var ids = {};
+    for (var i = 0; i < list.length; i++) {
+        try { ids[String(list[i].nodeId)] = true; } catch (e) {}
+    }
+    return ids;
+}
+
+/**
+ * Import'tan SONRA eklenen ogeyi bulur.
+ *
+ * Ad esleşmesine guvenmiyoruz: Premiere ogeye farkli bir ad verebilir,
+ * ayni adda oge zaten olabilir, ya da oge bir alt klasore dusebilir.
+ * Import oncesi/sonrasi FARKI almak bunlarin hicbirine bagli degil.
+ */
+function findNewItem(beforeIds, filePath) {
+    var list = collectAllItems(app.project.rootItem, [], 0);
+    var yeni = null;
+    for (var i = 0; i < list.length; i++) {
+        var id = '';
+        try { id = String(list[i].nodeId); } catch (e) { continue; }
+        if (!beforeIds[id]) { yeni = list[i]; }
+    }
+    if (yeni) return yeni;
+
+    // Yedek: ad esleşmesi (fark alinamadiysa)
+    var wanted = new File(filePath).name;
+    var stem = wanted.replace(/\.[^.]+$/, '');
+    for (var j = 0; j < list.length; j++) {
+        try {
+            if (list[j].name === wanted || list[j].name === stem) return list[j];
+        } catch (e) {}
+    }
+    return null;
 }
 
 /** Bir ogeyi altyazi pistine koymayi dener; ayrintiyi rapora yazar. */
@@ -582,17 +624,23 @@ function tryPlace(seq, filePath, attempts) {
     var bin = null;
     try { bin = app.project.getInsertionBin(); } catch (e) { bin = app.project.rootItem; }
 
+    var before = snapshotItems();
     var imported = false;
     try { imported = app.project.importFiles([filePath], true, bin, false); }
     catch (e) { attempts.push('HATA  ' + ad + ' -> import: ' + String(e.message || e)); return null; }
     if (!imported) { attempts.push('HATA  ' + ad + ' -> import reddedildi'); return null; }
 
-    var item = findImportedItem(filePath);
-    if (!item) { attempts.push('HATA  ' + ad + ' -> oge bulunamadi'); return null; }
+    var item = findNewItem(before, filePath);
+    if (!item) {
+        var toplam = collectAllItems(app.project.rootItem, [], 0).length;
+        attempts.push('HATA  ' + ad + ' -> oge bulunamadi (projede ' + toplam + ' oge)');
+        return null;
+    }
 
     // Ogenin ne olarak alindigini gormek, uzanti tahminini dogrulamanin tek yolu
     var tur = '';
-    try { tur = 'type=' + String(item.type); } catch (e) {}
+    try { tur = 'ad="' + item.name + '"'; } catch (e) {}
+    try { tur += ' type=' + String(item.type); } catch (e) {}
     try { tur += ' video=' + String(item.isSequence ? 'seq' : (item.getMediaPath ? 'media' : '?')); } catch (e) {}
 
     var placed = false;
