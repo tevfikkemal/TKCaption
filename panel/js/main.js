@@ -483,17 +483,44 @@
     mogrtKlasor = yerelOku(MOGRT_KLASOR_ANAHTAR);
     mogrtSecili = yerelOku(MOGRT_SECIM_ANAHTAR);
 
+    // Klasor secilmediyse pakete gelen demo sablonlarini kullan. Boylece
+    // eklenti kurulur kurulmaz bu bolum calisiyor; kullanici kendi
+    // sablonlari icin isterse klasor secer.
+    if (!mogrtKlasor) {
+      var demo = npath.join(ext, 'mogrt', 'demo');
+      try { if (nfs.existsSync(demo)) mogrtKlasor = demo; } catch (e) {}
+    }
+
     kartlariCiz(ext);
     klasorEtiketiTazele();
     mogrtDurumTazele();
   }
 
+  /**
+   * Kartlari cizer — ama YALNIZCA secili klasorde dosyasi bulunanlari.
+   *
+   * Katalog 50 sablon tanimliyor; pakete gelen demo klasorunde 3 tane var.
+   * Hepsini gostermek kullaniciyi tiklayinca "dosya yok" diyen 47 kartla
+   * bas basa birakirdi.
+   */
   function kartlariCiz(ext) {
     var grid = $('mogrtGrid');
     if (!grid) return;
+
+    var mevcut = {};
+    try {
+      if (mogrtKlasor && nfs.existsSync(mogrtKlasor)) {
+        var liste = nfs.readdirSync(mogrtKlasor);
+        for (var d = 0; d < liste.length; d++) mevcut[liste[d].toLowerCase()] = true;
+      }
+    } catch (e) {}
+
     var html = '';
+    var gorunen = 0;
     for (var i = 0; i < mogrtKatalog.items.length; i++) {
       var it = mogrtKatalog.items[i];
+      if (!mevcut[String(it.dosya).toLowerCase()]) continue;
+      gorunen++;
       var secili = (it.id === mogrtSecili) ? ' on' : '';
       // Onizleme dosya yolu; CEP'te file:// gerekmiyor, goreli yol yeter
       var gorsel = it.thumb
@@ -504,6 +531,10 @@
     }
     grid.innerHTML = html;
     grid.hidden = false;
+    setText('mogrtCount', gorunen + ' şablon');
+    if (!gorunen) {
+      mogrtNot('Bu klasörde katalogdaki şablonlardan hiçbiri yok.');
+    }
 
     var kartlar = grid.querySelectorAll('.mogrt-card');
     for (var k = 0; k < kartlar.length; k++) {
@@ -538,6 +569,7 @@
     mogrtKlasor = String(r.data[0]);
     yerelYaz(MOGRT_KLASOR_ANAHTAR, mogrtKlasor);
     klasorEtiketiTazele();
+    kartlariCiz(CEP.extensionPath());
     mogrtDurumTazele();
   }
 
