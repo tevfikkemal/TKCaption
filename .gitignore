@@ -22,3 +22,6 @@ tools/.bin/
 
 # Stil yoklamasinin cikrisi — arac repoda, ciktisi degil
 stil-denemesi/
+
+# MOGRT sablonlari — 114 MB, depoya girmez
+mogrt sablonlar/

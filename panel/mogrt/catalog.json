@@ -1,0 +1,507 @@
+{
+  "version": 1,
+  "uretim": "2026-09-08T12:17:16.150Z",
+  "sayi": 50,
+  "items": [
+    {
+      "id": "3d-text",
+      "ad": "3D TEXT",
+      "dosya": "3D TEXT.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "3D TEXT",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/3D TEXT.png"
+    },
+    {
+      "id": "above-in",
+      "ad": "ABOVE IN",
+      "dosya": "ABOVE IN.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "above in",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/ABOVE IN.png"
+    },
+    {
+      "id": "aesthetic-purple",
+      "ad": "AESTHETIC PURPLE",
+      "dosya": "AESTHETIC PURPLE.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "purple",
+      "font": "Poppins-Black",
+      "punto": 124,
+      "thumb": "thumbs/AESTHETIC PURPLE.png"
+    },
+    {
+      "id": "aesthetic-strinking",
+      "ad": "AESTHETIC STRINKING",
+      "dosya": "AESTHETIC STRINKING.mogrt",
+      "metinIndex": 1,
+      "metinAdi": "text 2",
+      "font": "Poppins-Black",
+      "punto": 140,
+      "thumb": "thumbs/AESTHETIC STRINKING.png"
+    },
+    {
+      "id": "apple-style-animation",
+      "ad": "APPLE STYLE ANIMATION",
+      "dosya": "APPLE STYLE ANIMATION.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "Cambiar texto 1",
+      "font": "Mytupi-Bold",
+      "punto": 134,
+      "thumb": "thumbs/APPLE STYLE ANIMATION.png"
+    },
+    {
+      "id": "blue-and-orange",
+      "ad": "BLUE AND ORANGE",
+      "dosya": "BLUE AND ORANGE.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "orange",
+      "font": "Poppins-Black",
+      "punto": 124,
+      "thumb": "thumbs/BLUE AND ORANGE.png"
+    },
+    {
+      "id": "blur-in",
+      "ad": "BLUR IN",
+      "dosya": "BLUR IN.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "bottom in 2",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/BLUR IN.png"
+    },
+    {
+      "id": "bottom-in",
+      "ad": "BOTTOM IN",
+      "dosya": "BOTTOM IN.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "bottom in",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/BOTTOM IN.png"
+    },
+    {
+      "id": "bubble",
+      "ad": "Bubble",
+      "dosya": "Bubble.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "Bubble",
+      "font": "Poppins-Black",
+      "punto": 158,
+      "thumb": "thumbs/Bubble.png"
+    },
+    {
+      "id": "clean-blue",
+      "ad": "CLEAN BLUE",
+      "dosya": "CLEAN BLUE.mogrt",
+      "metinIndex": 1,
+      "metinAdi": "Clean 2",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/CLEAN BLUE.png"
+    },
+    {
+      "id": "clean-style",
+      "ad": "CLEAN STYLE",
+      "dosya": "CLEAN STYLE.mogrt",
+      "metinIndex": 3,
+      "metinAdi": "Cambiar texto 1",
+      "font": "Mytupi-Bold",
+      "punto": 140,
+      "thumb": "thumbs/CLEAN STYLE.png"
+    },
+    {
+      "id": "clean-gradient",
+      "ad": "Clean gradient",
+      "dosya": "Clean gradient.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "Radial blur",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/Clean gradient.png"
+    },
+    {
+      "id": "elegant",
+      "ad": "ELEGANT",
+      "dosya": "ELEGANT.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "ELEGANT",
+      "font": "AVANTERegular",
+      "punto": 124,
+      "thumb": "thumbs/ELEGANT.png"
+    },
+    {
+      "id": "error-text",
+      "ad": "ERROR TEXT",
+      "dosya": "ERROR TEXT.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "NO TOCAR",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/ERROR TEXT.png"
+    },
+    {
+      "id": "escrito-a-mano-posterizacion",
+      "ad": "ESCRITO A MANO POSTERIZACION",
+      "dosya": "ESCRITO A MANO POSTERIZACION.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "Cambiar texto",
+      "font": "Mytupi-Bold",
+      "punto": 36,
+      "thumb": "thumbs/ESCRITO A MANO POSTERIZACION.png"
+    },
+    {
+      "id": "esmerald",
+      "ad": "ESMERALD",
+      "dosya": "ESMERALD.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "Esmerald",
+      "font": "BirdsofParadise-PersonaluseOnly",
+      "punto": 124,
+      "thumb": "thumbs/ESMERALD.png"
+    },
+    {
+      "id": "fast",
+      "ad": "FAST",
+      "dosya": "FAST.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "FAST",
+      "font": "Poppins-BlackItalic",
+      "punto": 158,
+      "thumb": "thumbs/FAST.png"
+    },
+    {
+      "id": "fire",
+      "ad": "FIRE",
+      "dosya": "FIRE.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "FIRE",
+      "font": "Poppins-BlackItalic",
+      "punto": 158,
+      "thumb": "thumbs/FIRE.png"
+    },
+    {
+      "id": "futurist",
+      "ad": "FUTURIST",
+      "dosya": "FUTURIST.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "Futurist",
+      "font": "Mytupi-Bold",
+      "punto": 158,
+      "thumb": "thumbs/FUTURIST.png"
+    },
+    {
+      "id": "gold-text",
+      "ad": "GOLD TEXT",
+      "dosya": "GOLD TEXT.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "Source text",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/GOLD TEXT.png"
+    },
+    {
+      "id": "green-and-grey",
+      "ad": "GREEN AND GREY",
+      "dosya": "GREEN AND GREY.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "grey",
+      "font": "Poppins-Black",
+      "punto": 124,
+      "thumb": "thumbs/GREEN AND GREY.png"
+    },
+    {
+      "id": "green",
+      "ad": "Green",
+      "dosya": "Green.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "Green",
+      "font": "Mytupi-Bold",
+      "punto": 158,
+      "thumb": "thumbs/Green.png"
+    },
+    {
+      "id": "left-in",
+      "ad": "LEFT IN",
+      "dosya": "LEFT IN.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "left in",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/LEFT IN.png"
+    },
+    {
+      "id": "old-money",
+      "ad": "OLD MONEY",
+      "dosya": "OLD MONEY.mogrt",
+      "metinIndex": 1,
+      "metinAdi": "Cambiar texto 1",
+      "font": "AVANTERegular",
+      "punto": 140,
+      "thumb": "thumbs/OLD MONEY.png"
+    },
+    {
+      "id": "old-tv",
+      "ad": "OLD TV",
+      "dosya": "OLD TV.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "OLD TV",
+      "font": "Poppins-Black",
+      "punto": 124,
+      "thumb": "thumbs/OLD TV.png"
+    },
+    {
+      "id": "opacity-in",
+      "ad": "OPACITY IN",
+      "dosya": "OPACITY IN.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "opacity in",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/OPACITY IN.png"
+    },
+    {
+      "id": "orange-text",
+      "ad": "ORANGE TEXT",
+      "dosya": "ORANGE TEXT.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "Cambiar texto",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/ORANGE TEXT.png"
+    },
+    {
+      "id": "purple",
+      "ad": "Purple",
+      "dosya": "Purple.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "Purple",
+      "font": "Poppins-BlackItalic",
+      "punto": 158,
+      "thumb": "thumbs/Purple.png"
+    },
+    {
+      "id": "rainbow-clean-text",
+      "ad": "RAINBOW CLEAN TEXT",
+      "dosya": "RAINBOW CLEAN TEXT.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "rainbow clean text ",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/RAINBOW CLEAN TEXT.png"
+    },
+    {
+      "id": "rainbow-text",
+      "ad": "RAINBOW TEXT",
+      "dosya": "RAINBOW TEXT.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "Cambiar texto",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/RAINBOW TEXT.png"
+    },
+    {
+      "id": "right-in",
+      "ad": "RIGHT IN",
+      "dosya": "RIGHT IN.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "right in",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/RIGHT IN.png"
+    },
+    {
+      "id": "radial-blur",
+      "ad": "Radial BLUR",
+      "dosya": "Radial BLUR.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "Radial blur",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/Radial BLUR.png"
+    },
+    {
+      "id": "rebote",
+      "ad": "Rebote",
+      "dosya": "Rebote.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "source text",
+      "font": "Mytupi-Bold",
+      "punto": 88,
+      "thumb": "thumbs/Rebote.png"
+    },
+    {
+      "id": "smooth-opacity",
+      "ad": "SMOOTH OPACITY",
+      "dosya": "SMOOTH OPACITY.mogrt",
+      "metinIndex": 1,
+      "metinAdi": "Cambiar texto 1",
+      "font": "Bebas-Regular",
+      "punto": 140,
+      "thumb": "thumbs/SMOOTH OPACITY.png"
+    },
+    {
+      "id": "smooth-up",
+      "ad": "SMOOTH UP",
+      "dosya": "SMOOTH UP.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "Cambiar texto",
+      "font": "BirdsofParadise-PersonaluseOnly",
+      "punto": 140,
+      "thumb": "thumbs/SMOOTH UP.png"
+    },
+    {
+      "id": "triple-elegant-text",
+      "ad": "TRIPLE ELEGANT TEXT",
+      "dosya": "TRIPLE ELEGANT TEXT.mogrt",
+      "metinIndex": 1,
+      "metinAdi": "Cambiar texto arriba",
+      "font": "Bebas-Regular",
+      "punto": 124,
+      "thumb": "thumbs/TRIPLE ELEGANT TEXT.png"
+    },
+    {
+      "id": "vhs",
+      "ad": "VHS",
+      "dosya": "VHS.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "Cambiar texto",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/VHS.png"
+    },
+    {
+      "id": "warp",
+      "ad": "WARP",
+      "dosya": "WARP.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "warp",
+      "font": "Poppins-Black",
+      "punto": 124,
+      "thumb": "thumbs/WARP.png"
+    },
+    {
+      "id": "water-text",
+      "ad": "WATER TEXT",
+      "dosya": "WATER TEXT.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "Cambiar texto",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/WATER TEXT.png"
+    },
+    {
+      "id": "waves",
+      "ad": "WAVES",
+      "dosya": "WAVES.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "waves",
+      "font": "Mytupi-Bold",
+      "punto": 158,
+      "thumb": "thumbs/WAVES.png"
+    },
+    {
+      "id": "zoom-in",
+      "ad": "ZOOM IN",
+      "dosya": "ZOOM IN.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "zoom out 2",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/ZOOM IN.png"
+    },
+    {
+      "id": "zoom-out",
+      "ad": "ZOOM OUT",
+      "dosya": "ZOOM OUT.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "zoom out",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/ZOOM OUT.png"
+    },
+    {
+      "id": "zoom-word",
+      "ad": "ZOOM WORD",
+      "dosya": "ZOOM WORD.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "zoom ",
+      "font": "Poppins-Black",
+      "punto": 124,
+      "thumb": "thumbs/ZOOM WORD.png"
+    },
+    {
+      "id": "apple-ladder",
+      "ad": "apple LADDER",
+      "dosya": "apple LADDER.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "apple ladder",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/apple LADDER.png"
+    },
+    {
+      "id": "apple-middle",
+      "ad": "apple MIDDLE",
+      "dosya": "apple MIDDLE.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "apple middle",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/apple MIDDLE.png"
+    },
+    {
+      "id": "apple-word",
+      "ad": "apple WORD",
+      "dosya": "apple WORD.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "apple word",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/apple WORD.png"
+    },
+    {
+      "id": "apple-smooth",
+      "ad": "apple smooth",
+      "dosya": "apple smooth.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "apple smooth",
+      "font": "Mytupi-Bold",
+      "punto": 124,
+      "thumb": "thumbs/apple smooth.png"
+    },
+    {
+      "id": "clean-aesthetic-light",
+      "ad": "clean aesthetic light",
+      "dosya": "clean aesthetic light.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "clean aesthetic light",
+      "font": "Poppins-Regular",
+      "punto": 124,
+      "thumb": "thumbs/clean aesthetic light.png"
+    },
+    {
+      "id": "dark-water",
+      "ad": "dark water",
+      "dosya": "dark water.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "Principal",
+      "font": "Poppins-BlackItalic",
+      "punto": 158,
+      "thumb": "thumbs/dark water.png"
+    },
+    {
+      "id": "fluorscent",
+      "ad": "fluorscent",
+      "dosya": "fluorscent.mogrt",
+      "metinIndex": 0,
+      "metinAdi": "fluorescent  ",
+      "font": "Poppins-Black",
+      "punto": 124,
+      "thumb": "thumbs/fluorscent.png"
+    }
+  ]
+}
