@@ -9,6 +9,8 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var log = [];
+  /* Hazir stillerin kurulum sonucu — tanilamada gosteriliyor. */
+  var stilDurum = 'henüz denenmedi';
   var NL = String.fromCharCode(10); // uretilen kodda kacis sorunu yasamamak icin
 
   function esc(s) {
@@ -197,6 +199,21 @@
       }
     }
 
+    // Hazir altyazi stillerini Premiere'in stil klasorune koy.
+    // Sessiz: basarisiz olsa bile panelin isi bundan etkilenmiyor, ama
+    // sonucu tanilamada gorunur tutuyoruz ki "stiller gelmedi" dendiginde
+    // sebebi arayabilelim.
+    (function () {
+      var ext = CEP.extensionPath();
+      if (!ext) { stilDurum = 'eklenti yolu alınamadı'; return; }
+      var dir = ext + '/styles';
+      CEP.call('trInstallTextStyles("' + esPath(dir) + '")').then(function (r) {
+        stilDurum = r.copied + ' kopyalandı, ' + r.skipped + ' zaten vardı — ' + r.dir;
+      }).catch(function (e) {
+        stilDurum = 'kurulamadı: ' + (e && e.message ? e.message : e);
+      });
+    })();
+
     // Kopru yuklu mu? bridge.jsx ScriptPath uzerinden otomatik yuklenmeli.
     CEP.call('trPing()').then(function (d) {
       setText('ver', 'v' + d.bridgeVersion);
@@ -274,6 +291,9 @@
       html += 'QE DOM: ' + (String(d.qeAvailable) === 'true'
         ? '<span class="ok">açık</span>' : '<span class="dim">kapalı</span>') + '\n';
 
+      html += '<h3>Hazır stiller</h3>';
+      html += esc(stilDurum) + '\n';
+
       html += '<h3>Güncelleme</h3>';
       html += esc(updateDurum) + '\n';
 
@@ -328,6 +348,7 @@
   var pendingUpdate = null;
   /* Son guncelleme kontrolunun sonucu — tanilamada gosteriliyor. */
   var updateDurum = 'henüz kontrol edilmedi';
+
 
   /** Eklentinin kurulu oldugu gercek klasor (junction cozulmus hali) */
   function extensionRoot() {

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <PremiereData Version="3">
 	<Project ObjectRef="1"/>
-	<Project ObjectID="1" ClassID="62ad66dd-0dcd-42da-a660-6d8fbde94876" Version="45">
-		<RootProjectItem ObjectURef="715377a4-2f2a-47e0-b832-a4c0d75c88ba"/>
+	<Project ObjectID="1" ClassID="62ad66dd-0dcd-42da-a660-6d8fbde94876" Version="43">
+		<RootProjectItem ObjectURef="cdd33d06-b49d-46d3-8c3b-e0fab6214d6e"/>
 		<ProjectSettings ObjectRef="2"/>
 		<MovieCompileSettings ObjectRef="3"/>
 		<StillCompileSettings ObjectRef="4"/>
@@ -14,13 +14,13 @@
 		<ProjectWorkspace ObjectRef="10"/>
 		<NextID>1000000</NextID>
 	</Project>
-	<RootProjectItem ObjectUID="715377a4-2f2a-47e0-b832-a4c0d75c88ba" ClassID="1c307a89-9318-47d7-a583-bf2553736543" Version="1">
+	<RootProjectItem ObjectUID="cdd33d06-b49d-46d3-8c3b-e0fab6214d6e" ClassID="1c307a89-9318-47d7-a583-bf2553736543" Version="1">
 		<ProjectItem Version="1">
 			<Name>Root Bin</Name>
 		</ProjectItem>
 		<ProjectItemContainer Version="1">
 			<Items Version="1">
-				<Item Index="0" ObjectURef="d0b42947-2747-4b9a-a7ce-2ce9679094e1"/>
+				<Item Index="0" ObjectURef="9e5e70c2-b4c1-4344-8fc2-fa70501d31ec"/>
 			</Items>
 		</ProjectItemContainer>
 	</RootProjectItem>
@@ -31,10 +31,8 @@
 		<AudioCompileSettings ObjectRef="14"/>
 		<CaptureSettings ObjectRef="15"/>
 		<DefaultSequenceSettings ObjectRef="16"/>
-		<ColorManagementSettings>{"enableLogColorManagement":2,"graphicsWhiteLuminance":203,"sdrGamma":220}</ColorManagementSettings>
 		<VideoTimeDisplay>102</VideoTimeDisplay>
 		<AudioTimeDisplay>200</AudioTimeDisplay>
-		<ColorAwareEffectsEnabled>0</ColorAwareEffectsEnabled>
 		<VideoTimeDisplayInitial>102</VideoTimeDisplayInitial>
 		<ActionSafeWidth>10</ActionSafeWidth>
 		<ActionSafeHeight>10</ActionSafeHeight>
@@ -44,6 +42,8 @@
 		<EditingModeID>00000000-0000-0000-0000-000000000000</EditingModeID>
 		<PreviewFileFormatID>00000000-0000-0000-0000-000000000000</PreviewFileFormatID>
 		<UsePreviewCache>false</UsePreviewCache>
+		<ColorManagementSettings>{"enableLogColorManagement":2,"graphicsWhiteLuminance":203}</ColorManagementSettings>
+		<ColorAwareEffectsEnabled>0</ColorAwareEffectsEnabled>
 	</ProjectSettings>
 	<CompileSettings ObjectID="3" ClassID="18a35d66-597e-4157-b783-938b5bec3547" Version="4">
 		<VideoCompileSettings ObjectRef="17"/>
@@ -106,39 +106,44 @@
 		<EmbedProjectLink>false</EmbedProjectLink>
 	</CompileSettings>
 	<ScratchDiskSettings ObjectID="8" ClassID="4c6ed82b-a81c-4df1-8bd0-750504c4b560" Version="4">
-		<AudioPreviewLocation0>SameAsProject</AudioPreviewLocation0>
-		<VideoPreviewLocation0>SameAsProject</VideoPreviewLocation0>
+		<CapsuleMediaLocation0>SameAsProject</CapsuleMediaLocation0>
 		<DVDEncodingLocation0>SameAsProject</DVDEncodingLocation0>
+		<CCLibrariesLocation0>SameAsProject</CCLibrariesLocation0>
 		<AutoSaveLocation0>SameAsProject</AutoSaveLocation0>
 		<TransferMediaLocation0>SameAsProject</TransferMediaLocation0>
-		<CCLibrariesLocation0>SameAsProject</CCLibrariesLocation0>
-		<CapsuleMediaLocation0>SameAsProject</CapsuleMediaLocation0>
 		<CapturedVideoLocation0>SameAsProject</CapturedVideoLocation0>
+		<AudioPreviewLocation0>SameAsProject</AudioPreviewLocation0>
+		<VideoPreviewLocation0>SameAsProject</VideoPreviewLocation0>
 	</ScratchDiskSettings>
 	<IngestSettings ObjectID="9" ClassID="2db8f76b-2c37-48ee-925d-9a4f7278152d" Version="2">
-		<Action>copy</Action>
 		<Enabled>false</Enabled>
+		<Action>copy</Action>
 	</IngestSettings>
 	<WorkspaceSettings ObjectID="10" ClassID="c4372273-e1aa-4683-98aa-a2ceadf3066c" Version="1">
 	</WorkspaceSettings>
-	<StyleProjectItem ObjectUID="d0b42947-2747-4b9a-a7ce-2ce9679094e1" ClassID="31673410-6b9a-420b-990a-fdfe31ef94f3" Version="1">
+	<StyleProjectItem ObjectUID="9e5e70c2-b4c1-4344-8fc2-fa70501d31ec" ClassID="31673410-6b9a-420b-990a-fdfe31ef94f3" Version="1">
 		<ProjectItem Version="1">
 			<Node Version="1">
 				<Properties Version="1">
-					<project.icon.view.grid.order>6</project.icon.view.grid.order>
+					<project.icon.view.grid.order>25</project.icon.view.grid.order>
 				</Properties>
 			</Node>
-			<Name>Beyaz roboto</Name>
+			<Name>TK Caption Style - 1</Name>
 		</ProjectItem>
 		<Component ObjectRef="27"/>
 	</StyleProjectItem>
-	<VideoSettings ObjectID="11" ClassID="58474264-30c4-43a2-bba5-dc0812df8a3a" Version="10">
+	<VideoSettings ObjectID="11" ClassID="58474264-30c4-43a2-bba5-dc0812df8a3a" Version="9">
+		<FrameRate>8475667200</FrameRate>
+		<FrameSize>0,0,720,480</FrameSize>
+		<PixelAspectRatio>10,11</PixelAspectRatio>
+		<MaximumBitDepth>false</MaximumBitDepth>
 	</VideoSettings>
-	<AudioSettings ObjectID="12" ClassID="6baf5521-b132-4634-840e-13cec5bc86a4" Version="8">
+	<AudioSettings ObjectID="12" ClassID="6baf5521-b132-4634-840e-13cec5bc86a4" Version="7">
+		<ChannelType>1</ChannelType>
+		<FrameRate>5292000</FrameRate>
 	</AudioSettings>
 	<VideoCompileSettings ObjectID="13" ClassID="db372db5-7de2-4d3c-98ae-f42659d77b22" Version="9">
 		<VideoSettings ObjectRef="28"/>
-		<VideoFieldType>0</VideoFieldType>
 		<Compressor>1685288558</Compressor>
 		<VideoCompilerClassIDFourCC>1061109567</VideoCompilerClassIDFourCC>
 		<VideoFileTypeFourCC>1096173910</VideoFileTypeFourCC>
@@ -155,6 +160,7 @@
 		<OptimizeStills>false</OptimizeStills>
 		<FramesAtMarkers>false</FramesAtMarkers>
 		<RealTimePreview>true</RealTimePreview>
+		<VideoFieldType>0</VideoFieldType>
 		<DoKeyframeEveryNFrames>false</DoKeyframeEveryNFrames>
 		<DoKeyframeEveryNFramesValue>0</DoKeyframeEveryNFramesValue>
 		<AddKeyframesAtMarkers>false</AddKeyframesAtMarkers>
@@ -163,9 +169,9 @@
 	</VideoCompileSettings>
 	<AudioCompileSettings ObjectID="14" ClassID="34b10007-ab6d-49a7-bac5-7b60d919e387" Version="6">
 		<AudioSettings ObjectRef="29"/>
-		<Interleave>1</Interleave>
 		<SampleType>3</SampleType>
 		<Compressor>1380013856</Compressor>
+		<Interleave>1</Interleave>
 	</AudioCompileSettings>
 	<DummyCaptureSettings ObjectID="15" ClassID="328c2aa2-47f9-4211-805b-b6a6dbd4ca29" Version="1">
 	</DummyCaptureSettings>
@@ -180,7 +186,6 @@
 	</DefaultSequenceSettings>
 	<VideoCompileSettings ObjectID="17" ClassID="db372db5-7de2-4d3c-98ae-f42659d77b22" Version="9">
 		<VideoSettings ObjectRef="30"/>
-		<VideoFieldType>0</VideoFieldType>
 		<Compressor>1685288558</Compressor>
 		<VideoCompilerClassIDFourCC>1061109567</VideoCompilerClassIDFourCC>
 		<VideoFileTypeFourCC>1096173910</VideoFileTypeFourCC>
@@ -197,6 +202,7 @@
 		<OptimizeStills>false</OptimizeStills>
 		<FramesAtMarkers>false</FramesAtMarkers>
 		<RealTimePreview>true</RealTimePreview>
+		<VideoFieldType>0</VideoFieldType>
 		<DoKeyframeEveryNFrames>false</DoKeyframeEveryNFrames>
 		<DoKeyframeEveryNFramesValue>0</DoKeyframeEveryNFramesValue>
 		<AddKeyframesAtMarkers>false</AddKeyframesAtMarkers>
@@ -205,13 +211,12 @@
 	</VideoCompileSettings>
 	<AudioCompileSettings ObjectID="18" ClassID="34b10007-ab6d-49a7-bac5-7b60d919e387" Version="6">
 		<AudioSettings ObjectRef="31"/>
-		<Interleave>1</Interleave>
 		<SampleType>3</SampleType>
 		<Compressor>1380013856</Compressor>
+		<Interleave>1</Interleave>
 	</AudioCompileSettings>
 	<VideoCompileSettings ObjectID="19" ClassID="db372db5-7de2-4d3c-98ae-f42659d77b22" Version="9">
 		<VideoSettings ObjectRef="32"/>
-		<VideoFieldType>0</VideoFieldType>
 		<Compressor>1685288558</Compressor>
 		<VideoCompilerClassIDFourCC>1061109567</VideoCompilerClassIDFourCC>
 		<VideoFileTypeFourCC>1096173910</VideoFileTypeFourCC>
@@ -228,6 +233,7 @@
 		<OptimizeStills>false</OptimizeStills>
 		<FramesAtMarkers>false</FramesAtMarkers>
 		<RealTimePreview>true</RealTimePreview>
+		<VideoFieldType>0</VideoFieldType>
 		<DoKeyframeEveryNFrames>false</DoKeyframeEveryNFrames>
 		<DoKeyframeEveryNFramesValue>0</DoKeyframeEveryNFramesValue>
 		<AddKeyframesAtMarkers>false</AddKeyframesAtMarkers>
@@ -236,13 +242,12 @@
 	</VideoCompileSettings>
 	<AudioCompileSettings ObjectID="20" ClassID="34b10007-ab6d-49a7-bac5-7b60d919e387" Version="6">
 		<AudioSettings ObjectRef="33"/>
-		<Interleave>1</Interleave>
 		<SampleType>3</SampleType>
 		<Compressor>1380013856</Compressor>
+		<Interleave>1</Interleave>
 	</AudioCompileSettings>
 	<VideoCompileSettings ObjectID="21" ClassID="db372db5-7de2-4d3c-98ae-f42659d77b22" Version="9">
 		<VideoSettings ObjectRef="34"/>
-		<VideoFieldType>0</VideoFieldType>
 		<Compressor>1685288558</Compressor>
 		<VideoCompilerClassIDFourCC>1061109567</VideoCompilerClassIDFourCC>
 		<VideoFileTypeFourCC>1096173910</VideoFileTypeFourCC>
@@ -259,6 +264,7 @@
 		<OptimizeStills>false</OptimizeStills>
 		<FramesAtMarkers>false</FramesAtMarkers>
 		<RealTimePreview>true</RealTimePreview>
+		<VideoFieldType>0</VideoFieldType>
 		<DoKeyframeEveryNFrames>false</DoKeyframeEveryNFrames>
 		<DoKeyframeEveryNFramesValue>0</DoKeyframeEveryNFramesValue>
 		<AddKeyframesAtMarkers>false</AddKeyframesAtMarkers>
@@ -267,13 +273,12 @@
 	</VideoCompileSettings>
 	<AudioCompileSettings ObjectID="22" ClassID="34b10007-ab6d-49a7-bac5-7b60d919e387" Version="6">
 		<AudioSettings ObjectRef="35"/>
-		<Interleave>1</Interleave>
 		<SampleType>3</SampleType>
 		<Compressor>1380013856</Compressor>
+		<Interleave>1</Interleave>
 	</AudioCompileSettings>
 	<VideoCompileSettings ObjectID="23" ClassID="db372db5-7de2-4d3c-98ae-f42659d77b22" Version="9">
 		<VideoSettings ObjectRef="36"/>
-		<VideoFieldType>0</VideoFieldType>
 		<Compressor>1685288558</Compressor>
 		<VideoCompilerClassIDFourCC>1061109567</VideoCompilerClassIDFourCC>
 		<VideoFileTypeFourCC>1096173910</VideoFileTypeFourCC>
@@ -290,6 +295,7 @@
 		<OptimizeStills>false</OptimizeStills>
 		<FramesAtMarkers>false</FramesAtMarkers>
 		<RealTimePreview>true</RealTimePreview>
+		<VideoFieldType>0</VideoFieldType>
 		<DoKeyframeEveryNFrames>false</DoKeyframeEveryNFrames>
 		<DoKeyframeEveryNFramesValue>0</DoKeyframeEveryNFramesValue>
 		<AddKeyframesAtMarkers>false</AddKeyframesAtMarkers>
@@ -298,13 +304,12 @@
 	</VideoCompileSettings>
 	<AudioCompileSettings ObjectID="24" ClassID="34b10007-ab6d-49a7-bac5-7b60d919e387" Version="6">
 		<AudioSettings ObjectRef="37"/>
-		<Interleave>1</Interleave>
 		<SampleType>3</SampleType>
 		<Compressor>1380013856</Compressor>
+		<Interleave>1</Interleave>
 	</AudioCompileSettings>
 	<VideoCompileSettings ObjectID="25" ClassID="db372db5-7de2-4d3c-98ae-f42659d77b22" Version="9">
 		<VideoSettings ObjectRef="38"/>
-		<VideoFieldType>0</VideoFieldType>
 		<Compressor>1685288558</Compressor>
 		<VideoCompilerClassIDFourCC>1061109567</VideoCompilerClassIDFourCC>
 		<VideoFileTypeFourCC>1096173910</VideoFileTypeFourCC>
@@ -321,6 +326,7 @@
 		<OptimizeStills>false</OptimizeStills>
 		<FramesAtMarkers>false</FramesAtMarkers>
 		<RealTimePreview>true</RealTimePreview>
+		<VideoFieldType>0</VideoFieldType>
 		<DoKeyframeEveryNFrames>false</DoKeyframeEveryNFrames>
 		<DoKeyframeEveryNFramesValue>0</DoKeyframeEveryNFramesValue>
 		<AddKeyframesAtMarkers>false</AddKeyframesAtMarkers>
@@ -329,12 +335,12 @@
 	</VideoCompileSettings>
 	<AudioCompileSettings ObjectID="26" ClassID="34b10007-ab6d-49a7-bac5-7b60d919e387" Version="6">
 		<AudioSettings ObjectRef="39"/>
-		<Interleave>1</Interleave>
 		<SampleType>3</SampleType>
 		<Compressor>1380013856</Compressor>
+		<Interleave>1</Interleave>
 	</AudioCompileSettings>
 	<VideoFilterComponent ObjectID="27" ClassID="d10da199-beea-4dd1-b941-ed3a78766d50" Version="9">
-		<Component Version="7">
+		<Component Version="6">
 			<Params Version="1">
 				<Param Index="0" ObjectRef="40"/>
 				<Param Index="1" ObjectRef="41"/>
@@ -359,174 +365,268 @@
 				<Param Index="20" ObjectRef="60"/>
 				<Param Index="21" ObjectRef="61"/>
 			</Params>
+			<Bypass>false</Bypass>
 			<DisplayName>Text</DisplayName>
+			<Intrinsic>false</Intrinsic>
+			<ArchivedType>0</ArchivedType>
+			<Unique>false</Unique>
+			<ID>0</ID>
 		</Component>
 		<MatchName>AE.ADBE Text</MatchName>
 		<VideoFilterType>2</VideoFilterType>
 	</VideoFilterComponent>
-	<VideoSettings ObjectID="28" ClassID="58474264-30c4-43a2-bba5-dc0812df8a3a" Version="10">
+	<VideoSettings ObjectID="28" ClassID="58474264-30c4-43a2-bba5-dc0812df8a3a" Version="9">
+		<FrameRate>8475667200</FrameRate>
+		<FrameSize>0,0,720,480</FrameSize>
+		<PixelAspectRatio>10,11</PixelAspectRatio>
+		<MaximumBitDepth>false</MaximumBitDepth>
 	</VideoSettings>
-	<AudioSettings ObjectID="29" ClassID="6baf5521-b132-4634-840e-13cec5bc86a4" Version="8">
+	<AudioSettings ObjectID="29" ClassID="6baf5521-b132-4634-840e-13cec5bc86a4" Version="7">
+		<ChannelType>1</ChannelType>
+		<FrameRate>5292000</FrameRate>
 	</AudioSettings>
-	<VideoSettings ObjectID="30" ClassID="58474264-30c4-43a2-bba5-dc0812df8a3a" Version="10">
+	<VideoSettings ObjectID="30" ClassID="58474264-30c4-43a2-bba5-dc0812df8a3a" Version="9">
+		<FrameRate>8475667200</FrameRate>
+		<FrameSize>0,0,720,480</FrameSize>
+		<PixelAspectRatio>10,11</PixelAspectRatio>
+		<MaximumBitDepth>false</MaximumBitDepth>
 	</VideoSettings>
-	<AudioSettings ObjectID="31" ClassID="6baf5521-b132-4634-840e-13cec5bc86a4" Version="8">
+	<AudioSettings ObjectID="31" ClassID="6baf5521-b132-4634-840e-13cec5bc86a4" Version="7">
+		<ChannelType>1</ChannelType>
+		<FrameRate>5292000</FrameRate>
 	</AudioSettings>
-	<VideoSettings ObjectID="32" ClassID="58474264-30c4-43a2-bba5-dc0812df8a3a" Version="10">
+	<VideoSettings ObjectID="32" ClassID="58474264-30c4-43a2-bba5-dc0812df8a3a" Version="9">
+		<FrameRate>8475667200</FrameRate>
+		<FrameSize>0,0,720,480</FrameSize>
+		<PixelAspectRatio>10,11</PixelAspectRatio>
+		<MaximumBitDepth>false</MaximumBitDepth>
 	</VideoSettings>
-	<AudioSettings ObjectID="33" ClassID="6baf5521-b132-4634-840e-13cec5bc86a4" Version="8">
+	<AudioSettings ObjectID="33" ClassID="6baf5521-b132-4634-840e-13cec5bc86a4" Version="7">
+		<ChannelType>1</ChannelType>
+		<FrameRate>5292000</FrameRate>
 	</AudioSettings>
-	<VideoSettings ObjectID="34" ClassID="58474264-30c4-43a2-bba5-dc0812df8a3a" Version="10">
+	<VideoSettings ObjectID="34" ClassID="58474264-30c4-43a2-bba5-dc0812df8a3a" Version="9">
+		<FrameRate>8475667200</FrameRate>
+		<FrameSize>0,0,720,480</FrameSize>
+		<PixelAspectRatio>10,11</PixelAspectRatio>
+		<MaximumBitDepth>false</MaximumBitDepth>
 	</VideoSettings>
-	<AudioSettings ObjectID="35" ClassID="6baf5521-b132-4634-840e-13cec5bc86a4" Version="8">
+	<AudioSettings ObjectID="35" ClassID="6baf5521-b132-4634-840e-13cec5bc86a4" Version="7">
+		<ChannelType>1</ChannelType>
+		<FrameRate>5292000</FrameRate>
 	</AudioSettings>
-	<VideoSettings ObjectID="36" ClassID="58474264-30c4-43a2-bba5-dc0812df8a3a" Version="10">
+	<VideoSettings ObjectID="36" ClassID="58474264-30c4-43a2-bba5-dc0812df8a3a" Version="9">
+		<FrameRate>8475667200</FrameRate>
+		<FrameSize>0,0,720,480</FrameSize>
+		<PixelAspectRatio>10,11</PixelAspectRatio>
+		<MaximumBitDepth>false</MaximumBitDepth>
 	</VideoSettings>
-	<AudioSettings ObjectID="37" ClassID="6baf5521-b132-4634-840e-13cec5bc86a4" Version="8">
+	<AudioSettings ObjectID="37" ClassID="6baf5521-b132-4634-840e-13cec5bc86a4" Version="7">
+		<ChannelType>1</ChannelType>
+		<FrameRate>5292000</FrameRate>
 	</AudioSettings>
-	<VideoSettings ObjectID="38" ClassID="58474264-30c4-43a2-bba5-dc0812df8a3a" Version="10">
+	<VideoSettings ObjectID="38" ClassID="58474264-30c4-43a2-bba5-dc0812df8a3a" Version="9">
+		<FrameRate>8475667200</FrameRate>
+		<FrameSize>0,0,720,480</FrameSize>
+		<PixelAspectRatio>10,11</PixelAspectRatio>
+		<MaximumBitDepth>false</MaximumBitDepth>
 	</VideoSettings>
-	<AudioSettings ObjectID="39" ClassID="6baf5521-b132-4634-840e-13cec5bc86a4" Version="8">
+	<AudioSettings ObjectID="39" ClassID="6baf5521-b132-4634-840e-13cec5bc86a4" Version="7">
+		<ChannelType>1</ChannelType>
+		<FrameRate>5292000</FrameRate>
 	</AudioSettings>
-	<ArbVideoComponentParam ObjectID="40" ClassID="313e54d4-6903-49ad-b0bf-8262cdd10f4e" Version="3">
-		<Name>Source Text</Name>
-		<ParameterControlType>9</ParameterControlType>
+	<ArbVideoComponentParam ObjectID="40" ClassID="313e54d4-6903-49ad-b0bf-8262cdd10f4e" Version="2">
 		<ParameterID>1</ParameterID>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>9</ParameterControlType>
+		<Name>Source Text</Name>
 		<StartKeyframePosition>-91445760000000000</StartKeyframePosition>
-		<StartKeyframeValue Encoding="base64" BinaryHash="f2f15989-6128-5061-2b48-ec85000001c4">rAEAAAAAAABEMyIRDAAAAAAABgAKAAQABgAAAGQAAAAAAF4AUAAUABAAAAAAAEwASAAAAAAAAAAAAEQAQwA8AAAAOAA0ADAALAArACQAIAAAAAAAAAAAAAAAGgAAAAAAAAAAAAAAAAAMABwAAAAAAAAAAAAAAAgAAAAAABsABwBeAAAAAAAAAUwAAABYAAAAhAAAAJwAAAAAAAEAAAAgQQAAIEEAAIJCAAAAAUwAAAAAAEBBAADAQAAAQEAAAMhCAAAAAUgAAAACAAAAAgAAAAQABgAEAAAAAAAKAAoAAAAAAAQACgAAAFVVhb4AAAoACgAHAAgACQAKAAAAAAAAAAAACgAIAAUABgAHAAoAAAAAAAAAAQAAAAQAAAAOAAAAUm9ib3RvLVJlZ3VsYXIAAAEAAAAMAAAACAAMAAQACAAIAAAACAAAAEQAAAACAAAAQWEAAAAANgAYAAAAFAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAIAAQANgAAAAIAAAAQAAAAEAAAAAAAgEAAAEBC9P////j////8////BAAEAAQAAAA=
+		<StartKeyframeValue Encoding="base64" BinaryHash="1f5533ef-6bdf-4490-9196-5a0a000001a4">jAEAAAAAAABEMyIRDAAAAAAABgAKAAQABgAAAGQAAAAAAF4ASAAQAAwAAAAAAEQAQAAAAAAAAAAAADwAOwA0AAAAMAAsACgAJAAjAAAAHAAAAAAAAAAAAAAAFgAAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAAgAAAAAABcABwBeAAAAAAAAAUAAAABwAAAAgAAAAAAAAQAAAHBBAABwQQAAAAE8AAAAAABAQQAAwEAAAEBAAADIQgAAAAE4AAAAAgAAAAIAAAA4////BAAGAAQAAAAAAAoACgAHAAgACQAKAAAAAAAAAAAACgAIAAUABgAHAAoAAAAAAAAAAQAAAAQAAAAGAAAAVGFob21hAAABAAAADAAAAAgADAAEAAgACAAAAAgAAABEAAAAAgAAAEFhAAAAADYAGAAAABQAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAACAAEADYAAAACAAAAEAAAABAAAAAAAIBAAABAQvT////4/////P///wQABAAEAAAA
 		</StartKeyframeValue>
 	</ArbVideoComponentParam>
-	<VideoComponentParam ObjectID="41" ClassID="cc12343e-f113-4d3b-ae05-b287db77d461" Version="10">
-		<Name>Transform</Name>
-		<ParameterControlType>11</ParameterControlType>
+	<VideoComponentParam ObjectID="41" ClassID="cc12343e-f113-4d3b-ae05-b287db77d461" Version="9">
 		<ParameterID>2</ParameterID>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>11</ParameterControlType>
+		<Name>Transform</Name>
 		<StartKeyframe>-91445760000000000,false,0,0,0,0,0,0</StartKeyframe>
+		<LowerBound>false</LowerBound>
 		<UpperBound>false</UpperBound>
 	</VideoComponentParam>
-	<PointComponentParam ObjectID="42" ClassID="ca81d347-309b-44d2-acc7-1c572efb973c" Version="4">
-		<Name>Position</Name>
+	<PointComponentParam ObjectID="42" ClassID="ca81d347-309b-44d2-acc7-1c572efb973c" Version="3">
 		<ParameterID>3</ParameterID>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>6</ParameterControlType>
+		<Name>Position</Name>
 		<StartKeyframe>-91445760000000000,0.5:0.5,0,0,0,0,0,0,5,4,0,0,0,0</StartKeyframe>
 	</PointComponentParam>
-	<VideoComponentParam ObjectID="43" ClassID="fe47129e-6c94-4fc0-95d5-c056a517aaf3" Version="10">
-		<Name>Scale</Name>
+	<VideoComponentParam ObjectID="43" ClassID="fe47129e-6c94-4fc0-95d5-c056a517aaf3" Version="9">
 		<ParameterID>4</ParameterID>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>2</ParameterControlType>
+		<Name>Scale</Name>
 		<StartKeyframe>-91445760000000000,100.,0,0,0,0,0,0</StartKeyframe>
 		<LowerBound>0</LowerBound>
 		<UpperBound>4000</UpperBound>
 	</VideoComponentParam>
-	<VideoComponentParam ObjectID="44" ClassID="fe47129e-6c94-4fc0-95d5-c056a517aaf3" Version="10">
-		<Name>Horizontal Scale</Name>
+	<VideoComponentParam ObjectID="44" ClassID="fe47129e-6c94-4fc0-95d5-c056a517aaf3" Version="9">
 		<ParameterID>5</ParameterID>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>2</ParameterControlType>
+		<Name>Horizontal Scale</Name>
 		<StartKeyframe>-91445760000000000,100.,0,0,0,0,0,0</StartKeyframe>
 		<LowerBound>0</LowerBound>
 		<UpperBound>4000</UpperBound>
 	</VideoComponentParam>
-	<VideoComponentParam ObjectID="45" ClassID="cc12343e-f113-4d3b-ae05-b287db77d461" Version="10">
-		<Name> </Name>
+	<VideoComponentParam ObjectID="45" ClassID="cc12343e-f113-4d3b-ae05-b287db77d461" Version="9">
 		<ParameterID>6</ParameterID>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>4</ParameterControlType>
+		<Name> </Name>
 		<StartKeyframe>-91445760000000000,true,0,0,0,0,0,0</StartKeyframe>
+		<LowerBound>false</LowerBound>
+		<UpperBound>true</UpperBound>
 	</VideoComponentParam>
-	<VideoComponentParam ObjectID="46" ClassID="fe47129e-6c94-4fc0-95d5-c056a517aaf3" Version="10">
-		<Name>Rotation</Name>
-		<ParameterControlType>3</ParameterControlType>
+	<VideoComponentParam ObjectID="46" ClassID="fe47129e-6c94-4fc0-95d5-c056a517aaf3" Version="9">
 		<ParameterID>7</ParameterID>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>3</ParameterControlType>
+		<Name>Rotation</Name>
 		<StartKeyframe>-91445760000000000,0.,0,0,0,0,0,0</StartKeyframe>
 		<LowerBound>-32768</LowerBound>
 		<UpperBound>32767</UpperBound>
 	</VideoComponentParam>
-	<VideoComponentParam ObjectID="47" ClassID="fe47129e-6c94-4fc0-95d5-c056a517aaf3" Version="10">
-		<Name>Opacity</Name>
+	<VideoComponentParam ObjectID="47" ClassID="fe47129e-6c94-4fc0-95d5-c056a517aaf3" Version="9">
 		<ParameterID>8</ParameterID>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>2</ParameterControlType>
+		<Name>Opacity</Name>
 		<StartKeyframe>-91445760000000000,100.,0,0,0,0,0,0</StartKeyframe>
 		<LowerBound>0</LowerBound>
 		<UpperBound>100</UpperBound>
 	</VideoComponentParam>
-	<PointComponentParam ObjectID="48" ClassID="ca81d347-309b-44d2-acc7-1c572efb973c" Version="4">
-		<Name>Anchor Point</Name>
+	<PointComponentParam ObjectID="48" ClassID="ca81d347-309b-44d2-acc7-1c572efb973c" Version="3">
 		<ParameterID>9</ParameterID>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>6</ParameterControlType>
+		<Name>Anchor Point</Name>
 		<StartKeyframe>-91445760000000000,0:0,0,0,0,0,0,0,5,4,0,0,0,0</StartKeyframe>
 	</PointComponentParam>
-	<VideoComponentParam ObjectID="49" ClassID="cc12343e-f113-4d3b-ae05-b287db77d461" Version="10">
-		<ParameterControlType>12</ParameterControlType>
+	<VideoComponentParam ObjectID="49" ClassID="cc12343e-f113-4d3b-ae05-b287db77d461" Version="9">
 		<ParameterID>10</ParameterID>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>12</ParameterControlType>
 		<StartKeyframe>-91445760000000000,false,0,0,0,0,0,0</StartKeyframe>
+		<LowerBound>false</LowerBound>
 		<UpperBound>false</UpperBound>
 	</VideoComponentParam>
-	<VideoComponentParam ObjectID="50" ClassID="a4ff2d6e-7ac2-44f8-9d52-17d9ca50e542" Version="10">
-		<Name> </Name>
+	<VideoComponentParam ObjectID="50" ClassID="a4ff2d6e-7ac2-44f8-9d52-17d9ca50e542" Version="9">
 		<ParameterID>11</ParameterID>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>8</ParameterControlType>
+		<Name> </Name>
 		<StartKeyframe>-91445760000000000,0.,0,0,0,0,0,0</StartKeyframe>
 		<LowerBound>0</LowerBound>
 		<UpperBound>32768</UpperBound>
 	</VideoComponentParam>
-	<VideoComponentParam ObjectID="51" ClassID="a4ff2d6e-7ac2-44f8-9d52-17d9ca50e542" Version="10">
-		<Name> </Name>
+	<VideoComponentParam ObjectID="51" ClassID="a4ff2d6e-7ac2-44f8-9d52-17d9ca50e542" Version="9">
 		<ParameterID>12</ParameterID>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>8</ParameterControlType>
+		<Name> </Name>
 		<StartKeyframe>-91445760000000000,0.,0,0,0,0,0,0</StartKeyframe>
 		<LowerBound>0</LowerBound>
 		<UpperBound>32768</UpperBound>
 	</VideoComponentParam>
-	<VideoComponentParam ObjectID="52" ClassID="a4ff2d6e-7ac2-44f8-9d52-17d9ca50e542" Version="10">
-		<Name>start</Name>
+	<VideoComponentParam ObjectID="52" ClassID="a4ff2d6e-7ac2-44f8-9d52-17d9ca50e542" Version="9">
 		<ParameterID>13</ParameterID>
-		<StartKeyframe>-91445760000000000,-1.,0,0,0,0,0,0</StartKeyframe>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>8</ParameterControlType>
+		<Name>start</Name>
+		<StartKeyframe>-91445760000000000,1.,0,0,0,0,0,0</StartKeyframe>
 		<LowerBound>-100</LowerBound>
 		<UpperBound>1000000000</UpperBound>
 	</VideoComponentParam>
-	<VideoComponentParam ObjectID="53" ClassID="a4ff2d6e-7ac2-44f8-9d52-17d9ca50e542" Version="10">
-		<Name>end</Name>
+	<VideoComponentParam ObjectID="53" ClassID="a4ff2d6e-7ac2-44f8-9d52-17d9ca50e542" Version="9">
 		<ParameterID>14</ParameterID>
-		<StartKeyframe>-91445760000000000,-1.,0,0,0,0,0,0</StartKeyframe>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>8</ParameterControlType>
+		<Name>end</Name>
+		<StartKeyframe>-91445760000000000,1.,0,0,0,0,0,0</StartKeyframe>
 		<LowerBound>-100</LowerBound>
 		<UpperBound>1000000000</UpperBound>
 	</VideoComponentParam>
-	<VideoComponentParam ObjectID="54" ClassID="cc12343e-f113-4d3b-ae05-b287db77d461" Version="10">
-		<Name> </Name>
+	<VideoComponentParam ObjectID="54" ClassID="cc12343e-f113-4d3b-ae05-b287db77d461" Version="9">
 		<ParameterID>15</ParameterID>
-		<StartKeyframe>-91445760000000000,false,0,0,0,0,0,0</StartKeyframe>
-	</VideoComponentParam>
-	<VideoComponentParam ObjectID="55" ClassID="cc12343e-f113-4d3b-ae05-b287db77d461" Version="10">
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>4</ParameterControlType>
 		<Name> </Name>
+		<StartKeyframe>-91445760000000000,false,0,0,0,0,0,0</StartKeyframe>
+		<LowerBound>false</LowerBound>
+		<UpperBound>true</UpperBound>
+	</VideoComponentParam>
+	<VideoComponentParam ObjectID="55" ClassID="cc12343e-f113-4d3b-ae05-b287db77d461" Version="9">
 		<ParameterID>16</ParameterID>
-		<StartKeyframe>-91445760000000000,false,0,0,0,0,0,0</StartKeyframe>
-	</VideoComponentParam>
-	<VideoComponentParam ObjectID="56" ClassID="cc12343e-f113-4d3b-ae05-b287db77d461" Version="10">
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>4</ParameterControlType>
 		<Name> </Name>
+		<StartKeyframe>-91445760000000000,false,0,0,0,0,0,0</StartKeyframe>
+		<LowerBound>false</LowerBound>
+		<UpperBound>true</UpperBound>
+	</VideoComponentParam>
+	<VideoComponentParam ObjectID="56" ClassID="cc12343e-f113-4d3b-ae05-b287db77d461" Version="9">
 		<ParameterID>17</ParameterID>
-		<StartKeyframe>-91445760000000000,false,0,0,0,0,0,0</StartKeyframe>
-	</VideoComponentParam>
-	<VideoComponentParam ObjectID="57" ClassID="cc12343e-f113-4d3b-ae05-b287db77d461" Version="10">
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>4</ParameterControlType>
 		<Name> </Name>
-		<ParameterID>18</ParameterID>
 		<StartKeyframe>-91445760000000000,false,0,0,0,0,0,0</StartKeyframe>
+		<LowerBound>false</LowerBound>
+		<UpperBound>true</UpperBound>
 	</VideoComponentParam>
-	<VideoComponentParam ObjectID="58" ClassID="fe47129e-6c94-4fc0-95d5-c056a517aaf3" Version="10">
-		<Name>Parent Width</Name>
+	<VideoComponentParam ObjectID="57" ClassID="cc12343e-f113-4d3b-ae05-b287db77d461" Version="9">
+		<ParameterID>18</ParameterID>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>4</ParameterControlType>
+		<Name> </Name>
+		<StartKeyframe>-91445760000000000,false,0,0,0,0,0,0</StartKeyframe>
+		<LowerBound>false</LowerBound>
+		<UpperBound>true</UpperBound>
+	</VideoComponentParam>
+	<VideoComponentParam ObjectID="58" ClassID="fe47129e-6c94-4fc0-95d5-c056a517aaf3" Version="9">
 		<ParameterID>19</ParameterID>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>2</ParameterControlType>
+		<Name>Parent Width</Name>
 		<StartKeyframe>-91445760000000000,0.,0,0,0,0,0,0</StartKeyframe>
 		<LowerBound>0</LowerBound>
 		<UpperBound>20000</UpperBound>
 	</VideoComponentParam>
-	<VideoComponentParam ObjectID="59" ClassID="fe47129e-6c94-4fc0-95d5-c056a517aaf3" Version="10">
-		<Name>Parent Height</Name>
+	<VideoComponentParam ObjectID="59" ClassID="fe47129e-6c94-4fc0-95d5-c056a517aaf3" Version="9">
 		<ParameterID>20</ParameterID>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>2</ParameterControlType>
+		<Name>Parent Height</Name>
 		<StartKeyframe>-91445760000000000,0.,0,0,0,0,0,0</StartKeyframe>
 		<LowerBound>0</LowerBound>
 		<UpperBound>20000</UpperBound>
 	</VideoComponentParam>
-	<VideoComponentParam ObjectID="60" ClassID="fe47129e-6c94-4fc0-95d5-c056a517aaf3" Version="10">
-		<Name>Parent Rotation</Name>
-		<ParameterControlType>3</ParameterControlType>
+	<VideoComponentParam ObjectID="60" ClassID="fe47129e-6c94-4fc0-95d5-c056a517aaf3" Version="9">
 		<ParameterID>21</ParameterID>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>3</ParameterControlType>
+		<Name>Parent Rotation</Name>
 		<StartKeyframe>-91445760000000000,0.,0,0,0,0,0,0</StartKeyframe>
 		<LowerBound>-32768</LowerBound>
 		<UpperBound>32767</UpperBound>
 	</VideoComponentParam>
-	<VideoComponentParam ObjectID="61" ClassID="cc12343e-f113-4d3b-ae05-b287db77d461" Version="10">
-		<Name> </Name>
+	<VideoComponentParam ObjectID="61" ClassID="cc12343e-f113-4d3b-ae05-b287db77d461" Version="9">
 		<ParameterID>22</ParameterID>
+		<IsTimeVarying>false</IsTimeVarying>
+		<ParameterControlType>4</ParameterControlType>
+		<Name> </Name>
 		<StartKeyframe>-91445760000000000,false,0,0,0,0,0,0</StartKeyframe>
+		<LowerBound>false</LowerBound>
+		<UpperBound>true</UpperBound>
 	</VideoComponentParam>
 </PremiereData>
 

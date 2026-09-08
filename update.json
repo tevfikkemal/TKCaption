@@ -1,7 +1,7 @@
 {
-  "version": "0.8.8",
-  "updated": "2026-09-08T11:48:44.833Z",
-  "notes": "altyazi yeniden alt ortaya geliyor",
+  "version": "0.8.9",
+  "updated": "2026-09-08T11:53:13.145Z",
+  "notes": "uc hazir altyazi stili",
   "files": [
     {
       "path": "core/package.json",
@@ -71,7 +71,7 @@
     {
       "path": "core/src/updater.js",
       "source": "core/src/updater.js",
-      "sha": "ffd43bdde82f78b87598bb55ded118dac35f793aa92ca8c6424991e79ffeba75"
+      "sha": "90185872227334fc0d6502ed4448854a6bb181bf2b01ce83c7deff76c113b817"
     },
     {
       "path": "core/src/vad.js",
@@ -91,7 +91,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "add4f71fbf6d954059e69724950965f23806ad1ec7ddfce67e4b1e897f4be598"
+      "sha": "cdedc58dac41ba034c761fb4137b0586cbb22312558905cdcfed67801cb52df9"
     },
     {
       "path": "index.html",
@@ -106,17 +106,32 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "f58fa454c39ad13fd9a81267fab6995e8c3645849135576cce8bb6a32d77311f"
+      "sha": "7dcbeef7d457957844f229af0b6a314079aaaabe5fbe0e518d8dbcd5a02ae820"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "35f83f6e7ad0ff9c0f3a43fa4fee4dc6fd9c44a47492e9b54ec9353ae741da16"
+      "sha": "a19c704e0fb6263a5e064df6a5dff3ce0f151a32529264cfd8c4e377980726de"
     },
     {
       "path": "LICENSE",
       "source": "LICENSE",
       "sha": "1c6307b23ff7ec15b7ca73ec8922da90890a3bad74039ee48cd2dc2df32dc71b"
+    },
+    {
+      "path": "styles/TK Caption Style - 1.prtextstyle",
+      "source": "styles/TK Caption Style - 1.prtextstyle",
+      "sha": "f567e29213d059e590e3c1c0b7ca15b556aef25fa6533c3d8cfa2ff8c2c6909b"
+    },
+    {
+      "path": "styles/TK Caption Style - 2.prtextstyle",
+      "source": "styles/TK Caption Style - 2.prtextstyle",
+      "sha": "013fef2374789371980edf504b3bceb95327fa2c8ad285ea6144a6bb87c25789"
+    },
+    {
+      "path": "styles/TK Caption Style - 3.prtextstyle",
+      "source": "styles/TK Caption Style - 3.prtextstyle",
+      "sha": "62f02138d99c36479fe0e1e123c8f25e32222207a1293fbaf335174846d621ad"
     }
   ]
 }

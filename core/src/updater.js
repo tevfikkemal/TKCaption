@@ -265,7 +265,11 @@ async function apply(extensionDir, manifest, onProgress) {
     const f = files[i];
     if (onProgress) onProgress({ done: i, total: files.length, file: f.path });
 
-    const buf = await fetchBuffer(RAW_BASE + '/' + f.source + '?t=' + Date.now());
+    // Yol parcalarini KODLA: hazir stil dosyalarinin adinda bosluk var
+    // ("TK Caption Style - 1.prtextstyle") ve ham bosluk iceren bir URL
+    // 404 doner. Egik cizgileri bozmamak icin parca parca kodluyoruz.
+    const url = f.source.split('/').map(encodeURIComponent).join('/');
+    const buf = await fetchBuffer(RAW_BASE + '/' + url + '?t=' + Date.now());
     if (f.sha && sha256(buf) !== f.sha) {
       // OLCULEN: raw.githubusercontent.com dosyalari 5 dakika onbellekliyor
       // (max-age=300) ve query string ile de no-cache basligiyla da

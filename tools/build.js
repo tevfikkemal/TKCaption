@@ -298,6 +298,7 @@ function writeUpdateManifest(version, notes) {
   const kaynak = (rel) => {
     const p = rel.split(path.sep).join('/');
     if (p.startsWith('core/')) return p;          // core/src/... depoda ayni yerde
+    if (p.startsWith('styles/')) return p;        // hazir stiller de depo kokunde
     if (p === 'LICENSE') return 'LICENSE';        // depo kokunde
     return 'panel/' + p;                          // gerisi panel/ altinda
   };
@@ -360,6 +361,16 @@ function build(notes) {
   fs.copyFileSync(path.join(ROOT, 'core', 'package.json'),
                   path.join(OUT, 'core', 'package.json'));
   console.log('  core/src/   -> eklentinin icine');
+
+  // --- Hazir metin stilleri ---
+  // Panel acilista bunlari Premiere'in stil klasorune kopyaliyor. Paketin
+  // icinde olmak zorundalar: ZXP kurulumunda KUR.ps1 hic calismiyor.
+  const stilKaynak = path.join(ROOT, 'styles');
+  if (fs.existsSync(stilKaynak)) {
+    copyDir(stilKaynak, path.join(OUT, 'styles'));
+    const n = fs.readdirSync(stilKaynak).filter((f) => f.endsWith('.prtextstyle')).length;
+    console.log('  styles/     -> ' + n + ' hazir stil');
+  }
 
   // --- Lisans ve surum ---
   fs.copyFileSync(path.join(ROOT, 'LICENSE'), path.join(OUT, 'LICENSE'));

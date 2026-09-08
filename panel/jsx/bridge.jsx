@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.8.8';
+var TR_ALTYAZI_VERSION = '0.8.9';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -1328,6 +1328,59 @@ function trRemoveSafeZone() {
 /* ------------------------------------------------------------------ */
 /*  Ortam kontrolu                                                     */
 /* ------------------------------------------------------------------ */
+
+/**
+ * Hazir metin stillerini Premiere'in stil klasorune kopyalar.
+ *
+ * NEDEN KOPRUDEN: hedef klasor "Belgeler" altinda ve Belgeler OneDrive'a
+ * yonlendirilmis olabiliyor (kullanicinin makinesinde oyle:
+ * C:\Users\...\OneDrive\Belgeler\...). Node'un homedir()+Documents
+ * varsayimi bu durumda yanlis yere yazardi. ExtendScript'in
+ * Folder.myDocuments'i sistemin gercek Belgeler yolunu veriyor.
+ *
+ * NEDEN PANELDEN, KUR.ps1'DEN DEGIL: ZXP Installer ile kurulunca KUR.ps1
+ * hic calismiyor. Stiller yalnizca zip kurulumunda gelirse ZXP kullanan
+ * arkadaslarda hic olmaz.
+ *
+ * Var olan dosyanin uzerine YAZMIYORUZ: kullanici stili kendine gore
+ * duzenlemis olabilir, guncelleme onu geri almamali.
+ *
+ * @param srcDir eklenti icindeki styles/ klasoru
+ */
+function trInstallTextStyles(srcDir) {
+    try {
+        var src = new Folder(srcDir);
+        if (!src.exists) return err('Stil klasoru yok: ' + srcDir);
+
+        var docs = Folder.myDocuments;
+        if (!docs || !docs.exists) return err('Belgeler klasoru bulunamadi.');
+
+        var hedefYol = docs.fsName + '/Adobe/Common/Assets/Text Styles';
+        var hedef = new Folder(hedefYol);
+        if (!hedef.exists) {
+            if (!hedef.create()) return err('Stil klasoru olusturulamadi: ' + hedefYol);
+        }
+
+        var dosyalar = src.getFiles('*.prtextstyle');
+        var kopyalanan = [];
+        var atlanan = [];
+        for (var i = 0; i < dosyalar.length; i++) {
+            var f = dosyalar[i];
+            var d = new File(hedef.fsName + '/' + f.name);
+            if (d.exists) { atlanan.push(f.name); continue; }
+            if (f.copy(d.fsName)) kopyalanan.push(f.name);
+        }
+
+        return ok([
+            kv('dir', hedefYol),
+            kv('copied', String(kopyalanan.length), true),
+            kv('skipped', String(atlanan.length), true),
+            kv('files', arrToJson(kopyalanan), true)
+        ]);
+    } catch (e) {
+        return err('Stiller kurulamadi', e);
+    }
+}
 
 function trPing() {
     try {
