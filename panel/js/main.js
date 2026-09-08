@@ -836,7 +836,7 @@
     CEP.call('trGetSequenceInfo()').then(function (d) {
       seqInfo = d;
       // SRT'yi proje klasorune kalici olarak yaz
-      var fmt = $('optFormat') ? $('optFormat').value : 'ttml';
+      var fmt = $('optFormat') ? $('optFormat').value : 'srt';
       // OLCULDU (Premiere 2026): ayni TTML icerigi uc uzantiyla denendi.
       //   .ttml -> "File format not supported" ile REDDEDILIYOR
       //   .dfxp -> kabul ediliyor
@@ -910,7 +910,7 @@
       cfg.output.timecodeOffsetSec = Number(seqInfo.zeroPointSec) || 0;
       // TTML kare hizini dosyanin icinde tasir; SRT tasimadigi icin Premiere
       // 30 fps varsayiyor ve 60 fps sekansta altyazi kayiyor.
-      cfg.output.format = $('optFormat') ? $('optFormat').value : 'ttml';
+      cfg.output.format = $('optFormat') ? $('optFormat').value : 'srt';
 
       return pipeline.run({
         input: wav,

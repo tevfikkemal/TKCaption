@@ -1,7 +1,7 @@
 {
-  "version": "0.8.7",
-  "updated": "2026-09-08T11:29:58.896Z",
-  "notes": "altyazi pisti stil yoklamasi",
+  "version": "0.8.8",
+  "updated": "2026-09-08T11:48:44.833Z",
+  "notes": "altyazi yeniden alt ortaya geliyor",
   "files": [
     {
       "path": "core/package.json",
@@ -91,12 +91,12 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "5c0e0595aba6766204e027f81dbb22563fd905a76d95ae3d521193354521ea43"
+      "sha": "add4f71fbf6d954059e69724950965f23806ad1ec7ddfce67e4b1e897f4be598"
     },
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "71ab5f5b0af4b1983f3d683dc775fd5a0c5eec28ac1a3f7ea24e743ef5de014f"
+      "sha": "f88aaf7ec7bd61f6698efa401b26ef209ef91498ae44806ab3d5e0fdf74d4df4"
     },
     {
       "path": "js/cep.js",
@@ -106,12 +106,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "fd26933ae0f805573592f4ea826288c2382df0b4d9ac7deee99249a968c35ca3"
+      "sha": "f58fa454c39ad13fd9a81267fab6995e8c3645849135576cce8bb6a32d77311f"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "55f8b74325d03b473dc4c05db70ca43832fb2bb41545e32483a6e01eb40a4efd"
+      "sha": "35f83f6e7ad0ff9c0f3a43fa4fee4dc6fd9c44a47492e9b54ec9353ae741da16"
     },
     {
       "path": "LICENSE",
