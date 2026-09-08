@@ -507,3 +507,66 @@ details > summary:hover { color: var(--text-2); }
   color: var(--text-2);
 }
 .update-box .bar { margin-top: 8px; }
+
+/* ------------------------------------------------------------------ */
+/*  Stilize altyazi — sablon kartlari                                  */
+/* ------------------------------------------------------------------ */
+
+/* Onizlemeler sablonun kendi thumb.png'si; kart boyu ona gore.
+   Panel dar oldugunda tek sutuna dusuyor, sikismiyor. */
+.mogrt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 6px;
+  margin: 10px 0 4px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.mogrt-card {
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--surface);
+  cursor: pointer;
+  overflow: hidden;
+  text-align: center;
+  padding: 0 0 4px;
+}
+
+.mogrt-card:hover { border-color: var(--accent); }
+
+/* Secili kart: renk YALNIZCA anlam tasidigi yerde — burada secim */
+.mogrt-card.on {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.mogrt-card img {
+  display: block;
+  width: 100%;
+  height: 54px;
+  object-fit: cover;
+  background: #000;
+}
+
+.mogrt-card .ad {
+  display: block;
+  font-size: 10px;
+  line-height: 1.25;
+  padding: 3px 3px 0;
+  color: var(--text-2);
+  word-break: break-word;
+}
+
+.mogrt-card.on .ad { color: var(--text); }
+
+/* Onizlemesi olmayan sablon: bos kutu yerine adin yeterli oldugu bir yer */
+.mogrt-card .yok {
+  display: block;
+  height: 54px;
+  line-height: 54px;
+  font-size: 10px;
+  color: var(--text-3);
+  background: var(--surface-2);
+}

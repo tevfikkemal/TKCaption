@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.8.9';
+var TR_ALTYAZI_VERSION = '0.9.0';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -858,6 +858,43 @@ function trProbeCaptionApi() {
             }
         } catch (e) { notes.push('captionTracks yoklamasi hata: ' + e); }
 
+        // --- Sequence SINIFININ statik uyeleri (ornek degil, sinif) ---
+        // createCaptionTrack(item, 0, fmt) ucuncu parametre aliyor ve fmt
+        // Sequence.CAPTION_FORMAT_* sabitlerinden geliyor. Hangi formatlar
+        // var, biliyor muyuz? Altyazinin monospace ciziliyor ve uste
+        // sabitleniyor olmasi bir format ozelligi OLABILIR (CEA-608 boyle
+        // davranir). Once hangi sabitlerin var oldugunu gorelim.
+        try {
+            if (typeof Sequence !== 'undefined' && Sequence) {
+                var sabitler = [];
+                for (var k7 in Sequence) {
+                    try { sabitler.push(k7 + '=' + String(Sequence[k7])); } catch (e) {}
+                }
+                if (sabitler.length) found.push('Sequence sinifi sabitleri: ' + sabitler.join(', '));
+                else notes.push('Sequence sinifi uzerinde sabit sayilamadi');
+            } else {
+                notes.push('Sequence sinifi tanimsiz');
+            }
+        } catch (e) { notes.push('Sequence sabitleri okunamadi: ' + e); }
+
+        // --- Altyazi pisti videoTracks icinde mi? ---
+        // videoTrack uzerinde mediaType alani var. Altyazi pistleri ayri bir
+        // koleksiyonda degil de videoTracks icinde farkli bir mediaType ile
+        // duruyor olabilir; oyleyse kliplere ve bilesenlerine erisebiliriz.
+        try {
+            var vn = seq.videoTracks.numTracks;
+            var pistler = [];
+            for (var vi = 0; vi < vn; vi++) {
+                var tr = seq.videoTracks[vi];
+                var mt = '?', nm = '?', cc = 0;
+                try { mt = String(tr.mediaType); } catch (e) {}
+                try { nm = String(tr.name); } catch (e) {}
+                try { cc = tr.clips.numItems; } catch (e) {}
+                pistler.push('[' + vi + '] mediaType=' + mt + ' ad=' + nm + ' klip=' + cc);
+            }
+            found.push('videoTracks (' + vn + '): ' + pistler.join(' | '));
+        } catch (e) { notes.push('videoTracks gezilemedi: ' + e); }
+
         // --- QE DOM (belgelenmemis ama bazen caption islevleri barindirir) ---
         var qeAvailable = false;
         try {
@@ -1328,6 +1365,216 @@ function trRemoveSafeZone() {
 /* ------------------------------------------------------------------ */
 /*  Ortam kontrolu                                                     */
 /* ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ */
+/*  Stilize altyazi — MOGRT sablonuyla video pistine                   */
+/* ------------------------------------------------------------------ */
+
+/**
+ * MOGRT bileseninin METIN parametresini bulur.
+ *
+ * OLCULEN: parametrenin adi sablondan sablona degisiyor ("apple middle",
+ * "Texto", "Source Text"...). Ada gore aramak sablonlarin cogunda
+ * basarisiz oluyor. Guvenilir isaret DEGERIN kendisi: AE metin
+ * kontrolleri getValue() ile icinde "textEditValue" ya da "mTextParam"
+ * gecen bir JSON belgesi donduruyor.
+ */
+function mogrtMetinParam(component) {
+    if (!component || !component.properties) return null;
+    var props = component.properties;
+
+    // Once bilinen adlari dene — hizli yol
+    var adlar = ['Source Text', 'Text', 'Subtitle', 'Title'];
+    if (props.getParamForDisplayName) {
+        for (var n = 0; n < adlar.length; n++) {
+            try {
+                var p = props.getParamForDisplayName(adlar[n]);
+                if (p) return p;
+            } catch (e) {}
+        }
+    }
+
+    // Ada gore bulunamadi: degere bakarak ara
+    var sayi = 0;
+    try { sayi = Number(props.numItems) || Number(props.numProperties) || 0; } catch (e) {}
+    for (var i = 0; i < sayi; i++) {
+        var prop = props[i];
+        try {
+            var ham = prop.getValue();
+            if (typeof ham === 'string' &&
+                /"(?:textEditValue|mTextParam)"\s*:/.test(ham)) return prop;
+        } catch (e) {}
+    }
+    return null;
+}
+
+/**
+ * Metin parametresine yazar.
+ *
+ * OLCULEN iki incelik:
+ *   1. Deger duz metin degil, bir JSON metin belgesi. Icindeki
+ *      textEditValue alanini degistirmek gerekiyor; belgeyi duz metinle
+ *      degistirmek bicimlendirmeyi siliyor.
+ *   2. Satir sonu \n DEGIL \r olmali; \n gonderilince metin tek satira
+ *      diziliyor.
+ * ES3'te JSON yok, bu yuzden alani duzenli ifadeyle degistiriyoruz.
+ */
+function mogrtMetinYaz(prop, metin) {
+    if (!prop) return false;
+    var deger = String(metin || '').replace(/\r?\n/g, '\r');
+
+    var ham = null;
+    try { ham = prop.getValue(); } catch (e) {}
+
+    var yuk = deger;
+    if (typeof ham === 'string' && /^\s*\{/.test(ham)) {
+        // JSON dizgi kacisi: ters egik cizgi, tirnak ve satir sonu
+        var kacisli = deger
+            .replace(/\\/g, '\\\\')
+            .replace(/"/g, '\\"')
+            .replace(/\r/g, '\\r');
+        var yeni = ham;
+        if (/"textEditValue"\s*:/.test(yeni)) {
+            yeni = yeni.replace(/("textEditValue"\s*:\s*")(?:[^"\\]|\\.)*(")/,
+                               '$1' + kacisli + '$2');
+        } else if (/"mTextParam"\s*:/.test(yeni)) {
+            yeni = yeni.replace(/("mTextParam"\s*:\s*")(?:[^"\\]|\\.)*(")/,
+                               '$1' + kacisli + '$2');
+        }
+        // Bicimlendirme uzunluk dizileri metinle ayni uzunlukta olmali
+        yeni = yeni.replace(/("fontTextRunLength"\s*:\s*\[)[^\]]*(\])/,
+                            '$1' + deger.length + '$2');
+        yeni = yeni.replace(/("fontTextRunStart"\s*:\s*\[)[^\]]*(\])/, '$10$2');
+        yuk = yeni;
+    }
+
+    try { prop.setValue(yuk, true); } catch (e) { return false; }
+    // setValue hemen islenmiyor; dogrulamadan once nefes aldiriyoruz
+    try { if ($.sleep) $.sleep(45); } catch (e) {}
+    return true;
+}
+
+/**
+ * Bir grup altyazi blogunu MOGRT klibi olarak video pistine dizer.
+ *
+ * NEDEN GRUP GRUP: 7 dakikalik bir videoda ~150 klip oluyor ve her biri
+ * saniyenin onda biri kadar suruyor. Tek cagrida yapilsa panel dakikalarca
+ * donmus gorunurdu; grup grup cagirinca arada ilerleme gosterilebiliyor.
+ *
+ * @param mogrtPath  .mogrt dosyasinin tam yolu
+ * @param bloklarJson  [{start,end,text}] — panel uretir, eval ile okunur
+ * @param trackIndex  hedef video pisti (0 tabanli)
+ */
+function trPlaceMogrtBatch(mogrtPath, bloklarJson, trackIndex) {
+    try {
+        var seq = app.project.activeSequence;
+        if (!seq) return err('Aktif sekans yok.');
+
+        var f = new File(String(mogrtPath));
+        if (!f.exists) return err('MOGRT sablonu bulunamadi: ' + mogrtPath);
+
+        var track = parseInt(trackIndex, 10);
+        if (!(track >= 0) || track >= seq.videoTracks.numTracks) {
+            return err('Video pisti gecersiz: ' + trackIndex);
+        }
+
+        var bloklar;
+        // ES3'te JSON yok. Veriyi panel uretiyor (kullanici girdisi degil),
+        // bu yuzden eval guvenli.
+        try { bloklar = eval('(' + bloklarJson + ')'); }
+        catch (e) { return err('Blok listesi okunamadi: ' + e); }
+        if (!bloklar || !bloklar.length) return err('Blok listesi bos.');
+
+        var konan = 0;
+        var hatalar = [];
+
+        for (var i = 0; i < bloklar.length; i++) {
+            var b = bloklar[i];
+            var bas = Math.max(0, Number(b.start) || 0);
+            var bit = Math.max(bas + 0.05, Number(b.end) || bas + 0.05);
+            var clip = null;
+
+            try {
+                var at = new Time();
+                at.seconds = bas;
+                try { clip = seq.importMGT(f.fsName, at.ticks, track, 0); } catch (eI) {}
+                if (!clip) { hatalar.push('#' + (i + 1) + ' yerlestirilemedi'); continue; }
+
+                try { clip.name = 'TK Caption ' + (i + 1); } catch (e) {}
+
+                // Bilesen ASENKRON yukleniyor; hazir olana kadar bekliyoruz
+                var comp = null;
+                for (var w = 0; w < 8 && !comp; w++) {
+                    try { comp = clip.getMGTComponent(); } catch (e) {}
+                    if (!comp) { try { if ($.sleep) $.sleep(55); } catch (e) {} }
+                }
+                if (!comp) { hatalar.push('#' + (i + 1) + ' bileşen açılmadı'); continue; }
+
+                var prop = mogrtMetinParam(comp);
+                if (!prop) { hatalar.push('#' + (i + 1) + ' metin alanı yok'); continue; }
+                mogrtMetinYaz(prop, String(b.text || ''));
+
+                // Sure: bazi surumler ilk atamayi yutuyor, ikinci kez deniyoruz
+                var son = new Time();
+                son.seconds = bit;
+                try { clip.end = son; } catch (e) {}
+                var gercek = 0;
+                try { gercek = Number(clip.end.seconds) || 0; } catch (e) {}
+                if (Math.abs(gercek - bit) > 0.08) {
+                    try { clip.end = son; } catch (e) {}
+                }
+
+                konan++;
+            } catch (eB) {
+                hatalar.push('#' + (i + 1) + ' ' + String(eB.message || eB));
+                try { if (clip) clip.remove(0, 0); } catch (e) {}
+            }
+        }
+
+        return ok([
+            kv('placed', String(konan), true),
+            kv('total', String(bloklar.length), true),
+            kv('errors', arrToJson(hatalar), true)
+        ]);
+    } catch (e) {
+        return err('MOGRT altyazilari yerlestirilemedi', e);
+    }
+}
+
+/**
+ * Stilize altyazi icin BOS bir video pisti bulur ya da olusturur.
+ *
+ * Var olan klipleri ezmemek icin once tamamen bos bir pist ariyoruz;
+ * yoksa sekansa yeni pist ekliyoruz.
+ */
+function trFindFreeVideoTrack() {
+    try {
+        var seq = app.project.activeSequence;
+        if (!seq) return err('Aktif sekans yok.');
+
+        var n = seq.videoTracks.numTracks;
+        for (var i = n - 1; i >= 0; i--) {
+            var t = seq.videoTracks[i];
+            var c = 0;
+            try { c = t.clips.numItems; } catch (e) {}
+            if (c === 0) return ok([kv('track', String(i), true), kv('created', 'false', true)]);
+        }
+
+        // Bos pist yok: yeni ekle. QE DOM disinda pist ekleme API'si yok.
+        try {
+            if (typeof qe === 'undefined') app.enableQE();
+            var qseq = qe.project.getActiveSequence();
+            qseq.addTracks(1, n, 0, 0, 0);
+            var yeni = app.project.activeSequence.videoTracks.numTracks - 1;
+            return ok([kv('track', String(yeni), true), kv('created', 'true', true)]);
+        } catch (e) {
+            return err('Boş video pisti yok ve yeni pist eklenemedi.',
+                       'Sekansa elle bir video pisti ekleyip tekrar deneyin.');
+        }
+    } catch (e) {
+        return err('Video pisti bulunamadi', e);
+    }
+}
 
 /**
  * Hazir metin stillerini Premiere'in stil klasorune kopyalar.

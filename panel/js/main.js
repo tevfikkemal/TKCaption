@@ -433,6 +433,273 @@
   }
 
   /* ---------------------------------------------------------------- */
+  /*  STILIZE ALTYAZI — MOGRT sablonuyla video pistine                 */
+  /* ---------------------------------------------------------------- */
+
+  /*
+   * NEDEN AYRI BIR AKIS: Premiere altyazi pistinin stilini ne dosyadan
+   * ne betikten kabul ediyor (olculdu). Yazi tipi/renk vermenin tek yolu
+   * altyaziyi grafik olarak koymak. Bedeli de acik: cikti kapatilabilir
+   * bir altyazi pisti degil, videoya gomulu yazi oluyor. Bu yuzden
+   * mevcut altyazi akisini DEGISTIRMIYORUZ, yanina koyuyoruz.
+   *
+   * .mogrt dosyalari pakete girmiyor (50 sablon ~114 MB). Katalog ve
+   * kucuk onizlemeler pakette; dosyalarin kendisi kullanicinin
+   * klasorunden okunuyor.
+   */
+
+  var mogrtKatalog = null;
+  var mogrtSecili = null;
+  var mogrtKlasor = null;
+  var sonAltyaziYolu = null;
+
+  var MOGRT_KLASOR_ANAHTAR = 'tkcaption.mogrtDir';
+  var MOGRT_SECIM_ANAHTAR = 'tkcaption.mogrtStyle';
+
+  function yerelOku(k) {
+    try { return window.localStorage.getItem(k); } catch (e) { return null; }
+  }
+  function yerelYaz(k, v) {
+    try { window.localStorage.setItem(k, v); } catch (e) {}
+  }
+
+  function initMogrt() {
+    if (!nodeReq) { mogrtNot('Node.js kapalı — bu bölüm çalışmaz.'); return; }
+
+    var ext = CEP.extensionPath();
+    if (!ext) { mogrtNot('Eklenti yolu alınamadı.'); return; }
+
+    try {
+      var kYol = npath.join(ext, 'mogrt', 'catalog.json');
+      if (!nfs.existsSync(kYol)) { mogrtNot('Şablon kataloğu pakette yok.'); return; }
+      mogrtKatalog = JSON.parse(nfs.readFileSync(kYol, 'utf8'));
+    } catch (e) {
+      mogrtNot('Katalog okunamadı: ' + e.message);
+      return;
+    }
+
+    setText('mogrtCount', mogrtKatalog.items.length + ' şablon');
+
+    mogrtKlasor = yerelOku(MOGRT_KLASOR_ANAHTAR);
+    mogrtSecili = yerelOku(MOGRT_SECIM_ANAHTAR);
+
+    kartlariCiz(ext);
+    klasorEtiketiTazele();
+    mogrtDurumTazele();
+  }
+
+  function kartlariCiz(ext) {
+    var grid = $('mogrtGrid');
+    if (!grid) return;
+    var html = '';
+    for (var i = 0; i < mogrtKatalog.items.length; i++) {
+      var it = mogrtKatalog.items[i];
+      var secili = (it.id === mogrtSecili) ? ' on' : '';
+      // Onizleme dosya yolu; CEP'te file:// gerekmiyor, goreli yol yeter
+      var gorsel = it.thumb
+        ? '<img src="mogrt/' + encodeURI(it.thumb) + '" alt="">'
+        : '<span class="yok">önizleme yok</span>';
+      html += '<div class="mogrt-card' + secili + '" data-id="' + esc(it.id) + '">' +
+              gorsel + '<span class="ad">' + esc(it.ad) + '</span></div>';
+    }
+    grid.innerHTML = html;
+    grid.hidden = false;
+
+    var kartlar = grid.querySelectorAll('.mogrt-card');
+    for (var k = 0; k < kartlar.length; k++) {
+      kartlar[k].addEventListener('click', function () {
+        var hepsi = grid.querySelectorAll('.mogrt-card');
+        for (var j = 0; j < hepsi.length; j++) hepsi[j].className = 'mogrt-card';
+        this.className = 'mogrt-card on';
+        mogrtSecili = this.getAttribute('data-id');
+        yerelYaz(MOGRT_SECIM_ANAHTAR, mogrtSecili);
+        mogrtDurumTazele();
+      });
+    }
+  }
+
+  function klasorEtiketiTazele() {
+    if (!mogrtKlasor) { setText('mogrtDirLabel', 'seçilmedi'); return; }
+    var varMi = false;
+    try { varMi = nfs.existsSync(mogrtKlasor); } catch (e) {}
+    setText('mogrtDirLabel', (varMi ? '' : '(bulunamadı) ') + mogrtKlasor);
+  }
+
+  function chooseMogrtDir() {
+    var r = null;
+    try {
+      r = window.cep.fs.showOpenDialogEx(false, true, 'MOGRT şablon klasörü',
+                                         mogrtKlasor || '');
+    } catch (e) {
+      try { r = window.cep.fs.showOpenDialog(false, true, 'MOGRT şablon klasörü', ''); }
+      catch (e2) { mogrtNot('Klasör seçici açılamadı: ' + e2.message); return; }
+    }
+    if (!r || !r.data || !r.data.length) return;
+    mogrtKlasor = String(r.data[0]);
+    yerelYaz(MOGRT_KLASOR_ANAHTAR, mogrtKlasor);
+    klasorEtiketiTazele();
+    mogrtDurumTazele();
+  }
+
+  function mogrtNot(msg) {
+    var el = $('mogrtNote');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.hidden = !msg;
+  }
+
+  /** Dugmeyi ancak her sart tamamsa acar; neyin eksik oldugunu yazar. */
+  function mogrtDurumTazele() {
+    var btn = $('btnMogrtRun');
+    if (!btn) return;
+
+    if (!mogrtKatalog) { btn.disabled = true; return; }
+    if (!mogrtKlasor) { btn.disabled = true; mogrtNot('Şablon klasörünü seçin.'); return; }
+    if (!mogrtSecili) { btn.disabled = true; mogrtNot('Bir şablon seçin.'); return; }
+    if (!sonAltyaziYolu) {
+      btn.disabled = true;
+      mogrtNot('Önce yukarıdan altyazı oluşturun; stilize sürüm o bloklardan yazılır.');
+      return;
+    }
+    var it = mogrtItem(mogrtSecili);
+    if (it) {
+      var dosya = npath.join(mogrtKlasor, it.dosya);
+      var varMi = false;
+      try { varMi = nfs.existsSync(dosya); } catch (e) {}
+      if (!varMi) {
+        btn.disabled = true;
+        mogrtNot('Seçilen şablon dosyası klasörde yok: ' + it.dosya);
+        return;
+      }
+    }
+    btn.disabled = false;
+    mogrtNot('');
+  }
+
+  function mogrtItem(id) {
+    if (!mogrtKatalog) return null;
+    for (var i = 0; i < mogrtKatalog.items.length; i++) {
+      if (mogrtKatalog.items[i].id === id) return mogrtKatalog.items[i];
+    }
+    return null;
+  }
+
+  function mogrtBar(oran) {
+    var b = $('mogrtBar');
+    var f = $('mogrtFill');
+    if (b) b.hidden = false;
+    if (f) f.style.width = Math.round(Math.max(0, Math.min(1, oran)) * 100) + '%';
+  }
+
+  function mogrtYaz(html) {
+    var el = $('mogrtOut');
+    if (!el) return;
+    el.hidden = false;
+    el.innerHTML += html + '\n';
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function runMogrtCaptions() {
+    var it = mogrtItem(mogrtSecili);
+    if (!it || !sonAltyaziYolu) return;
+
+    var btn = $('btnMogrtRun');
+    btn.disabled = true;
+    $('mogrtOut').innerHTML = '';
+    mogrtBar(0);
+    mogrtNot('');
+
+    var core = resolveCore();
+    var bloklar;
+    try {
+      var srtMod = nodeReq(npath.join(core, 'src', 'srt.js'));
+      bloklar = srtMod.parseSrt(nfs.readFileSync(sonAltyaziYolu, 'utf8'));
+    } catch (e) {
+      mogrtYaz('<span class="err">Altyazı dosyası okunamadı: ' + esc(e.message) + '</span>');
+      btn.disabled = false;
+      return;
+    }
+    if (!bloklar || !bloklar.length) {
+      mogrtYaz('<span class="err">Altyazı dosyasında blok yok.</span>');
+      btn.disabled = false;
+      return;
+    }
+
+    var dosya = npath.join(mogrtKlasor, it.dosya);
+    mogrtYaz('<span class="dim">Şablon:</span> ' + esc(it.ad));
+    mogrtYaz('<span class="dim">Blok:</span> ' + bloklar.length);
+
+    // SRT zamanlari sekansin BASLANGIC ZAMAN KODUNA gore yazildi (pipeline
+    // zeroPoint'i offset olarak ekliyor). importMGT ise sekansin basindan
+    // itibaren saniye istiyor. Sekans 01:00:00:00'dan basliyorsa bu farki
+    // dusmezsek her klip bir saat ileri gider.
+    var zeroSec = 0;
+    CEP.call('trGetSequenceInfo()').then(function (si) {
+      zeroSec = Number(si.zeroPointSec) || 0;
+      if (zeroSec > 0.0005) {
+        mogrtYaz('<span class="dim">Başlangıç zaman kodu düşülüyor:</span> ' +
+                 zeroSec.toFixed(3) + ' sn');
+      }
+      // Once bos bir video pisti bul; var olan klipleri ezmek istemiyoruz
+      return CEP.call('trFindFreeVideoTrack()');
+    }).then(function (t) {
+      var track = Number(t.track);
+      mogrtYaz('<span class="dim">Pist:</span> V' + (track + 1) +
+               (String(t.created) === 'true' ? ' (yeni eklendi)' : ''));
+
+      // Grup grup gonderiyoruz: tek cagrida panel dakikalarca donardi
+      var GRUP = 10;
+      var i = 0;
+      var konan = 0;
+      var hatalar = [];
+
+      function sonraki() {
+        if (i >= bloklar.length) {
+          mogrtBar(1);
+          mogrtYaz('<span class="ok">' + konan + ' / ' + bloklar.length +
+                   ' altyazı yerleştirildi</span>');
+          if (hatalar.length) {
+            mogrtYaz('<span class="warn">' + hatalar.length + ' blok atlandı</span>');
+            for (var h = 0; h < Math.min(5, hatalar.length); h++) {
+              mogrtYaz('<span class="dim">  ' + esc(hatalar[h]) + '</span>');
+            }
+          }
+          btn.disabled = false;
+          return;
+        }
+
+        var grup = [];
+        for (var g = 0; g < GRUP && i < bloklar.length; g++, i++) {
+          grup.push({
+            start: Math.max(0, bloklar[i].start - zeroSec),
+            end: Math.max(0.05, bloklar[i].end - zeroSec),
+            text: bloklar[i].lines ? bloklar[i].lines.join('\n') : (bloklar[i].text || '')
+          });
+        }
+
+        var json = JSON.stringify(grup);
+        CEP.call('trPlaceMogrtBatch("' + esPath(dosya) + '", "' + esPath(json) +
+                 '", ' + track + ')').then(function (r) {
+          konan += Number(r.placed) || 0;
+          var hs = asArray(r.errors);
+          for (var e = 0; e < hs.length; e++) hatalar.push(hs[e]);
+          mogrtBar(i / bloklar.length);
+          sonraki();
+        }).catch(function (e) {
+          mogrtYaz('<span class="err">' + esc(e.message || String(e)) + '</span>');
+          btn.disabled = false;
+        });
+      }
+
+      sonraki();
+    }).catch(function (e) {
+      mogrtYaz('<span class="err">' + esc(e.message || String(e)) + '</span>');
+      if (e.detail) mogrtYaz('<span class="dim">' + esc(e.detail) + '</span>');
+      btn.disabled = false;
+    });
+  }
+
+  /* ---------------------------------------------------------------- */
   /*  GUVENLI ALAN katmani                                             */
   /* ---------------------------------------------------------------- */
 
@@ -947,6 +1214,9 @@
       });
     }).then(function (res) {
       lastResult = res;
+      // Stilize altyazi bolumu bu dosyayi okuyup MOGRT olarak dizecek
+      sonAltyaziYolu = srtPath;
+      mogrtDurumTazele();
       setBar(0.95);
       appendRun('<span class="ok">' + res.blocks + ' blok, ' + res.words + ' kelime</span>  ' +
                 res.elapsedSec + ' sn (' + res.speedRealtime + 'x)');
@@ -1181,6 +1451,9 @@
       sfBoxes[b].addEventListener('change', refreshPlatformNote);
     }
     refreshPlatformNote();
+    initMogrt();
+    $('btnMogrtDir').addEventListener('click', chooseMogrtDir);
+    $('btnMogrtRun').addEventListener('click', runMogrtCaptions);
     $('btnCancel').addEventListener('click', cancelRun);
     $('btnSeq').addEventListener('click', function () { readSequence(false); });
     $('btnProbe').addEventListener('click', runProbe);

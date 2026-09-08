@@ -1,7 +1,7 @@
 {
-  "version": "0.8.9",
-  "updated": "2026-09-08T11:53:13.145Z",
-  "notes": "uc hazir altyazi stili",
+  "version": "0.9.0",
+  "updated": "2026-09-08T12:23:38.609Z",
+  "notes": "stilize altyazi — MOGRT sablonlariyla",
   "files": [
     {
       "path": "core/package.json",
@@ -86,17 +86,17 @@
     {
       "path": "css/style.css",
       "source": "panel/css/style.css",
-      "sha": "1d2df2d23b1a87abf1a5e0d53c6c2ffae76b71aee0bae2368d2947d9e9a5797b"
+      "sha": "1432bde439ec9608b16b27a7d8ab5aec3b7945beeb910189f17bf1eb8451efac"
     },
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "cdedc58dac41ba034c761fb4137b0586cbb22312558905cdcfed67801cb52df9"
+      "sha": "608aa239d10191c0467f82f60ce0cd30bd69e697e08d1de5df60ad59c35de38e"
     },
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "f88aaf7ec7bd61f6698efa401b26ef209ef91498ae44806ab3d5e0fdf74d4df4"
+      "sha": "55c33b7dbe1dff9c1eee78c1b4e4d605a1ce78bf4caea707aa663dc216a1b843"
     },
     {
       "path": "js/cep.js",
@@ -106,17 +106,272 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "7dcbeef7d457957844f229af0b6a314079aaaabe5fbe0e518d8dbcd5a02ae820"
+      "sha": "0f716025d5ba58fda025aaed185d77b02fbc412f3aab3262db2f82306b390939"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "a19c704e0fb6263a5e064df6a5dff3ce0f151a32529264cfd8c4e377980726de"
+      "sha": "03af5d79dcfd774fdc2c532b273af505b65eb74a0f404a2ebc6c0b803d11c8c7"
     },
     {
       "path": "LICENSE",
       "source": "LICENSE",
       "sha": "1c6307b23ff7ec15b7ca73ec8922da90890a3bad74039ee48cd2dc2df32dc71b"
+    },
+    {
+      "path": "mogrt/catalog.json",
+      "source": "panel/mogrt/catalog.json",
+      "sha": "1bdcaf7e74a0b3af30ce24fd68c8e80dd3e556b8284f89552620b28e9bda3be4"
+    },
+    {
+      "path": "mogrt/thumbs/3D TEXT.png",
+      "source": "panel/mogrt/thumbs/3D TEXT.png",
+      "sha": "48a769717605588ed1de1946227dd9995f64b7ceaff5243e24720297827707cd"
+    },
+    {
+      "path": "mogrt/thumbs/ABOVE IN.png",
+      "source": "panel/mogrt/thumbs/ABOVE IN.png",
+      "sha": "5849c9309be50c4b916ab6ecc8927547cd1cb680400f0c58d707555ae02b08c9"
+    },
+    {
+      "path": "mogrt/thumbs/AESTHETIC PURPLE.png",
+      "source": "panel/mogrt/thumbs/AESTHETIC PURPLE.png",
+      "sha": "0ba06f76aad0015f2d8f8be74798b935d2745304055e7f91eef537e6baa0fece"
+    },
+    {
+      "path": "mogrt/thumbs/AESTHETIC STRINKING.png",
+      "source": "panel/mogrt/thumbs/AESTHETIC STRINKING.png",
+      "sha": "3a3429ebb7cd831579f75bc7e44d5c4075576f265ea6eb35b2825d07cdf6ca99"
+    },
+    {
+      "path": "mogrt/thumbs/apple LADDER.png",
+      "source": "panel/mogrt/thumbs/apple LADDER.png",
+      "sha": "b1288b4bf7f2c38498e538ee9b37fe103d4a684046409946109bb3506c30f9df"
+    },
+    {
+      "path": "mogrt/thumbs/apple MIDDLE.png",
+      "source": "panel/mogrt/thumbs/apple MIDDLE.png",
+      "sha": "cb482340bc0682367dea1e9264beebf7f40b3f80abb6479a578697452dacc230"
+    },
+    {
+      "path": "mogrt/thumbs/apple smooth.png",
+      "source": "panel/mogrt/thumbs/apple smooth.png",
+      "sha": "00e346d7ba22b133464189ec5633ef462c6595dbfaeb21358519368d3b288911"
+    },
+    {
+      "path": "mogrt/thumbs/APPLE STYLE ANIMATION.png",
+      "source": "panel/mogrt/thumbs/APPLE STYLE ANIMATION.png",
+      "sha": "5d6032759d97350c87608bdd27ac23c497fcf267c831c45f0ed8cd25fbc672fc"
+    },
+    {
+      "path": "mogrt/thumbs/apple WORD.png",
+      "source": "panel/mogrt/thumbs/apple WORD.png",
+      "sha": "3783a5898fa7cdcf14cfe150798218f2e0571bf1ca0a713cd164000df92e7b4e"
+    },
+    {
+      "path": "mogrt/thumbs/BLUE AND ORANGE.png",
+      "source": "panel/mogrt/thumbs/BLUE AND ORANGE.png",
+      "sha": "a867f4afa6796a5d9ee03b39362f057cd7532abe465373332daae3b45390b6f7"
+    },
+    {
+      "path": "mogrt/thumbs/BLUR IN.png",
+      "source": "panel/mogrt/thumbs/BLUR IN.png",
+      "sha": "ac922812001041d2961c699924366e4b778757ec91dda875c29cab4062c64160"
+    },
+    {
+      "path": "mogrt/thumbs/BOTTOM IN.png",
+      "source": "panel/mogrt/thumbs/BOTTOM IN.png",
+      "sha": "112534b8700c8caec0da28be0969be2ae0f8b4cc0ca3926579627bdeb2ed12be"
+    },
+    {
+      "path": "mogrt/thumbs/Bubble.png",
+      "source": "panel/mogrt/thumbs/Bubble.png",
+      "sha": "35867b7c5f145205f420cf10e77c2ec16485c63bb269d5d3ec2df74ebe6fb787"
+    },
+    {
+      "path": "mogrt/thumbs/clean aesthetic light.png",
+      "source": "panel/mogrt/thumbs/clean aesthetic light.png",
+      "sha": "0a3c4ab737abdea8b67e3b91a6747724c8385a4e259efb0a119b98f96ac4b034"
+    },
+    {
+      "path": "mogrt/thumbs/CLEAN BLUE.png",
+      "source": "panel/mogrt/thumbs/CLEAN BLUE.png",
+      "sha": "23fdf634cc2973fec944ddb3770e2f7dd274061722888b14532b8be1ca920c95"
+    },
+    {
+      "path": "mogrt/thumbs/Clean gradient.png",
+      "source": "panel/mogrt/thumbs/Clean gradient.png",
+      "sha": "ed6a0388588ea0c5da6d96b18eccc990cf433f16254f9ed71e0c54d05ff3d390"
+    },
+    {
+      "path": "mogrt/thumbs/CLEAN STYLE.png",
+      "source": "panel/mogrt/thumbs/CLEAN STYLE.png",
+      "sha": "0b7f5817377c76c03ed999e922f1c94f4b225c8d4be77237261b7720f3896bdc"
+    },
+    {
+      "path": "mogrt/thumbs/dark water.png",
+      "source": "panel/mogrt/thumbs/dark water.png",
+      "sha": "9edcc9ea0cea9e207515bd6fd86815f580af3f47611c6dd913e02861d5d78362"
+    },
+    {
+      "path": "mogrt/thumbs/ELEGANT.png",
+      "source": "panel/mogrt/thumbs/ELEGANT.png",
+      "sha": "cd0836fafcfe5f57bec4d513cd571cf610f8341386bf5579043a740a7638c353"
+    },
+    {
+      "path": "mogrt/thumbs/ERROR TEXT.png",
+      "source": "panel/mogrt/thumbs/ERROR TEXT.png",
+      "sha": "5f9b00612c74c91c34d35d950af535cf58f2d7301433d5dd69967c8846de7be3"
+    },
+    {
+      "path": "mogrt/thumbs/ESCRITO A MANO POSTERIZACION.png",
+      "source": "panel/mogrt/thumbs/ESCRITO A MANO POSTERIZACION.png",
+      "sha": "cc0bc05443bb51d2296651bf797bd314304a1ca43bde61f2758280a0386d2290"
+    },
+    {
+      "path": "mogrt/thumbs/ESMERALD.png",
+      "source": "panel/mogrt/thumbs/ESMERALD.png",
+      "sha": "c3dc546dc53d8ac377d35af6c4304ff24838ad4022b60bc4d8c8f230dda2449c"
+    },
+    {
+      "path": "mogrt/thumbs/FAST.png",
+      "source": "panel/mogrt/thumbs/FAST.png",
+      "sha": "46287775813c55634fc224c2774ea18fb9d2f4ca51b6724bcbbc76e731c05b23"
+    },
+    {
+      "path": "mogrt/thumbs/FIRE.png",
+      "source": "panel/mogrt/thumbs/FIRE.png",
+      "sha": "a7f10360a39691041c46ed7175dedec9c9b1bed5582ae91f8ef9a26fbaa13eba"
+    },
+    {
+      "path": "mogrt/thumbs/fluorscent.png",
+      "source": "panel/mogrt/thumbs/fluorscent.png",
+      "sha": "510cf9a17e985780eba6d2893a048c0e60c8c2ba7d036ce6a03f1c60fb623af9"
+    },
+    {
+      "path": "mogrt/thumbs/FUTURIST.png",
+      "source": "panel/mogrt/thumbs/FUTURIST.png",
+      "sha": "0da8758289c16ab4c2da7c749065bb06fc329c47cec22b7f97ec60bf2485276b"
+    },
+    {
+      "path": "mogrt/thumbs/GOLD TEXT.png",
+      "source": "panel/mogrt/thumbs/GOLD TEXT.png",
+      "sha": "d14a3bc76efe8a277d825a044a92d8093dfa28e94073d40ebee7ded81cd742f9"
+    },
+    {
+      "path": "mogrt/thumbs/GREEN AND GREY.png",
+      "source": "panel/mogrt/thumbs/GREEN AND GREY.png",
+      "sha": "8954bb2d3ea29d1ad1e601632f3463673bdbb8682b5a27f8f765c2fb82c35c96"
+    },
+    {
+      "path": "mogrt/thumbs/Green.png",
+      "source": "panel/mogrt/thumbs/Green.png",
+      "sha": "b588b00591c34f0942b738348243f7edc76b4650151b5a9c84dfef7b44ab79c6"
+    },
+    {
+      "path": "mogrt/thumbs/LEFT IN.png",
+      "source": "panel/mogrt/thumbs/LEFT IN.png",
+      "sha": "adec28dd077c431c4c1d0ade5e36e39e169ad83b7956cde7069563fc80077723"
+    },
+    {
+      "path": "mogrt/thumbs/OLD MONEY.png",
+      "source": "panel/mogrt/thumbs/OLD MONEY.png",
+      "sha": "9d0a443ab23fb20853377952b33f537b8c0bac8ad91b3b9a51dfb81dc8081bd6"
+    },
+    {
+      "path": "mogrt/thumbs/OLD TV.png",
+      "source": "panel/mogrt/thumbs/OLD TV.png",
+      "sha": "5d6ccfcc17cd24045c1756924c8e10e5be1d8631157d856cf0633247643e08c3"
+    },
+    {
+      "path": "mogrt/thumbs/OPACITY IN.png",
+      "source": "panel/mogrt/thumbs/OPACITY IN.png",
+      "sha": "1d379f1bc3d682a263f82d76b5b90ffa920c7dfd7c5a71b83334be2d99bf594c"
+    },
+    {
+      "path": "mogrt/thumbs/ORANGE TEXT.png",
+      "source": "panel/mogrt/thumbs/ORANGE TEXT.png",
+      "sha": "3a744e2c184ddf60153b61af5bd833a23f127d289ab860a72530c69596696d78"
+    },
+    {
+      "path": "mogrt/thumbs/Purple.png",
+      "source": "panel/mogrt/thumbs/Purple.png",
+      "sha": "a10c2eef997dd7f54dbf4ae3f38e9f3f7545af445e265c8337adca6fcb6b8eba"
+    },
+    {
+      "path": "mogrt/thumbs/Radial BLUR.png",
+      "source": "panel/mogrt/thumbs/Radial BLUR.png",
+      "sha": "89c86b32d0ed54d02e02e7265aaf4f9362807aa64088afd846b264186428c16e"
+    },
+    {
+      "path": "mogrt/thumbs/RAINBOW CLEAN TEXT.png",
+      "source": "panel/mogrt/thumbs/RAINBOW CLEAN TEXT.png",
+      "sha": "498cbf3b585263a184f62430ce361313ae59400a916256e558eed32595d5e381"
+    },
+    {
+      "path": "mogrt/thumbs/RAINBOW TEXT.png",
+      "source": "panel/mogrt/thumbs/RAINBOW TEXT.png",
+      "sha": "7292a4600db350a90d4c6791d1e0287a3133ce84e2c60ae5f3a6cb009bf4ca2e"
+    },
+    {
+      "path": "mogrt/thumbs/Rebote.png",
+      "source": "panel/mogrt/thumbs/Rebote.png",
+      "sha": "e4f89ad079c472bf49988091da69c51904d11163728e4a360dc1c67a8b570ed1"
+    },
+    {
+      "path": "mogrt/thumbs/RIGHT IN.png",
+      "source": "panel/mogrt/thumbs/RIGHT IN.png",
+      "sha": "b13372dc3bd2ad210515b22b55ed22b170c2470a5da182e1c7bfdc127b2f6c97"
+    },
+    {
+      "path": "mogrt/thumbs/SMOOTH OPACITY.png",
+      "source": "panel/mogrt/thumbs/SMOOTH OPACITY.png",
+      "sha": "b25cbf6dd29ef8373c9eaf901fdb8fb96a8f3fb6bfcbdeffd9a85ebbc03a3a38"
+    },
+    {
+      "path": "mogrt/thumbs/SMOOTH UP.png",
+      "source": "panel/mogrt/thumbs/SMOOTH UP.png",
+      "sha": "9cd98d4c38b1dae2e61fc7caa7d4c766fff770f92ae0c575fcb969d5e35c5572"
+    },
+    {
+      "path": "mogrt/thumbs/TRIPLE ELEGANT TEXT.png",
+      "source": "panel/mogrt/thumbs/TRIPLE ELEGANT TEXT.png",
+      "sha": "6f1d13b0c39ff0f998898b74e87c24e24938764d7c56eacc7cc45714b21da07d"
+    },
+    {
+      "path": "mogrt/thumbs/VHS.png",
+      "source": "panel/mogrt/thumbs/VHS.png",
+      "sha": "39df980dbca24798545e55a34e693652bf5d5aeb264bc287f870306e2a9989b2"
+    },
+    {
+      "path": "mogrt/thumbs/WARP.png",
+      "source": "panel/mogrt/thumbs/WARP.png",
+      "sha": "e0c43243cc5f464a4fe49596098adef4ff00758dcf85c9c451e51a78c8589e5b"
+    },
+    {
+      "path": "mogrt/thumbs/WATER TEXT.png",
+      "source": "panel/mogrt/thumbs/WATER TEXT.png",
+      "sha": "034d275b590b4c12ac9ed5c387ef64c4a9f669fdfb863c78b36a8a272d8c1e82"
+    },
+    {
+      "path": "mogrt/thumbs/WAVES.png",
+      "source": "panel/mogrt/thumbs/WAVES.png",
+      "sha": "ad744844fbf48e348fa8bdc1fe8292cf5440f0a972505d809944448b5e6aebb9"
+    },
+    {
+      "path": "mogrt/thumbs/ZOOM IN.png",
+      "source": "panel/mogrt/thumbs/ZOOM IN.png",
+      "sha": "83abc7d6aa5b3b97aedcd43c7e0bbfe2728e60858503fd50ccbaea1362356fcc"
+    },
+    {
+      "path": "mogrt/thumbs/ZOOM OUT.png",
+      "source": "panel/mogrt/thumbs/ZOOM OUT.png",
+      "sha": "93340f5d537e614525764817561f365a978d50a7e2bed754f04ef920bf605d67"
+    },
+    {
+      "path": "mogrt/thumbs/ZOOM WORD.png",
+      "source": "panel/mogrt/thumbs/ZOOM WORD.png",
+      "sha": "e546dccfa2e2609572982f148cddb63795bfb18fdb270c0ce23aec9fd4dba165"
     },
     {
       "path": "styles/TK Caption Style - 1.prtextstyle",
