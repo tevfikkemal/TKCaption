@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.8.6';
+var TR_ALTYAZI_VERSION = '0.8.7';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -808,6 +808,55 @@ function trProbeCaptionApi() {
                 if (vtMembers.length) found.push('videoTrack -> ' + vtMembers.join(', '));
             }
         } catch (e) {}
+
+        // --- VAR OLAN ALTYAZI PISTI: stil ve konum ayarlanabiliyor mu? ---
+        // OLCULDU: Premiere TTML'den yalnizca zamanlama, metin ve kare
+        // hizini aliyor. tts: stil oznitelikleri ve layout/region konumu
+        // yok sayiliyor (region'un VARLIGI zorunlu ama degerleri
+        // kullanilmiyor — regionsuz dosya "format not supported" aliyor,
+        // regionlu dosya konumdan bagimsiz ustte cikiyor).
+        // Dolayisiyla stil ve konumu ancak Premiere'in kendi pist
+        // nesnesinden ayarlayabiliriz — varsa. Onu ariyoruz.
+        try {
+            var ctList = null;
+            try { ctList = seq.captionTracks; } catch (e) {}
+            if (ctList) {
+                var n = 0;
+                try { n = ctList.numTracks; } catch (e) { try { n = ctList.length; } catch (e2) {} }
+                found.push('sequence.captionTracks bulundu, pist sayisi=' + String(n));
+
+                if (n > 0) {
+                    var ct = ctList[0];
+                    var ctKeys = [];
+                    for (var k5 in ct) {
+                        try { ctKeys.push(k5 + (typeof ct[k5] === 'function' ? '()' : ':' + typeof ct[k5])); }
+                        catch (e) {}
+                    }
+                    ctKeys.sort();
+                    found.push('captionTrack[0] TUM UYELER: ' + ctKeys.join(', '));
+
+                    // Pist uzerindeki altyazi kliplerine de bakalim: stil
+                    // pist duzeyinde degil klip duzeyinde olabilir.
+                    try {
+                        var clips = ct.clips;
+                        var cn = clips ? clips.numItems : 0;
+                        found.push('captionTrack[0].clips sayisi=' + String(cn));
+                        if (cn > 0) {
+                            var cl = clips[0];
+                            var clKeys = [];
+                            for (var k6 in cl) {
+                                try { clKeys.push(k6 + (typeof cl[k6] === 'function' ? '()' : ':' + typeof cl[k6])); }
+                                catch (e) {}
+                            }
+                            clKeys.sort();
+                            found.push('captionClip[0] TUM UYELER: ' + clKeys.join(', '));
+                        }
+                    } catch (e) { notes.push('caption klipleri okunamadi: ' + e); }
+                }
+            } else {
+                notes.push('sequence.captionTracks YOK — pist nesnesine erisilemiyor');
+            }
+        } catch (e) { notes.push('captionTracks yoklamasi hata: ' + e); }
 
         // --- QE DOM (belgelenmemis ama bazen caption islevleri barindirir) ---
         var qeAvailable = false;

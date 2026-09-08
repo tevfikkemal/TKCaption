@@ -1,7 +1,7 @@
 {
-  "version": "0.8.6",
-  "updated": "2026-09-08T11:14:07.137Z",
-  "notes": "TTML artik gercekten kullaniliyor (.dfxp uzantisi)",
+  "version": "0.8.7",
+  "updated": "2026-09-08T11:29:58.896Z",
+  "notes": "altyazi pisti stil yoklamasi",
   "files": [
     {
       "path": "core/package.json",
@@ -91,12 +91,12 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "29b9564eee21808c3bbeecc8b1419df80d26e9614efa05a56aab388421fa7c1b"
+      "sha": "5c0e0595aba6766204e027f81dbb22563fd905a76d95ae3d521193354521ea43"
     },
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "184c354109bfedfdc6b002751fb8d1ffd030bb0371904c15ad98d24ad151ac5b"
+      "sha": "71ab5f5b0af4b1983f3d683dc775fd5a0c5eec28ac1a3f7ea24e743ef5de014f"
     },
     {
       "path": "js/cep.js",
@@ -111,7 +111,7 @@
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "88071ab6fda6915458574507cb76bf96838a04eb66c60b380848f4239bf51287"
+      "sha": "55f8b74325d03b473dc4c05db70ca43832fb2bb41545e32483a6e01eb40a4efd"
     },
     {
       "path": "LICENSE",
