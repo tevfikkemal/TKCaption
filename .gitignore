@@ -19,3 +19,6 @@ dist/
 # imzalama: ozel anahtar ve indirilen arac depoya girmez
 tools/.cert/
 tools/.bin/
+
+# Stil yoklamasinin cikrisi — arac repoda, ciktisi degil
+stil-denemesi/
