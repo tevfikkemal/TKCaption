@@ -261,9 +261,27 @@ async function apply(extensionDir, manifest, onProgress) {
   fs.mkdirSync(staging, { recursive: true });
 
   // --- 1. Indir ve dogrula ---
+  // DEGISMEYEN DOSYA INDIRILMEZ. Bildirimdeki SHA kurulu dosyanınkiyle
+  // ayniysa o dosya zaten gunceldir. Sablonlar pakete girince (yuz
+  // megabaytlar) her guncellemede hepsini indirmek kabul edilemezdi;
+  // bu kontrol olmadan surum atlamak bile tam paket indiriyordu.
+  let atlanan = 0;
+  let atlananBayt = 0;
+  const inen = [];   // yalnizca gercekten indirilenler tasinacak
   for (let i = 0; i < files.length; i++) {
     const f = files[i];
     if (onProgress) onProgress({ done: i, total: files.length, file: f.path });
+
+    const mevcut = path.join(extensionDir, f.path);
+    if (f.sha) {
+      try {
+        if (fs.existsSync(mevcut) && sha256(fs.readFileSync(mevcut)) === f.sha) {
+          atlanan++;
+          atlananBayt += fs.statSync(mevcut).size;
+          continue;
+        }
+      } catch (_) { /* okunamadi: indirip uzerine yazacagiz */ }
+    }
 
     // Yol parcalarini KODLA: hazir stil dosyalarinin adinda bosluk var
     // ("TK Caption Style - 1.prtextstyle") ve ham bosluk iceren bir URL
@@ -282,6 +300,7 @@ async function apply(extensionDir, manifest, onProgress) {
     const dest = path.join(staging, f.path);
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     fs.writeFileSync(dest, buf);
+    inen.push(f);
   }
   if (onProgress) onProgress({ done: files.length, total: files.length, file: '' });
 
@@ -291,16 +310,16 @@ async function apply(extensionDir, manifest, onProgress) {
   if (!yazilabilir(extensionDir)) {
     if (onProgress) onProgress({ done: files.length, total: files.length, file: '', phase: 'yetki' });
     try {
-      yukseltilmisTasi(staging, extensionDir, files);
+      yukseltilmisTasi(staging, extensionDir, inen);
     } finally {
       try { fs.rmSync(staging, { recursive: true, force: true }); } catch (_) {}
     }
-    return { updated: files.length, backup: null, version: manifest.version, elevated: true };
+    return { updated: inen.length, skipped: atlanan, backup: null, version: manifest.version, elevated: true };
   }
 
   const backup = path.join(os.tmpdir(), 'tkcaption-backup-' + Date.now().toString(36));
   fs.mkdirSync(backup, { recursive: true });
-  for (const f of files) {
+  for (const f of inen) {
     const cur = path.join(extensionDir, f.path);
     if (fs.existsSync(cur)) {
       const b = path.join(backup, f.path);
@@ -312,7 +331,7 @@ async function apply(extensionDir, manifest, onProgress) {
   // --- 3. Yerine tasi; hata olursa geri al ---
   const yazilan = [];
   try {
-    for (const f of files) {
+    for (const f of inen) {
       const src = path.join(staging, f.path);
       const dst = path.join(extensionDir, f.path);
       fs.mkdirSync(path.dirname(dst), { recursive: true });
@@ -344,7 +363,7 @@ async function apply(extensionDir, manifest, onProgress) {
     try { fs.rmSync(staging, { recursive: true, force: true }); } catch (_) {}
   }
 
-  return { updated: files.length, backup, version: manifest.version };
+  return { updated: inen.length, skipped: atlanan, skippedBytes: atlananBayt, backup, version: manifest.version };
 }
 
 module.exports = {

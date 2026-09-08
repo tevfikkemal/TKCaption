@@ -1,7 +1,7 @@
 {
-  "version": "0.9.0",
-  "updated": "2026-09-08T12:23:38.609Z",
-  "notes": "stilize altyazi — MOGRT sablonlariyla",
+  "version": "0.9.1",
+  "updated": "2026-09-08T12:32:45.216Z",
+  "notes": "MOGRT olcek ve konum ayari",
   "files": [
     {
       "path": "core/package.json",
@@ -71,7 +71,7 @@
     {
       "path": "core/src/updater.js",
       "source": "core/src/updater.js",
-      "sha": "90185872227334fc0d6502ed4448854a6bb181bf2b01ce83c7deff76c113b817"
+      "sha": "bc8f228786f585c7da2b04b343a5b36934e60b357b64f7e1b3e85971bcbde33f"
     },
     {
       "path": "core/src/vad.js",
@@ -91,12 +91,12 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "608aa239d10191c0467f82f60ce0cd30bd69e697e08d1de5df60ad59c35de38e"
+      "sha": "c02bcc23acc82137d620952020492660638f2856c82a1bf040e933a47a01375d"
     },
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "55c33b7dbe1dff9c1eee78c1b4e4d605a1ce78bf4caea707aa663dc216a1b843"
+      "sha": "8089846bb28f7949791e4ca0bdfe0cb6ea51c2919662953e0098ea5effad36c7"
     },
     {
       "path": "js/cep.js",
@@ -106,12 +106,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "0f716025d5ba58fda025aaed185d77b02fbc412f3aab3262db2f82306b390939"
+      "sha": "4af75121afabf97b987a062456e083ae7e87a36215e108b5064880b326bf90bd"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "03af5d79dcfd774fdc2c532b273af505b65eb74a0f404a2ebc6c0b803d11c8c7"
+      "sha": "c8063afd5804f064c5f11fd54537a53c2ff2ec04b63beac1d353f553c3d91c66"
     },
     {
       "path": "LICENSE",
@@ -121,7 +121,7 @@
     {
       "path": "mogrt/catalog.json",
       "source": "panel/mogrt/catalog.json",
-      "sha": "1bdcaf7e74a0b3af30ce24fd68c8e80dd3e556b8284f89552620b28e9bda3be4"
+      "sha": "c1194580b9fa08e33117481d49f7400268912d624b042664e2bc764bc19b4c92"
     },
     {
       "path": "mogrt/thumbs/3D TEXT.png",

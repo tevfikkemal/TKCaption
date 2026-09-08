@@ -132,6 +132,18 @@ for (const dosya of dosyalar) {
     thumb = 'thumbs/' + tAd;
   }
 
+  // Sablonun kendi cozunurlugu: 16:9 icin yapilmis bir sablon 9:16
+  // sekansta tasar. Panel bunu bilirse klibi olceklendirip oturtabilir.
+  let en = 0, boy = 0;
+  try {
+    const si = def.sourceInfoLocalized;
+    const ilk = si && si[Object.keys(si)[0]];
+    if (ilk && ilk.framesize && ilk.framesize.size) {
+      en = Number(ilk.framesize.size.x) || 0;
+      boy = Number(ilk.framesize.size.y) || 0;
+    }
+  } catch (e) { /* boyut okunamadi: panel olceklemeyi atlar */ }
+
   items.push({
     id: ad.replace(/[^A-Za-z0-9]+/g, '-').toLowerCase().replace(/^-|-$/g, ''),
     ad: ad,
@@ -140,6 +152,8 @@ for (const dosya of dosyalar) {
     metinAdi: metin.ad,
     font: metin.font,
     punto: metin.punto,
+    en: en,
+    boy: boy,
     thumb: thumb
   });
 
