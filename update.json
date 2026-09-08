@@ -1,7 +1,7 @@
 {
-  "version": "0.9.1",
-  "updated": "2026-09-08T12:32:45.216Z",
-  "notes": "MOGRT olcek ve konum ayari",
+  "version": "0.9.2",
+  "updated": "2026-09-08T12:55:40.075Z",
+  "notes": "uc demo sablon pakete girdi",
   "files": [
     {
       "path": "core/package.json",
@@ -91,7 +91,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "c02bcc23acc82137d620952020492660638f2856c82a1bf040e933a47a01375d"
+      "sha": "22bbcc70ee8405bd27a7c4f142109f61dd9ae6871293609bcad7a6b9fa578850"
     },
     {
       "path": "index.html",
@@ -106,12 +106,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "4af75121afabf97b987a062456e083ae7e87a36215e108b5064880b326bf90bd"
+      "sha": "3b9b3310addebb5db551ae1bdfe12cfcb8e2d16e0e36a6ed38b3f2219dec1d2b"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "c8063afd5804f064c5f11fd54537a53c2ff2ec04b63beac1d353f553c3d91c66"
+      "sha": "89ead3fbb8e311b2003a03e1fa92a280339159c2e58fd1bf37db9d5f32f71c73"
     },
     {
       "path": "LICENSE",
@@ -122,6 +122,21 @@
       "path": "mogrt/catalog.json",
       "source": "panel/mogrt/catalog.json",
       "sha": "c1194580b9fa08e33117481d49f7400268912d624b042664e2bc764bc19b4c92"
+    },
+    {
+      "path": "mogrt/demo/apple LADDER.mogrt",
+      "source": "panel/mogrt/demo/apple LADDER.mogrt",
+      "sha": "b9ad405630561eb114d8a3cada00515cbcdc0abf0f3b3a8d8054a11cfeb5abea"
+    },
+    {
+      "path": "mogrt/demo/BOTTOM IN.mogrt",
+      "source": "panel/mogrt/demo/BOTTOM IN.mogrt",
+      "sha": "603f5cef5a6a6c041f70d36c710c958e0a53a804ce435876c3a46962752e6235"
+    },
+    {
+      "path": "mogrt/demo/ELEGANT.mogrt",
+      "source": "panel/mogrt/demo/ELEGANT.mogrt",
+      "sha": "f40983c63e1e3bedc98d28b39fa3eb0095ae9281b7386bccc16b416a2b22efab"
     },
     {
       "path": "mogrt/thumbs/3D TEXT.png",

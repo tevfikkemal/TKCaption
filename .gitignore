@@ -23,3 +23,7 @@ tools/.bin/
 # Stil yoklamasinin cikrisi — arac repoda, ciktisi degil
 stil-denemesi/
 
+
+# Demo MOGRT sablonlari — satin alinmis bir paketten geldi, yeniden
+# dagitim izni teyit edilmedi. Teyit gelince bu satir kaldirilacak.
+panel/mogrt/demo/
