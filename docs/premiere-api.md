@@ -242,3 +242,26 @@ node core/tools/sync-check.js <ses|video> <altyazi.srt>
 Konuşma başlangıçları ile altyazı başlangıçları arasındaki **sistematik
 kaymayı** sayıyla verir. "Göz kararı kayıyor gibi" yerine ölçülebilir
 bir sayı üretir.
+
+## Altyazı dosya biçimi: uzantı kritik (ölçüldü, Premiere 2026)
+
+Aynı TTML içeriği üç uzantıyla denendi:
+
+| Uzantı | Sonuç |
+|---|---|
+| `.ttml` | **Reddediliyor** — "File format not supported" |
+| `.dfxp` | Kabul ediliyor |
+| `.xml` | Denenmedi; Final Cut Pro XML sanılma riski var |
+
+`.dfxp`, TTML'in eski adıdır (Distribution Format Exchange Profile) ve
+Premiere formatı bu isimle tanıyor.
+
+**Bunun bedeli:** panel uzun süre `.ttml` uzantısı üretti. TTML her
+seferinde reddedilip sessizce SRT'ye düşüldü — yani kare hızını dosyada
+taşıma çözümü hiç devreye girmemişti. 60 fps sekanslarda gözlenen
+kaymanın bir kısmı buradan geliyordu; düzelme sanılan şey aslında
+`snapBlocksToSpeech`'ten geliyordu.
+
+Ders: "dosyayı yazdık, Premiere aldı" yetmiyor — **hangi** dosyanın
+alındığını raporlamak gerekiyor. `trPlaceCaptions` denemeleri satır satır
+yazdığı için bu yakalanabildi.

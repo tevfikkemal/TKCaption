@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.8.5';
+var TR_ALTYAZI_VERSION = '0.8.6';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -675,8 +675,8 @@ function tryPlace(seq, filePath, attempts) {
  *
  * Birden fazla dosya bicimi SIRAYLA denenir. Sebep olculdu:
  *   - SRT kare hizi tasimaz; Premiere 30 fps varsayar, 60 fps sekansta kayar
- *   - TTML kare hizini tasir ama Premiere'in kabul ettigi UZANTI belirsiz
- *     (.xml Final Cut Pro XML ile karisiyor olabilir)
+ *   - TTML kare hizini tasir; OLCULDU: uzanti .ttml ise Premiere
+ *     "File format not supported" diyor, .dfxp ise kabul ediyor
  * Hangisinin ise yaradigini tahmin etmek yerine deneyip raporluyoruz.
  *
  * @param paths  noktali virgulle ayrilmis aday dosyalar, tercih sirasiyla

@@ -837,9 +837,14 @@
       seqInfo = d;
       // SRT'yi proje klasorune kalici olarak yaz
       var fmt = $('optFormat') ? $('optFormat').value : 'ttml';
-      // .xml KULLANMA: Premiere'de .xml Final Cut Pro XML demek ve dosya
-      // altyazi olarak degil proje degisim dosyasi olarak yorumlanabiliyor.
-      var uzanti = fmt === 'ttml' ? '.ttml' : '.srt';
+      // OLCULDU (Premiere 2026): ayni TTML icerigi uc uzantiyla denendi.
+      //   .ttml -> "File format not supported" ile REDDEDILIYOR
+      //   .dfxp -> kabul ediliyor
+      //   .xml  -> Final Cut Pro XML sanilma riski var, kullanmiyoruz
+      // Uzanti .ttml kaldigi surece TTML her seferinde reddedilip SRT'ye
+      // dusuluyordu; yani kare hizini dosyada tasima cozumu hic devreye
+      // girmemisti. Icerik yine TTML, yalnizca uzanti .dfxp.
+      var uzanti = fmt === 'ttml' ? '.dfxp' : '.srt';
       return CEP.call('trSuggestSrtPath("' + esPath(d.name) + '", "' + uzanti + '")')
         .then(function (s) { srtPath = s.path; })
         .catch(function () { /* gecici yolda kalir */ })
