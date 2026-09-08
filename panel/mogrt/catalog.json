@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "uretim": "2026-09-08T12:17:16.150Z",
+  "uretim": "2026-09-08T12:31:00.657Z",
   "sayi": 50,
   "items": [
     {
@@ -11,6 +11,8 @@
       "metinAdi": "3D TEXT",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/3D TEXT.png"
     },
     {
@@ -21,6 +23,8 @@
       "metinAdi": "above in",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/ABOVE IN.png"
     },
     {
@@ -31,6 +35,8 @@
       "metinAdi": "purple",
       "font": "Poppins-Black",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/AESTHETIC PURPLE.png"
     },
     {
@@ -41,6 +47,8 @@
       "metinAdi": "text 2",
       "font": "Poppins-Black",
       "punto": 140,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/AESTHETIC STRINKING.png"
     },
     {
@@ -51,6 +59,8 @@
       "metinAdi": "Cambiar texto 1",
       "font": "Mytupi-Bold",
       "punto": 134,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/APPLE STYLE ANIMATION.png"
     },
     {
@@ -61,6 +71,8 @@
       "metinAdi": "orange",
       "font": "Poppins-Black",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/BLUE AND ORANGE.png"
     },
     {
@@ -71,6 +83,8 @@
       "metinAdi": "bottom in 2",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/BLUR IN.png"
     },
     {
@@ -81,6 +95,8 @@
       "metinAdi": "bottom in",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/BOTTOM IN.png"
     },
     {
@@ -91,6 +107,8 @@
       "metinAdi": "Bubble",
       "font": "Poppins-Black",
       "punto": 158,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/Bubble.png"
     },
     {
@@ -101,6 +119,8 @@
       "metinAdi": "Clean 2",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/CLEAN BLUE.png"
     },
     {
@@ -111,6 +131,8 @@
       "metinAdi": "Cambiar texto 1",
       "font": "Mytupi-Bold",
       "punto": 140,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/CLEAN STYLE.png"
     },
     {
@@ -121,6 +143,8 @@
       "metinAdi": "Radial blur",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/Clean gradient.png"
     },
     {
@@ -131,6 +155,8 @@
       "metinAdi": "ELEGANT",
       "font": "AVANTERegular",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/ELEGANT.png"
     },
     {
@@ -141,6 +167,8 @@
       "metinAdi": "NO TOCAR",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/ERROR TEXT.png"
     },
     {
@@ -151,6 +179,8 @@
       "metinAdi": "Cambiar texto",
       "font": "Mytupi-Bold",
       "punto": 36,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/ESCRITO A MANO POSTERIZACION.png"
     },
     {
@@ -161,6 +191,8 @@
       "metinAdi": "Esmerald",
       "font": "BirdsofParadise-PersonaluseOnly",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/ESMERALD.png"
     },
     {
@@ -171,6 +203,8 @@
       "metinAdi": "FAST",
       "font": "Poppins-BlackItalic",
       "punto": 158,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/FAST.png"
     },
     {
@@ -181,6 +215,8 @@
       "metinAdi": "FIRE",
       "font": "Poppins-BlackItalic",
       "punto": 158,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/FIRE.png"
     },
     {
@@ -191,6 +227,8 @@
       "metinAdi": "Futurist",
       "font": "Mytupi-Bold",
       "punto": 158,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/FUTURIST.png"
     },
     {
@@ -201,6 +239,8 @@
       "metinAdi": "Source text",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/GOLD TEXT.png"
     },
     {
@@ -211,6 +251,8 @@
       "metinAdi": "grey",
       "font": "Poppins-Black",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/GREEN AND GREY.png"
     },
     {
@@ -221,6 +263,8 @@
       "metinAdi": "Green",
       "font": "Mytupi-Bold",
       "punto": 158,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/Green.png"
     },
     {
@@ -231,6 +275,8 @@
       "metinAdi": "left in",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/LEFT IN.png"
     },
     {
@@ -241,6 +287,8 @@
       "metinAdi": "Cambiar texto 1",
       "font": "AVANTERegular",
       "punto": 140,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/OLD MONEY.png"
     },
     {
@@ -251,6 +299,8 @@
       "metinAdi": "OLD TV",
       "font": "Poppins-Black",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/OLD TV.png"
     },
     {
@@ -261,6 +311,8 @@
       "metinAdi": "opacity in",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/OPACITY IN.png"
     },
     {
@@ -271,6 +323,8 @@
       "metinAdi": "Cambiar texto",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/ORANGE TEXT.png"
     },
     {
@@ -281,6 +335,8 @@
       "metinAdi": "Purple",
       "font": "Poppins-BlackItalic",
       "punto": 158,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/Purple.png"
     },
     {
@@ -291,6 +347,8 @@
       "metinAdi": "rainbow clean text ",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/RAINBOW CLEAN TEXT.png"
     },
     {
@@ -301,6 +359,8 @@
       "metinAdi": "Cambiar texto",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/RAINBOW TEXT.png"
     },
     {
@@ -311,6 +371,8 @@
       "metinAdi": "right in",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/RIGHT IN.png"
     },
     {
@@ -321,6 +383,8 @@
       "metinAdi": "Radial blur",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/Radial BLUR.png"
     },
     {
@@ -331,6 +395,8 @@
       "metinAdi": "source text",
       "font": "Mytupi-Bold",
       "punto": 88,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/Rebote.png"
     },
     {
@@ -341,6 +407,8 @@
       "metinAdi": "Cambiar texto 1",
       "font": "Bebas-Regular",
       "punto": 140,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/SMOOTH OPACITY.png"
     },
     {
@@ -351,6 +419,8 @@
       "metinAdi": "Cambiar texto",
       "font": "BirdsofParadise-PersonaluseOnly",
       "punto": 140,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/SMOOTH UP.png"
     },
     {
@@ -361,6 +431,8 @@
       "metinAdi": "Cambiar texto arriba",
       "font": "Bebas-Regular",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/TRIPLE ELEGANT TEXT.png"
     },
     {
@@ -371,6 +443,8 @@
       "metinAdi": "Cambiar texto",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/VHS.png"
     },
     {
@@ -381,6 +455,8 @@
       "metinAdi": "warp",
       "font": "Poppins-Black",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/WARP.png"
     },
     {
@@ -391,6 +467,8 @@
       "metinAdi": "Cambiar texto",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/WATER TEXT.png"
     },
     {
@@ -401,6 +479,8 @@
       "metinAdi": "waves",
       "font": "Mytupi-Bold",
       "punto": 158,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/WAVES.png"
     },
     {
@@ -411,6 +491,8 @@
       "metinAdi": "zoom out 2",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/ZOOM IN.png"
     },
     {
@@ -421,6 +503,8 @@
       "metinAdi": "zoom out",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/ZOOM OUT.png"
     },
     {
@@ -431,6 +515,8 @@
       "metinAdi": "zoom ",
       "font": "Poppins-Black",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/ZOOM WORD.png"
     },
     {
@@ -441,6 +527,8 @@
       "metinAdi": "apple ladder",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/apple LADDER.png"
     },
     {
@@ -451,6 +539,8 @@
       "metinAdi": "apple middle",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/apple MIDDLE.png"
     },
     {
@@ -461,6 +551,8 @@
       "metinAdi": "apple word",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/apple WORD.png"
     },
     {
@@ -471,6 +563,8 @@
       "metinAdi": "apple smooth",
       "font": "Mytupi-Bold",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/apple smooth.png"
     },
     {
@@ -481,6 +575,8 @@
       "metinAdi": "clean aesthetic light",
       "font": "Poppins-Regular",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/clean aesthetic light.png"
     },
     {
@@ -491,6 +587,8 @@
       "metinAdi": "Principal",
       "font": "Poppins-BlackItalic",
       "punto": 158,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/dark water.png"
     },
     {
@@ -501,6 +599,8 @@
       "metinAdi": "fluorescent  ",
       "font": "Poppins-Black",
       "punto": 124,
+      "en": 1920,
+      "boy": 1080,
       "thumb": "thumbs/fluorscent.png"
     }
   ]

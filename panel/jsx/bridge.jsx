@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.9.0';
+var TR_ALTYAZI_VERSION = '0.9.1';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -1455,6 +1455,47 @@ function mogrtMetinYaz(prop, metin) {
 }
 
 /**
+ * Klibin Motion bilesenindeki bir parametreyi ayarlar.
+ *
+ * OLCULEN: sablonlarin tamami 1920x1080 uretilmis. 1080x1920 bir sekansa
+ * konunca yazi saga sola tasiyor. Premiere MOGRT'yi kendiliginden
+ * olceklemiyor; klibin Motion > Scale degerini biz ayarlamaliyiz.
+ * Position normalize (0-1) calisiyor: 0.5,0.5 merkez.
+ */
+function mogrtMotionAyarla(clip, olcek, dikey) {
+    var motion = null;
+    try {
+        var bilesenler = clip.components;
+        var n = bilesenler ? bilesenler.numItems : 0;
+        for (var i = 0; i < n; i++) {
+            var ad = '';
+            try { ad = String(bilesenler[i].displayName || bilesenler[i].matchName || ''); } catch (e) {}
+            if (/motion|hareket/i.test(ad)) { motion = bilesenler[i]; break; }
+        }
+    } catch (e) {}
+    if (!motion || !motion.properties) return false;
+
+    var uygulandi = false;
+    var props = motion.properties;
+    var pn = 0;
+    try { pn = props.numItems || 0; } catch (e) {}
+
+    for (var p = 0; p < pn; p++) {
+        var ad2 = '';
+        try { ad2 = String(props[p].displayName || ''); } catch (e) {}
+
+        if (olcek > 0 && /^(scale|ölçek|olcek)$/i.test(ad2)) {
+            try { props[p].setValue(olcek, true); uygulandi = true; } catch (e) {}
+        }
+        if (dikey >= 0 && /^(position|konum)$/i.test(ad2)) {
+            // Yatayda ortali birak, yalnizca dikeyi tasi
+            try { props[p].setValue([0.5, dikey], true); uygulandi = true; } catch (e) {}
+        }
+    }
+    return uygulandi;
+}
+
+/**
  * Bir grup altyazi blogunu MOGRT klibi olarak video pistine dizer.
  *
  * NEDEN GRUP GRUP: 7 dakikalik bir videoda ~150 klip oluyor ve her biri
@@ -1465,7 +1506,7 @@ function mogrtMetinYaz(prop, metin) {
  * @param bloklarJson  [{start,end,text}] — panel uretir, eval ile okunur
  * @param trackIndex  hedef video pisti (0 tabanli)
  */
-function trPlaceMogrtBatch(mogrtPath, bloklarJson, trackIndex) {
+function trPlaceMogrtBatch(mogrtPath, bloklarJson, trackIndex, olcek, dikey) {
     try {
         var seq = app.project.activeSequence;
         if (!seq) return err('Aktif sekans yok.');
@@ -1513,6 +1554,11 @@ function trPlaceMogrtBatch(mogrtPath, bloklarJson, trackIndex) {
                 var prop = mogrtMetinParam(comp);
                 if (!prop) { hatalar.push('#' + (i + 1) + ' metin alanı yok'); continue; }
                 mogrtMetinYaz(prop, String(b.text || ''));
+
+                // Sablon 16:9 uretilmis olabilir; sekansa oturt
+                var ol = parseFloat(olcek);
+                var dk = parseFloat(dikey);
+                mogrtMotionAyarla(clip, isNaN(ol) ? 0 : ol, isNaN(dk) ? -1 : dk);
 
                 // Sure: bazi surumler ilk atamayi yutuyor, ikinci kez deniyoruz
                 var son = new Time();

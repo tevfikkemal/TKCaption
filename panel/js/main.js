@@ -634,8 +634,23 @@
     // itibaren saniye istiyor. Sekans 01:00:00:00'dan basliyorsa bu farki
     // dusmezsek her klip bir saat ileri gider.
     var zeroSec = 0;
+    var olcek = 0;
+    var dikey = Number($('optMogrtPos').value) / 100;
+
     CEP.call('trGetSequenceInfo()').then(function (si) {
       zeroSec = Number(si.zeroPointSec) || 0;
+
+      // Sablonlarin tamami 16:9 uretilmis; dikey sekansta genislik tasiyor.
+      // Elle bir deger verilmediyse sablonu sekans genisligine oturtuyoruz.
+      var elle = Number($('optMogrtScale').value) || 0;
+      if (elle > 0) {
+        olcek = elle;
+      } else if (it.en > 0 && Number(si.width) > 0) {
+        olcek = Math.round((Number(si.width) / it.en) * 1000) / 10;
+        mogrtYaz('<span class="dim">Şablon ' + it.en + 'x' + it.boy +
+                 ', sekans ' + si.width + 'x' + si.height +
+                 ' — ölçek %' + olcek + '</span>');
+      }
       if (zeroSec > 0.0005) {
         mogrtYaz('<span class="dim">Başlangıç zaman kodu düşülüyor:</span> ' +
                  zeroSec.toFixed(3) + ' sn');
@@ -679,7 +694,7 @@
 
         var json = JSON.stringify(grup);
         CEP.call('trPlaceMogrtBatch("' + esPath(dosya) + '", "' + esPath(json) +
-                 '", ' + track + ')').then(function (r) {
+                 '", ' + track + ', ' + olcek + ', ' + dikey.toFixed(4) + ')').then(function (r) {
           konan += Number(r.placed) || 0;
           var hs = asArray(r.errors);
           for (var e = 0; e < hs.length; e++) hatalar.push(hs[e]);
@@ -1454,6 +1469,13 @@
     initMogrt();
     $('btnMogrtDir').addEventListener('click', chooseMogrtDir);
     $('btnMogrtRun').addEventListener('click', runMogrtCaptions);
+    $('optMogrtPos').addEventListener('input', function () {
+      setText('mogrtPosVal', '%' + this.value);
+    });
+    $('optMogrtScale').addEventListener('input', function () {
+      // 0 = dokunulmadi: sablon boyutundan otomatik hesaplanacak
+      setText('mogrtScaleVal', Number(this.value) > 0 ? '%' + this.value : 'otomatik');
+    });
     $('btnCancel').addEventListener('click', cancelRun);
     $('btnSeq').addEventListener('click', function () { readSequence(false); });
     $('btnProbe').addEventListener('click', runProbe);
