@@ -259,23 +259,65 @@
    * odak degisimlerinde arka arkaya birkac olay gonderebiliyor.
    */
   var sonTazeleme = 0;
+  var sonImza = null;
+  var imzaTimer = null;
 
   function tazeleGerekirse() {
     var simdi = new Date().getTime();
-    if (simdi - sonTazeleme < 700) return;
+    if (simdi - sonTazeleme < 400) return;
     sonTazeleme = simdi;
     readSequence(true);
+  }
+
+  /**
+   * Sekans degisimini yakalamak icin UCUZ yoklama.
+   *
+   * Onceden yalnizca focus olayina guveniyorduk ama CEP panelinde o olay
+   * her zaman gelmiyor: kullanici Premiere'de In/Out isaretleyip panele
+   * donunce panel hala eski bilgiyi gosteriyordu ve elle "yenile"
+   * gerekiyordu.
+   *
+   * Simdi saniyede bir kez KISA bir imza okunuyor (sekans kimligi,
+   * In/Out, timeline sayilari). Imza degismediyse hicbir sey yapilmiyor;
+   * degistiyse tam bilgi bir kez aliniyor. Tam okuma pahali olan taraf —
+   * ses timeline'larini gezip klip sayiyor — ve artik yalnizca gerekince
+   * calisiyor.
+   *
+   * Panel gorunmezken yoklama duruyor: arkada Premiere'i mesgul etmenin
+   * anlami yok.
+   */
+  function imzaYokla() {
+    if (document.hidden) return;
+    // Altyazi uretilirken Premiere zaten mesgul; yoklama sirayi bekler
+    if (running) return;
+    CEP.call('trSeqSignature()').then(function (r) {
+      var imza = String(r.sig || '');
+      if (sonImza === null) { sonImza = imza; return; }
+      if (imza !== sonImza) {
+        sonImza = imza;
+        tazeleGerekirse();
+      }
+    }).catch(function () { /* sekans yok ya da kopru hazir degil */ });
+  }
+
+  function yoklamaBaslat() {
+    if (imzaTimer) return;
+    imzaTimer = window.setInterval(imzaYokla, 1000);
+  }
+  function yoklamaDurdur() {
+    if (!imzaTimer) return;
+    window.clearInterval(imzaTimer);
+    imzaTimer = null;
   }
 
   function initAutoRefresh() {
     try {
       window.addEventListener('focus', tazeleGerekirse);
       document.addEventListener('visibilitychange', function () {
-        if (!document.hidden) tazeleGerekirse();
+        if (document.hidden) { yoklamaDurdur(); }
+        else { yoklamaBaslat(); tazeleGerekirse(); }
       });
-      // Panelin uzerine gelmek de guvenilir bir isaret: kullanici
-      // Premiere'de bir sey yapip fareyi panele getiriyor.
-      document.addEventListener('mouseenter', tazeleGerekirse);
+      yoklamaBaslat();
     } catch (e) { /* olay baglanamadi: "yenile" dugmesi hep duruyor */ }
   }
 

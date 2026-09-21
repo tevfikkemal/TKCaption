@@ -1,7 +1,7 @@
 {
-  "version": "0.9.10",
-  "updated": "2026-09-21T16:36:13.095Z",
-  "notes": "sekme cubuklu duzene donuldu; kesme API yoklamasi",
+  "version": "0.9.11",
+  "updated": "2026-09-21T16:39:06.378Z",
+  "notes": "sekans degisimi 1 sn icinde yakalaniyor",
   "files": [
     {
       "path": "core/package.json",
@@ -101,7 +101,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "f50a375c4beb9139a1939de57a71cd91d2ce6a48b7c83c87a093e968ece60a66"
+      "sha": "3a38f36a3cf39a159b8e6c850c1effab1d60340bb4baea0044b4eccc70965d35"
     },
     {
       "path": "index.html",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "6632222c6b7924059361892dd5619ef7a51a4e0dcfee68656e8e4897b378965b"
+      "sha": "e20b203b148462d78d8eda8f4e34514dedd6028b23cf90866c66f04792c89997"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "3e13cbf533c70a24cbd9e911b98baa578edf20366d9e51e2db51823f4d617b21"
+      "sha": "2111a4e33e4dee130cec0ffae29cd52b6870c30d832a725fe99f88e8b15ba401"
     },
     {
       "path": "LICENSE",

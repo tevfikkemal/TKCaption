@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.9.10';
+var TR_ALTYAZI_VERSION = '0.9.11';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -1830,6 +1830,36 @@ function trInstallTextStyles(srcDir) {
         ]);
     } catch (e) {
         return err('Stiller kurulamadi', e);
+    }
+}
+
+/**
+ * Sekansin UCUZ imzasi — degisip degismedigini anlamak icin.
+ *
+ * NEDEN AYRI: trGetSequenceInfo her cagrida ses timeline'larini geziyor,
+ * klip sayiyor ve mute durumu okuyor. Bunu saniyede bir yapmak cok
+ * timeline'li bir sekansta Premiere'i bosuna mesgul eder.
+ *
+ * Bu fonksiyon yalnizca degisimi yakalayacak kadarini okuyor: sekans
+ * kimligi, In/Out noktalari ve timeline sayilari. Imza degisirse panel
+ * tam bilgiyi bir kez aliyor.
+ */
+function trSeqSignature() {
+    try {
+        var seq = app.project.activeSequence;
+        if (!seq) return ok([kv('sig', 'yok')]);
+
+        var parts = [];
+        try { parts.push(String(seq.sequenceID)); } catch (e) { parts.push('?'); }
+        try { parts.push(String(seq.getInPoint())); } catch (e) { parts.push('?'); }
+        try { parts.push(String(seq.getOutPoint())); } catch (e) { parts.push('?'); }
+        try { parts.push(String(seq.audioTracks.numTracks)); } catch (e) { parts.push('?'); }
+        try { parts.push(String(seq.videoTracks.numTracks)); } catch (e) { parts.push('?'); }
+        try { parts.push(String(seq.end)); } catch (e) { parts.push('?'); }
+
+        return ok([kv('sig', parts.join('|'))]);
+    } catch (e) {
+        return ok([kv('sig', 'hata')]);
     }
 }
 
