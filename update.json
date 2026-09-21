@@ -1,7 +1,7 @@
 {
-  "version": "0.9.12",
-  "updated": "2026-09-21T16:42:51.004Z",
-  "notes": "In/Out dugmesi her zaman secilebilir; kapsam kararı loglanıyor",
+  "version": "0.9.13",
+  "updated": "2026-09-21T16:45:55.616Z",
+  "notes": "guncelleme artik CDN onbellegini beklemiyor",
   "files": [
     {
       "path": "core/package.json",
@@ -76,7 +76,7 @@
     {
       "path": "core/src/updater.js",
       "source": "core/src/updater.js",
-      "sha": "bc8f228786f585c7da2b04b343a5b36934e60b357b64f7e1b3e85971bcbde33f"
+      "sha": "95fcd60604ee188b4b617710b6efcd066f0d30e87bb223481b316f583864f762"
     },
     {
       "path": "core/src/vad.js",
@@ -101,7 +101,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "c2307c9d281f03fca0a81fce3e9dfdfb3aba0a2d8701f4356cc90d6ca732b5a6"
+      "sha": "567081a7b5a2387f75783604a54bed7fdeaf49dc095ce900b32b0d438d5bb5c0"
     },
     {
       "path": "index.html",
@@ -121,7 +121,7 @@
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "52b08c5a2ab6f38e082330af5449653ba594f4bd63b27eb3ef3212c033942dc3"
+      "sha": "3810b473fe9d51532fa7811f090dbadc4641ff4c61bfa33fbf2b0ab46614ba40"
     },
     {
       "path": "LICENSE",

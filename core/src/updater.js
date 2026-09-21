@@ -36,6 +36,32 @@ const { execFileSync } = require('child_process');
 const RAW_BASE = 'https://raw.githubusercontent.com/tevfikkemal/TKCaption/main';
 const MANIFEST_URL = RAW_BASE + '/update.json';
 
+/*
+ * OLCULEN: raw.githubusercontent.com dosyalari 5 dakika onbellekliyor
+ * (max-age=300) ve bu onbellek ne query string ile ne de no-cache
+ * basligiyla atlatilabiliyor — ikisi de denendi. Yeni surum push
+ * edildikten sonra bes dakika boyunca "guncelleme yok" goruluyordu.
+ *
+ * GitHub'in contents API'si ayni icerigi ONBELLEKSIZ veriyor. Once oradan
+ * okuyup, basarisiz olursa raw'a dusuyoruz: API'nin kimliksiz kullanimi
+ * saatte 60 istekle sinirli ve limit dolarsa guncelleme hic calismamali
+ * degil, yalnizca gecikmeli calismali.
+ */
+const API_BASE = 'https://api.github.com/repos/tevfikkemal/TKCaption/contents';
+
+/** Bir depo yolunu once API'den, olmazsa raw'dan okur. */
+async function fetchRepoFile(relPath) {
+  const kodlu = relPath.split('/').map(encodeURIComponent).join('/');
+  try {
+    return await fetchBuffer(API_BASE + '/' + kodlu, 0, {
+      'Accept': 'application/vnd.github.raw'
+    });
+  } catch (e) {
+    // Limit dolmus, ag hatasi ya da API bicimi degismis olabilir
+    return await fetchBuffer(RAW_BASE + '/' + kodlu + '?t=' + Date.now());
+  }
+}
+
 /** "0.7.1" -> [0,7,1]; karsilastirilabilir sayi dizisi */
 function parseVersion(v) {
   return String(v || '0').split('.').map(function (n) {
@@ -55,17 +81,19 @@ function isNewer(a, b) {
   return false;
 }
 
-function fetchBuffer(url, depth) {
+function fetchBuffer(url, depth, ekBaslik) {
   depth = depth || 0;
   return new Promise((resolve, reject) => {
     if (depth > 6) return reject(new Error('Çok fazla yönlendirme'));
-    const req = https.get(url, { headers: { 'User-Agent': 'TKCaption-updater' } }, (res) => {
+    const headers = { 'User-Agent': 'TKCaption-updater' };
+    if (ekBaslik) for (const k in ekBaslik) headers[k] = ekBaslik[k];
+    const req = https.get(url, { headers }, (res) => {
       if ([301, 302, 307, 308].includes(res.statusCode) && res.headers.location) {
         res.resume();
         const loc = res.headers.location.startsWith('http')
           ? res.headers.location
           : new URL(res.headers.location, url).href;
-        return resolve(fetchBuffer(loc, depth + 1));
+        return resolve(fetchBuffer(loc, depth + 1, ekBaslik));
       }
       if (res.statusCode !== 200) {
         res.resume();
@@ -90,7 +118,7 @@ function sha256(buf) {
  * @returns {Promise<{version,files,notes}>}
  */
 async function fetchManifest() {
-  const raw = await fetchBuffer(MANIFEST_URL + '?t=' + Date.now());
+  const raw = await fetchRepoFile('update.json');
   let m;
   try {
     m = JSON.parse(raw.toString('utf8'));
@@ -286,8 +314,7 @@ async function apply(extensionDir, manifest, onProgress) {
     // Yol parcalarini KODLA: hazir stil dosyalarinin adinda bosluk var
     // ("TK Caption Style - 1.prtextstyle") ve ham bosluk iceren bir URL
     // 404 doner. Egik cizgileri bozmamak icin parca parca kodluyoruz.
-    const url = f.source.split('/').map(encodeURIComponent).join('/');
-    const buf = await fetchBuffer(RAW_BASE + '/' + url + '?t=' + Date.now());
+    const buf = await fetchRepoFile(f.source);
     if (f.sha && sha256(buf) !== f.sha) {
       // OLCULEN: raw.githubusercontent.com dosyalari 5 dakika onbellekliyor
       // (max-age=300) ve query string ile de no-cache basligiyla da
@@ -368,5 +395,5 @@ async function apply(extensionDir, manifest, onProgress) {
 
 module.exports = {
   check, apply, fetchManifest, installedVersion, yazilabilir, tasimaBetigiYaz,
-  isNewer, parseVersion, sha256, RAW_BASE, MANIFEST_URL
+  isNewer, parseVersion, sha256, RAW_BASE, MANIFEST_URL, API_BASE, fetchRepoFile
 };

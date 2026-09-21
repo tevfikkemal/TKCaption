@@ -72,6 +72,17 @@ console.log('\n=== ADRESLER ===');
   ok(up.RAW_BASE.indexOf('https://') === 0, 'kaynak HTTPS');
   ok(up.MANIFEST_URL.indexOf(up.RAW_BASE) === 0, 'bildirim aynı depodan');
   ok(up.MANIFEST_URL.indexOf('TKCaption') > 0, 'depo adı doğru');
+
+  // API yolu raw'in onbellek gecikmesini atlatmak icin eklendi; ikisi de
+  // AYNI depoyu gostermeli, yoksa surum bilgisi bir yerden, dosyalar
+  // baska yerden gelir.
+  ok(up.API_BASE.indexOf('https://api.github.com/') === 0, 'API adresi HTTPS ve GitHub');
+  ok(up.API_BASE.indexOf('TKCaption') > 0, 'API aynı depoyu gösteriyor');
+
+  const rawSahip = /github(?:usercontent)?\.com\/([^/]+)\//.exec(up.RAW_BASE);
+  const apiSahip = /repos\/([^/]+)\//.exec(up.API_BASE);
+  ok(rawSahip && apiSahip && rawSahip[1] === apiSahip[1],
+     'raw ve API aynı hesabı gösteriyor');
 }
 
 console.log('\n================================');
