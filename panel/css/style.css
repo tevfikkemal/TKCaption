@@ -807,3 +807,46 @@ details > summary:hover { color: var(--text-2); }
 .botlink:hover { color: var(--accent-text); }
 .botlink.on { color: var(--accent-text); }
 #advBody { margin-top: 8px; }
+
+/* ---------------------------------------------------------------- */
+/*  Kapsam satiri — aralik ve ses pisti secimi                       */
+/* ---------------------------------------------------------------- */
+
+/* Ana eylemin hemen altinda, kucuk ve sessiz durur; ama her
+   calistirmada degisebilecegi icin bir tik uzakta olmamali. */
+.scope {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: center;
+  margin: 7px 2px 0;
+}
+.scope-grp {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.mini-lbl {
+  font-size: 9.5px;
+  color: var(--text-3);
+  margin-right: 1px;
+}
+.mini {
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: var(--pill);
+  padding: 3px 9px;
+  font: 500 9.5px "Segoe UI", system-ui, sans-serif;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background .14s ease, border-color .14s ease, color .14s ease;
+}
+.mini:hover:not(:disabled) { border-color: var(--text-3); color: var(--text); }
+.mini.on {
+  background: var(--accent-soft);
+  border-color: transparent;
+  color: var(--accent-text);
+  font-weight: 600;
+}
+.mini:disabled { opacity: .35; cursor: default; }

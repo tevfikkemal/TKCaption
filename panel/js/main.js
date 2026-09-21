@@ -262,6 +262,7 @@
       setText('seqMeta', parca.join(' · '));
       var el = $('seqName');
       if (el) el.className = '';
+      kapsamiTazele(d);
     }).catch(function (e) {
       if (!auto) {
         setText('seqName', 'sekans okunamadı');
@@ -432,6 +433,124 @@
       setText('updateNote', e.message);
       btn.disabled = false;
     });
+  }
+
+  /* ---------------------------------------------------------------- */
+  /*  Kapsam — hangi aralik, hangi ses pistleri                        */
+  /* ---------------------------------------------------------------- */
+
+  /*
+   * ARALIK: "Tüm sekans" ya da "In → Out". Ikincisi yalnizca sekansta
+   * isaret varsa aciliyor; isaretsizken dugmeyi tiklanabilir birakmak
+   * kullaniciyi bos bir secime davet ederdi.
+   *
+   * SES PISTI: exportAsMediaDirect tum miksaji veriyor, tek pist secme
+   * secenegi yok. Kopru istenmeyen pistleri gecici susturup disari
+   * aktariyor ve eski durumlarini aynen geri koyuyor.
+   */
+
+  var kapsamAralik = 'entire';   // 'entire' | 'inout'
+  var kapsamSes = [];            // bos = tumu; dolu = secili pist indeksleri
+  var sonSeqBilgi = null;
+
+  function initScope() {
+    var grp = $('rangeGrp');
+    if (grp) {
+      var dugmeler = grp.querySelectorAll('.mini');
+      for (var i = 0; i < dugmeler.length; i++) {
+        dugmeler[i].addEventListener('click', function () {
+          if (this.disabled) return;
+          var hepsi = grp.querySelectorAll('.mini');
+          for (var j = 0; j < hepsi.length; j++) hepsi[j].className = 'mini';
+          this.className = 'mini on';
+          kapsamAralik = this.getAttribute('data-range');
+        });
+      }
+    }
+  }
+
+  /** Sekans bilgisi gelince aralik dugmesini ve ses pistlerini tazeler */
+  function kapsamiTazele(d) {
+    sonSeqBilgi = d;
+
+    // In/Out yalnizca gercekten isaret varsa secilebilir
+    var btn = $('btnInOut');
+    if (btn) {
+      var varMi = String(d.hasInOut) === 'true';
+      btn.disabled = !varMi;
+      if (varMi) {
+        var uz = Number(d.outSec) - Number(d.inSec);
+        btn.textContent = 'In → Out (' + uz.toFixed(0) + ' sn)';
+      } else {
+        btn.textContent = 'In → Out';
+        if (kapsamAralik === 'inout') {
+          // Isaret kalkmissa sessizce tum sekansa dus
+          kapsamAralik = 'entire';
+          var g = $('rangeGrp');
+          if (g) {
+            var hepsi = g.querySelectorAll('.mini');
+            for (var k = 0; k < hepsi.length; k++) {
+              hepsi[k].className = hepsi[k].getAttribute('data-range') === 'entire'
+                ? 'mini on' : 'mini';
+            }
+          }
+        }
+      }
+    }
+
+    sesPistleriniCiz(asArray(d.audioList));
+  }
+
+  /**
+   * Ses pisti dugmelerini kurar.
+   * Kopruden "ad|klipSayisi|sessizMi" bicimiinde geliyor. Bos pistleri
+   * gostermiyoruz — secilecek bir sey yok, yalnizca kalabalik yapardi.
+   */
+  function sesPistleriniCiz(liste) {
+    var grp = $('audioGrp');
+    if (!grp) return;
+
+    var html = '<span class="mini-lbl">Ses</span>' +
+               '<button class="mini' + (kapsamSes.length ? '' : ' on') +
+               '" data-audio="all" type="button">Tümü</button>';
+
+    var gosterilen = 0;
+    for (var i = 0; i < liste.length; i++) {
+      var p = String(liste[i]).split('|');
+      var ad = p[0] || ('A' + (i + 1));
+      var klip = parseInt(p[1], 10) || 0;
+      if (klip === 0) continue;   // bos pist
+      gosterilen++;
+      var secili = false;
+      for (var s = 0; s < kapsamSes.length; s++) if (kapsamSes[s] === i) secili = true;
+      html += '<button class="mini' + (secili ? ' on' : '') +
+              '" data-audio="' + i + '" type="button">' + esc(ad) + '</button>';
+    }
+
+    // Tek pist varsa secim anlamsiz; satiri hic gostermiyoruz
+    grp.hidden = gosterilen < 2;
+    grp.innerHTML = html;
+
+    var dugmeler = grp.querySelectorAll('.mini');
+    for (var d = 0; d < dugmeler.length; d++) {
+      dugmeler[d].addEventListener('click', function () {
+        var deger = this.getAttribute('data-audio');
+        if (deger === 'all') {
+          kapsamSes = [];
+        } else {
+          var idx = parseInt(deger, 10);
+          var yeni = [];
+          var vardi = false;
+          for (var v = 0; v < kapsamSes.length; v++) {
+            if (kapsamSes[v] === idx) { vardi = true; continue; }
+            yeni.push(kapsamSes[v]);
+          }
+          if (!vardi) yeni.push(idx);
+          kapsamSes = yeni;
+        }
+        sesPistleriniCiz(liste);
+      });
+    }
   }
 
   /* ---------------------------------------------------------------- */
@@ -1283,7 +1402,17 @@
       // 2) Sesi disari aktar — preset'ler sirayla denenir
       appendRun('<span class="dim">ses çıkarılıyor… (Premiere bu sırada yanıt vermeyebilir)</span>');
       setBar(0.05);
-      return CEP.call('trExportAudioAuto("' + esPath(wav) + '", 0)');
+      // Aralik: In/Out secildiyse Premiere'in kendi sabitini kullaniyoruz;
+      // sabit sayi yazmak belgelenmemis bir varsayim olurdu.
+      var aralik = (kapsamAralik === 'inout') ? 1 : 0;
+      var sesArg = kapsamSes.length ? kapsamSes.join(',') : '';
+      if (kapsamAralik === 'inout') {
+        appendRun('<span class="dim">kapsam:</span> In → Out  ' +
+                  (Number(d.outSec) - Number(d.inSec)).toFixed(1) + ' sn');
+      }
+      if (sesArg) appendRun('<span class="dim">ses pistleri:</span> ' + esc(sesArg));
+      return CEP.call('trExportAudioAuto("' + esPath(wav) + '", ' + aralik +
+                      ', "' + sesArg + '")');
     }).then(function (e) {
       var tries = asArray(e.attempts);
       // Ilk preset tutmadiysa hangilerinin elendigini gormek isteriz
@@ -1329,7 +1458,11 @@
       // Zaman kodu kaymasini SRT'nin ICINE yaziyoruz. createCaptionTrack'in
       // ikinci argümaninin anlami belgelenmemis; 0 her durumda gecerli
       // oldugu icin bu yol o belirsizlige bagimli degil.
-      cfg.output.timecodeOffsetSec = Number(seqInfo.zeroPointSec) || 0;
+      // In/Out disari aktarildiginda WAV 0'dan baslar ama o ses sekansta
+      // IN NOKTASINA denk gelir; farki eklemezsek altyazi sekansin basina
+      // yigilir. Tum sekansta bu fark sifirdir.
+      var inKayma = (kapsamAralik === 'inout') ? (Number(seqInfo.inSec) || 0) : 0;
+      cfg.output.timecodeOffsetSec = (Number(seqInfo.zeroPointSec) || 0) + inKayma;
       // TTML kare hizini dosyanin icinde tasir; SRT tasimadigi icin Premiere
       // 30 fps varsayiyor ve 60 fps sekansta altyazi kayiyor.
       cfg.output.format = $('optFormat') ? $('optFormat').value : 'srt';
@@ -1590,6 +1723,7 @@
     }
     refreshPlatformNote();
     cipleriTazele();
+    initScope();
     initTabs();
     initMogrt();
     $('btnMogrtDir').addEventListener('click', chooseMogrtDir);

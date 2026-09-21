@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.9.5';
+var TR_ALTYAZI_VERSION = '0.9.6';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -107,6 +107,35 @@ function trGetSequenceInfo() {
         try { audioTracks = seq.audioTracks.numTracks; } catch (e) {}
         try { videoTracks = seq.videoTracks.numTracks; } catch (e) {}
 
+        /* IN/OUT noktalari — yalnizca secili araligi isleyebilmek icin.
+         * getInPoint() saniyeyi STRING olarak donduruyor. Isaretlenmemisse
+         * Premiere 0 ve sekans sonunu veriyor; bunu "isaret yok" saymak
+         * icin sure ile karsilastiriyoruz. */
+        var inSec = 0, outSec = 0, hasInOut = false;
+        try { inSec = parseFloat(seq.getInPoint()); } catch (e) { inSec = 0; }
+        try { outSec = parseFloat(seq.getOutPoint()); } catch (e) { outSec = 0; }
+        if (isNaN(inSec)) inSec = 0;
+        if (isNaN(outSec)) outSec = 0;
+        var sure = endSec - zeroSec;
+        if (outSec > inSec && (inSec > 0.001 || outSec < sure - 0.001)) hasInOut = true;
+
+        /* SES PISTLERI — hangisinden ses alinacagi secilebilsin.
+         * Pist adi bos olabiliyor; o zaman A1, A2 diye adlandiriyoruz. */
+        var sesler = [];
+        try {
+            for (var a = 0; a < audioTracks; a++) {
+                var tr = seq.audioTracks[a];
+                var ad = '';
+                try { ad = String(tr.name || ''); } catch (e) {}
+                if (!ad) ad = 'A' + (a + 1);
+                var klip = 0;
+                try { klip = tr.clips.numItems; } catch (e) {}
+                var sessiz = 0;
+                try { sessiz = tr.isMuted() ? 1 : 0; } catch (e) { sessiz = 0; }
+                sesler.push(ad + '|' + klip + '|' + sessiz);
+            }
+        } catch (e) {}
+
         var projPath = '';
         try { projPath = app.project.path; } catch (e) {}
 
@@ -126,6 +155,10 @@ function trGetSequenceInfo() {
             kv('durationSec', (endSec - zeroSec).toFixed(6), true),
             kv('videoTracks', String(videoTracks), true),
             kv('audioTracks', String(audioTracks), true),
+            kv('inSec', inSec.toFixed(6), true),
+            kv('outSec', outSec.toFixed(6), true),
+            kv('hasInOut', hasInOut ? 'true' : 'false', true),
+            kv('audioList', arrToJson(sesler), true),
             kv('projectPath', projPath),
             kv('appVersion', app.version),
             kv('bridgeVersion', TR_ALTYAZI_VERSION)
@@ -291,7 +324,62 @@ function trFindAudioPreset() {
  * (ingest preset'leri "Unknown Error" veriyor). Tek tek deneyip gercekten
  * dosya ureteni buluyoruz ve hangilerinin neden basarisiz oldugunu raporluyoruz.
  */
-function trExportAudioAuto(outPath, rangeType) {
+/**
+ * Secilmeyen ses pistlerini GECICI olarak susturur.
+ *
+ * exportAsMediaDirect sekansin tum ses miksajini veriyor; tek bir pisti
+ * disari aktarma secenegi yok. Tek yol istemedigimiz pistleri susturup
+ * disari aktarmak, sonra eski hallerine dondurmek.
+ *
+ * KRITIK: kullanicinin kendi sustuurdugu pistler de vardir. Onceki
+ * durumu kaydedip AYNEN geri koyuyoruz; yoksa kullanicinin sekansini
+ * sessizce degistirmis oluruz.
+ *
+ * @param secili  "0,2" gibi virgullu pist indeksleri; bos ise hepsi
+ * @returns onceki durumlar dizisi (geriYukle'ye verilecek)
+ */
+function sesPistleriniAyarla(seq, secili) {
+    var onceki = [];
+    if (secili === undefined || secili === null || secili === '') return onceki;
+
+    var istenen = {};
+    var parcalar = String(secili).split(',');
+    var varMi = false;
+    for (var p = 0; p < parcalar.length; p++) {
+        var n = parseInt(parcalar[p], 10);
+        if (!isNaN(n)) { istenen[n] = true; varMi = true; }
+    }
+    if (!varMi) return onceki;
+
+    var say = 0;
+    try { say = seq.audioTracks.numTracks; } catch (e) { return onceki; }
+
+    for (var i = 0; i < say; i++) {
+        try {
+            var tr = seq.audioTracks[i];
+            var eski = tr.isMuted() ? 1 : 0;
+            onceki.push(i + ':' + eski);
+            var olmali = istenen[i] ? 0 : 1;
+            if (eski !== olmali) tr.setMute(olmali);
+        } catch (e) { /* bu pist ayarlanamadi; digerlerine devam */ }
+    }
+    return onceki;
+}
+
+/** sesPistleriniAyarla'nin kaydettigi durumlari aynen geri koyar */
+function sesPistleriniGeriYukle(seq, onceki) {
+    if (!onceki || !onceki.length) return;
+    for (var i = 0; i < onceki.length; i++) {
+        try {
+            var parca = String(onceki[i]).split(':');
+            var idx = parseInt(parca[0], 10);
+            var deger = parseInt(parca[1], 10);
+            seq.audioTracks[idx].setMute(deger);
+        } catch (e) {}
+    }
+}
+
+function trExportAudioAuto(outPath, rangeType, sesPistleri) {
     try {
         var seq = app.project.activeSequence;
         if (!seq) return err('Aktif sekans yok.');
@@ -319,6 +407,11 @@ function trExportAudioAuto(outPath, rangeType) {
         }
 
         var attempts = [];
+
+        // Secilmeyen ses pistlerini gecici sustur; ne olursa olsun geri koy
+        var oncekiSes = sesPistleriniAyarla(seq, sesPistleri);
+        if (oncekiSes.length) attempts.push('ses pistleri: ' + String(sesPistleri));
+
         attempts.push('aralik turu = ' + range +
             ' (ENCODE_ENTIRE=' + String(app.encoder && app.encoder.ENCODE_ENTIRE) +
             ', IN_TO_OUT=' + String(app.encoder && app.encoder.ENCODE_IN_TO_OUT) +
@@ -367,6 +460,9 @@ function trExportAudioAuto(outPath, rangeType) {
                    attempts.join(' | '));
     } catch (e) {
         return err('Ses disari aktarilamadi', e);
+    } finally {
+        // Kullanicinin sekansini degistirmis birakmamak icin her durumda
+        try { sesPistleriniGeriYukle(app.project.activeSequence, oncekiSes); } catch (e2) {}
     }
 }
 

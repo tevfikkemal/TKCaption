@@ -1,7 +1,7 @@
 {
-  "version": "0.9.5",
-  "updated": "2026-09-21T15:53:54.139Z",
-  "notes": "arayuz: eylem kartlari ve izgara ritmi",
+  "version": "0.9.6",
+  "updated": "2026-09-21T16:00:57.624Z",
+  "notes": "In/Out araligi ve ses pisti secimi",
   "files": [
     {
       "path": "core/package.json",
@@ -96,17 +96,17 @@
     {
       "path": "css/style.css",
       "source": "panel/css/style.css",
-      "sha": "7c84f5b41ef663d78274b9c103bec3e4e72ab5add3715a58dafd2c487458f86b"
+      "sha": "306fc39d989a44acd628e4b1847d86e01bb0fca11b59f20c1620dd10a0f99f7b"
     },
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "eafab334b7366d0d97060ae535da7105fb54d3fa78ea763ea5928382074a4ef7"
+      "sha": "72d28021018880ff63dd4b7fa60e905cbbd35e0dc6f6e5e3f6032b4853e48737"
     },
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "d509fa2e97037b5598ff1159400021ba6053009c380afe9249573a43b3599825"
+      "sha": "f64c5e1864339498bd0fa53224fcb24b73cbcf1031af87f84e6dfc02736142bc"
     },
     {
       "path": "js/cep.js",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "955a88db8e4b1537da7e65b35ee59ab3aafaf2dc78126992aef28ecea7d343df"
+      "sha": "7ee4ed2870084525be7258301b5e1d18cac80e0847dfa2026d4e6bfe2f42af7a"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "d1873befb5d2953b8b8e9b27f8fecf7df35f45150f4c25be2ff403e502d9816b"
+      "sha": "f19981b2582857c4f2bf0516a7f931b03a6a1d22048c365da8d09cfdff021df3"
     },
     {
       "path": "LICENSE",

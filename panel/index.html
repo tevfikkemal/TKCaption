@@ -55,6 +55,20 @@
     </span>
   </button>
 
+  <!-- Kapsam: neyin islenecegi. Ana eylemin hemen altinda cunku her
+       calistirmada degisebiliyor; Ayarlar'a gomulse her seferinde
+       oraya gidip gelmek gerekirdi. -->
+  <div class="scope">
+    <div class="scope-grp" id="rangeGrp">
+      <button class="mini on" data-range="entire" type="button">Tüm sekans</button>
+      <button class="mini" data-range="inout" type="button" id="btnInOut" disabled>In → Out</button>
+    </div>
+    <div class="scope-grp" id="audioGrp">
+      <span class="mini-lbl">Ses</span>
+      <button class="mini on" data-audio="all" type="button">Tümü</button>
+    </div>
+  </div>
+
   <div class="row" id="cancelRow" hidden>
     <button id="btnCancel" class="btn small">İptal</button>
   </div>
