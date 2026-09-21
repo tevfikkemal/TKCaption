@@ -1,7 +1,7 @@
 {
-  "version": "0.9.14",
-  "updated": "2026-09-21T16:48:08.727Z",
-  "notes": "In/Out secildiginde yanlis alarm kaldirildi",
+  "version": "0.9.15",
+  "updated": "2026-09-21T16:49:33.959Z",
+  "notes": "kesme metodlari adiyla yoklaniyor",
   "files": [
     {
       "path": "core/package.json",
@@ -101,7 +101,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "ec218b4610b5b703065ce1de003370482263635d3d066c440a4d65113c7c350f"
+      "sha": "e456f6196c6c934087d3817273d8598a8679399e0b1da30af2beaf06aff5b3db"
     },
     {
       "path": "index.html",
@@ -121,7 +121,7 @@
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "44417c17c50441b1ff5cce3da321229f877f007dbf4ffdb4306f382fd05cf132"
+      "sha": "a6328ceeb7ffe3a5d82f83fb88b764aece544e0b01d9199ddbb33367684862ec"
     },
     {
       "path": "LICENSE",

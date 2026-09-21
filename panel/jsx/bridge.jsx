@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.9.14';
+var TR_ALTYAZI_VERSION = '0.9.15';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -1052,6 +1052,65 @@ function trProbeCaptionApi() {
                 } catch (e) { notes.push('QE pist/klip okunamadi: ' + e); }
             }
         } catch (e) { notes.push('QE DOM acilamadi: ' + e); }
+
+        /* --- KESME/EKLEME METODLARI: ADIYLA SOR ---
+         *
+         * OLCULEN: for...in dokumunde razor gorunmedi. Ama ExtendScript'te
+         * host nesnelerinin metodlari cogu zaman ENUMERABLE DEGIL — QE DOM
+         * nesneleri tipik ornegi. Yani listede olmamasi "yok" demek degil.
+         * Bu yuzden bilinen aday isimleri tek tek soruyoruz.
+         */
+        try {
+            var hedefler = [];
+            try { hedefler.push(['sequence', seq]); } catch (e) {}
+            try { hedefler.push(['videoTrack', seq.videoTracks[0]]); } catch (e) {}
+            try { hedefler.push(['trackItem', seq.videoTracks[0].clips[0]]); } catch (e) {}
+            try {
+                if (typeof qe === 'undefined') app.enableQE();
+                var qsq = qe.project.getActiveSequence();
+                hedefler.push(['QE sequence', qsq]);
+                var qvtr = qsq.getVideoTrackAt(0);
+                hedefler.push(['QE videoTrack', qvtr]);
+                try { hedefler.push(['QE trackItem', qvtr.getItemAt(0)]); } catch (e) {}
+            } catch (e) {}
+
+            var adaylar = ['razor', 'razorAt', 'split', 'splitAt', 'cut', 'cutAt',
+                           'insertClip', 'overwriteClip', 'addClip', 'appendClip',
+                           'remove', 'removeItem', 'rippleDelete', 'deleteGap',
+                           'setInPoint', 'setOutPoint', 'setStart', 'setEnd', 'move'];
+
+            for (var hi = 0; hi < hedefler.length; hi++) {
+                var ad = hedefler[hi][0];
+                var nes = hedefler[hi][1];
+                if (!nes) continue;
+                var bulunan = [];
+                for (var ai = 0; ai < adaylar.length; ai++) {
+                    try {
+                        if (typeof nes[adaylar[ai]] === 'function') bulunan.push(adaylar[ai] + '()');
+                    } catch (e) {}
+                }
+                if (bulunan.length) found.push(ad + ' METODLARI: ' + bulunan.join(', '));
+                else notes.push(ad + ' uzerinde aday metod YOK');
+            }
+
+            // Yazilabilir alanlar: kesme yoksa klip sinirlarini oynatmak
+            // tek secenek olabilir
+            try {
+                var ti = seq.videoTracks[0].clips[0];
+                if (ti) {
+                    var yazilir = [];
+                    var alanlar = ['start', 'end', 'inPoint', 'outPoint'];
+                    for (var yi = 0; yi < alanlar.length; yi++) {
+                        try {
+                            var onceki = ti[alanlar[yi]];
+                            var tipi = (onceki && typeof onceki === 'object') ? 'Time' : typeof onceki;
+                            yazilir.push(alanlar[yi] + ':' + tipi);
+                        } catch (e) {}
+                    }
+                    found.push('trackItem zaman alanlari: ' + yazilir.join(', '));
+                }
+            } catch (e) {}
+        } catch (e) { notes.push('metod yoklamasi hata: ' + e); }
 
         // --- QE DOM (belgelenmemis ama bazen caption islevleri barindirir) ---
         var qeAvailable = false;
