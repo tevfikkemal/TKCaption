@@ -1,7 +1,7 @@
 {
-  "version": "0.9.17",
-  "updated": "2026-09-21T16:59:36.487Z",
-  "notes": "altyazilari panelde gorme ve duzenleme",
+  "version": "0.9.18",
+  "updated": "2026-09-21T17:04:12.348Z",
+  "notes": "duzenleme artik yeni timeline eklemeyi deniyor degil",
   "files": [
     {
       "path": "core/package.json",
@@ -101,7 +101,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "d0d144f764e47d32141453efa45c7e30c5780efdfba4b440511804838df053b9"
+      "sha": "5884dd9b0a590043e228d243d8ffcf9a1b757f5eea9192265766860a7fe5325a"
     },
     {
       "path": "index.html",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "1e8d098082f2f9963bffc3d95d675d70252fda06513eba1cc1453042f660a27d"
+      "sha": "3ed0ecb0244140050e63f48a653fb1ad6d7e99ec35f7a883b00e03ef05058473"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "d0c2039088e933a6efb7b480733f21d287d9eda825b18cf5d765ab9f1f13403d"
+      "sha": "4b8289f82f75c6f316a1ed8ad7036dd799c3c5899de3cc8a0dd80cc503b9d956"
     },
     {
       "path": "LICENSE",

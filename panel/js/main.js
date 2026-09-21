@@ -813,20 +813,38 @@
 
     subsDegisti = false;
     subsBilgiTazele();
-    subsNot('Kaydedildi. Sekansa yeniden yerleştirmek için aşağıdaki düğmeyi kullanın.');
 
     var satirlar = $('subsList').querySelectorAll('.sub');
     for (var s = 0; s < satirlar.length; s++) satirlar[s].className = 'sub';
 
-    CEP.call('trPlaceCaptions("' + esPath(subsYol) + '")').then(function (pl) {
-      if (String(pl.placed) === 'true') {
-        subsNot('Kaydedildi ve yeni altyazı timeline’ı eklendi. ' +
-                'Eski timeline sekansta duruyor — istemiyorsanız silin.');
-      } else {
-        subsNot('Kaydedildi ama yerleştirilemedi; dosyayı elle sürükleyebilirsiniz.');
+    /*
+     * ONCE TAZELEME, SONRA YERLESTIRME.
+     *
+     * Her kaydetmede yeni bir altyazi timeline'i eklemek kabul edilemez:
+     * uc duzenlemede sekansta uc timeline birikiyordu. Once Premiere'e
+     * dosyayi yeniden okutmayi deniyoruz — basarili olursa var olan
+     * timeline yerinde guncelleniyor ve yeni bir sey eklenmiyor.
+     *
+     * refreshMedia altyazi ogelerinde calismazsa eski yola dusuyoruz,
+     * ama o zaman da kullaniciya ne oldugunu soyluyoruz.
+     */
+    CEP.call('trRefreshMedia("' + esPath(subsYol) + '")').then(function (r) {
+      if (String(r.refreshed) === 'true') {
+        subsNot('Kaydedildi — sekanstaki altyazı yerinde güncellendi.');
+        return null;
       }
+      // Tazeleme yok: yeni timeline eklemekten baska yol kalmiyor
+      return CEP.call('trPlaceCaptions("' + esPath(subsYol) + '")').then(function (pl) {
+        if (String(pl.placed) === 'true') {
+          subsNot('Kaydedildi. Premiere dosyayı yerinde tazeleyemedi (' +
+                  esc(r.method) + '), bu yüzden yeni bir altyazı timeline’ı ' +
+                  'eklendi — eskisini silebilirsiniz.');
+        } else {
+          subsNot('Kaydedildi ama yerleştirilemedi; dosyayı elle sürükleyebilirsiniz.');
+        }
+      });
     }).catch(function (e) {
-      subsNot('Kaydedildi ama yerleştirilemedi: ' + e.message);
+      subsNot('Kaydedildi ama sekansa yansıtılamadı: ' + e.message);
     });
   }
 

@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.9.17';
+var TR_ALTYAZI_VERSION = '0.9.18';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -2073,6 +2073,62 @@ function trAutoCut(bolgelerJson, fps, kuru) {
         ]);
     } catch (e) {
         return err('Autocut basarisiz', e);
+    }
+}
+
+/**
+ * Projedeki bir medya ogesini diskteki halinden yeniden okutur.
+ *
+ * NEDEN: altyazi metni duzenlenince dosya degisiyor ama Premiere iceri
+ * aldigi kopyayi kullanmaya devam ediyor. Simdiye kadar yeni bir altyazi
+ * timeline'i ekleyip eskisini kullaniciya elle sildiriyorduk — her
+ * duzenlemede sekansa bir timeline daha birikiyordu.
+ *
+ * projectItem.refreshMedia() varsa dosya yerinde tazeleniyor ve var olan
+ * timeline kendiliginden guncelleniyor. API belgelenmis ama altyazi
+ * ogelerinde calisip calismadigi belirsiz — sonucu raporluyoruz ki
+ * panel calismazsa eski yola dusebilsin.
+ *
+ * @returns {found, refreshed, method}
+ */
+function trRefreshMedia(dosyaYolu) {
+    try {
+        var hedef = String(dosyaYolu).replace(/\\/g, '/').toLowerCase();
+        var hepsi = collectAllItems(app.project.rootItem, [], 0);
+
+        var oge = null;
+        for (var i = 0; i < hepsi.length; i++) {
+            try {
+                var yol = '';
+                try { yol = String(hepsi[i].getMediaPath()); } catch (e) { continue; }
+                if (yol.replace(/\\/g, '/').toLowerCase() === hedef) { oge = hepsi[i]; break; }
+            } catch (e) {}
+        }
+
+        if (!oge) {
+            return ok([kv('found', 'false', true), kv('refreshed', 'false', true),
+                       kv('method', 'oge bulunamadi')]);
+        }
+
+        // refreshMedia donus degeri belgelenmemis; varligini ve cagriyi
+        // ayri ayri raporluyoruz
+        if (typeof oge.refreshMedia !== 'function') {
+            return ok([kv('found', 'true', true), kv('refreshed', 'false', true),
+                       kv('method', 'refreshMedia yok')]);
+        }
+
+        var hata = '';
+        try { oge.refreshMedia(); }
+        catch (e) { hata = String(e.message || e); }
+
+        return ok([
+            kv('found', 'true', true),
+            kv('refreshed', hata ? 'false' : 'true', true),
+            kv('method', hata ? ('hata: ' + hata) : 'refreshMedia'),
+            kv('name', String(oge.name))
+        ]);
+    } catch (e) {
+        return err('Medya tazelenemedi', e);
     }
 }
 
