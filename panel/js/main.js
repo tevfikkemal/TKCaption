@@ -504,8 +504,8 @@
     }).then(function (res) {
       setText('updateTitle', 'v' + res.version + ' kuruldu');
       setText('updateNote',
-        res.updated + ' dosya güncellendi. Değişikliklerin geçerli olması için ' +
-        'Premiere’i kapatıp yeniden açın.');
+        res.updated + ' dosya güncellendi. Uygulamak için sağ üstteki ' +
+        'yenileme düğmesine basın — Premiere’i kapatmanız gerekmez.');
       btn.hidden = true;
     }).catch(function (e) {
       setText('updateNote', e.message);
@@ -875,16 +875,17 @@
     btn.disabled = true;
     subsNot('yerleştiriliyor…');
 
-    CEP.call('trPlaceCaptions("' + esPath(subsYol) + '")').then(function (pl) {
+    // trReplaceCaptions once ESKI altyazi ogelerini projeden silmeyi
+    // deniyor, sonra yenisini koyuyor. Pist silme API'si yok ama ogeyi
+    // silmek pisti de bosaltabilir — deneyip sonucu raporluyoruz.
+    CEP.call('trReplaceCaptions("' + esPath(subsYol) + '")').then(function (pl) {
       if (String(pl.placed) === 'true') {
+        var silinen = Number(pl.deletedItems) || 0;
         var dosyaAdi = subsYol.split(/[\/]/).pop();
         var duzeltme = /-dd+.[^.]+$/.test(dosyaAdi);
-        subsNot(duzeltme
-          ? 'Düzeltilmiş metin YENİ bir timeline olarak eklendi (' + esc(dosyaAdi) +
-            '). Eski timeline sekansta duruyor ve değişmez — düzeltmeyi görmek ' +
-            'için onu silin. Premiere altyazı timeline’ını betiğe açmadığı için ' +
-            'silmek bize kapalı.'
-          : 'Altyazı timeline’ı eklendi (' + esc(dosyaAdi) + ').');
+        subsNot('Yerleştirildi: ' + esc(dosyaAdi) +
+          (silinen ? '  ·  ' + silinen + ' eski altyazı öğesi projeden silindi.'
+                   : '  ·  Eski timeline duruyorsa elle silin.'));
       } else {
         subsNot('Yerleştirilemedi; dosyayı proje panelinden sürükleyebilirsiniz.');
         btn.disabled = false;

@@ -1,7 +1,7 @@
 {
-  "version": "0.9.22",
-  "updated": "2026-09-21T17:18:10.313Z",
-  "notes": "varsayilan: once goster sonra yerlestir",
+  "version": "0.9.23",
+  "updated": "2026-09-21T17:23:21.751Z",
+  "notes": "vundefined duzeltildi; yerlestirme eski ogeleri temizliyor",
   "files": [
     {
       "path": "core/package.json",
@@ -76,7 +76,7 @@
     {
       "path": "core/src/updater.js",
       "source": "core/src/updater.js",
-      "sha": "95fcd60604ee188b4b617710b6efcd066f0d30e87bb223481b316f583864f762"
+      "sha": "5dde2570459454e8e8a404170deabda7239540ddf5c28a9ad366d9e36739ce67"
     },
     {
       "path": "core/src/vad.js",
@@ -101,7 +101,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "2b550eb3de77ed2c238ddc48ff44b53f088cf8dc80a3f1c1abeced36e1696343"
+      "sha": "d8056ffa30b4f5075a9fec31f2eb805287504f3e454a64d87658055aefb713b6"
     },
     {
       "path": "index.html",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "3dfc86d4813eb0d8aa609c20796ed7aa4f5371cbd187148605389a60efb11b34"
+      "sha": "85772a94da099d2f6a81331dff18c1694c3e6c35e695a1269a2a6442c3ff795b"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "5a4bc8c25f6c651d759ed32216c9da81b2d7107959cb5bf90dcc9f3a8b2e5d3a"
+      "sha": "588f87e8f4e8a622dfb2c5a5595b02e545dca9fea22a036c88e5923b994592ac"
     },
     {
       "path": "LICENSE",

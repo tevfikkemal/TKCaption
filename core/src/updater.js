@@ -171,6 +171,10 @@ async function check(extensionDir) {
     available: isNewer(m.version, current),
     current,
     latest: m.version,
+    // apply() bu nesneyi 'manifest' olarak aliyor ve manifest.version
+    // okuyor; yalnizca 'latest' verince surum undefined kaliyordu ve
+    // panel "vundefined kuruldu" yaziyordu.
+    version: m.version,
     files: m.files,
     notes: m.notes || '',
     writable: yazilabilir(extensionDir)

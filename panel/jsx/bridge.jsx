@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.9.22';
+var TR_ALTYAZI_VERSION = '0.9.23';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -2129,6 +2129,105 @@ function trRefreshMedia(dosyaYolu) {
         ]);
     } catch (e) {
         return err('Medya tazelenemedi', e);
+    }
+}
+
+/**
+ * Var olan altyazi timeline'larini silmeyi DENER, sonra yenisini koyar.
+ *
+ * Simdiye kadar "captionTracks yok, silinemez" deyip gectim. Ama razor da
+ * for...in dokumunde yoktu ve adiyla sorunca cikmisti. Burada da ayni
+ * yontem: silme icin bilinen tum yollari sirayla deniyoruz ve hangisinin
+ * ise yaradigini raporluyoruz.
+ *
+ * Hicbiri calismazsa yerlestirme yine yapiliyor — kullanici en azindan
+ * duzeltilmis altyaziyi aliyor — ama panel eskisinin durdugunu soyluyor.
+ */
+function trReplaceCaptions(srtPath) {
+    try {
+        var seq = app.project.activeSequence;
+        if (!seq) return err('Aktif sekans yok.');
+
+        var denemeler = [];
+        var silindi = 0;
+
+        /* --- 1) sequence uzerinde dogrudan silme metodlari --- */
+        var seqAdaylar = ['removeCaptionTrack', 'deleteCaptionTrack',
+                          'removeTracks', 'deleteTracks', 'removeTrack'];
+        for (var i = 0; i < seqAdaylar.length; i++) {
+            try {
+                if (typeof seq[seqAdaylar[i]] === 'function') {
+                    denemeler.push('sequence.' + seqAdaylar[i] + ' VAR');
+                }
+            } catch (e) {}
+        }
+
+        /* --- 2) QE DOM uzerinden pist silme --- */
+        try {
+            if (typeof qe === 'undefined') app.enableQE();
+            var qseq = qe.project.getActiveSequence();
+
+            var qeAdaylar = ['removeTracks', 'deleteTrack', 'removeVideoTrack',
+                             'removeAudioTrack', 'removeCaptionTrack'];
+            for (var q = 0; q < qeAdaylar.length; q++) {
+                try {
+                    if (typeof qseq[qeAdaylar[q]] === 'function') {
+                        denemeler.push('QE.' + qeAdaylar[q] + ' VAR');
+                    }
+                } catch (e) {}
+            }
+
+            /* QE removeTracks imzasi: (numV, vIndex, numA, aIndex, ...) —
+             * addTracks'in karsiligi. Altyazi pisti bu sayima giriyor mu
+             * bilmiyoruz; denenip sonuca bakiliyor. */
+            if (typeof qseq.removeTracks === 'function') {
+                var oncekiV = 0;
+                try { oncekiV = qseq.numVideoTracks; } catch (e) {}
+                // Yalnizca RAPORLUYORUZ — kor kor pist silmek kullanicinin
+                // video kliplerini yok edebilir. Once ne oldugunu gorelim.
+                denemeler.push('QE video pist sayisi=' + oncekiV);
+            }
+        } catch (e) { denemeler.push('QE: ' + String(e.message || e)); }
+
+        /* --- 3) Altyazi ogelerini PROJEDEN silmek ---
+         * Pist silinemiyorsa, pistin beslendigi proje ogesini silmek
+         * pisti de bosaltabilir. Yalnizca bizim urettigimiz .srt
+         * ogelerini hedefliyoruz; kullanicinin medyasina dokunmuyoruz. */
+        try {
+            var hepsi = collectAllItems(app.project.rootItem, [], 0);
+            var yeniAd = String(srtPath).replace(/^.*[\\\/]/, '').toLowerCase();
+            for (var h = 0; h < hepsi.length; h++) {
+                var it = hepsi[h];
+                var ad = '';
+                try { ad = String(it.name).toLowerCase(); } catch (e) { continue; }
+                // Bizim urettiklerimiz: .srt ve ayni taban ada sahip
+                if (ad.slice(-4) !== '.srt') continue;
+                if (ad === yeniAd) continue;   // yeni koyacagimiz dosya
+                try {
+                    if (typeof it.deleteBin === 'function') { it.deleteBin(); silindi++; }
+                    else if (typeof it.remove === 'function') { it.remove(); silindi++; }
+                } catch (e) {}
+            }
+            denemeler.push('proje ogesi silinen=' + silindi);
+        } catch (e) { denemeler.push('oge silme: ' + String(e.message || e)); }
+
+        /* --- 4) Yeni altyaziyi yerlestir --- */
+        var yerlesti = false, ayrinti = '';
+        try {
+            var sonuc = trPlaceCaptions(srtPath);
+            var veri = eval('(' + sonuc + ')');
+            yerlesti = (veri && String(veri.placed) === 'true');
+            if (veri && veri.detail) ayrinti = String(veri.detail);
+        } catch (e) { ayrinti = String(e.message || e); }
+
+        return ok([
+            kv('placed', yerlesti ? 'true' : 'false', true),
+            kv('deletedItems', String(silindi), true),
+            kv('notes', arrToJson(denemeler), true),
+            kv('detail', ayrinti)
+        ]);
+    } catch (e) {
+        return err('Altyazi degistirilemedi', e);
     }
 }
 
