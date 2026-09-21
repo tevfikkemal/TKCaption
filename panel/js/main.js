@@ -818,33 +818,46 @@
     for (var s = 0; s < satirlar.length; s++) satirlar[s].className = 'sub';
 
     /*
-     * ONCE TAZELEME, SONRA YERLESTIRME.
+     * KAYDETME SEKANSA DOKUNMUYOR.
      *
-     * Her kaydetmede yeni bir altyazi timeline'i eklemek kabul edilemez:
-     * uc duzenlemede sekansta uc timeline birikiyordu. Once Premiere'e
-     * dosyayi yeniden okutmayi deniyoruz — basarili olursa var olan
-     * timeline yerinde guncelleniyor ve yeni bir sey eklenmiyor.
+     * OLCULEN: refreshMedia() altyazi ogelerinde hata vermeden calisiyor
+     * ama dosyayi tazelemiyor. Panel "guncellendi" diyordu, sekansta
+     * hicbir sey degismiyordu — sessiz basarisizlik, en kotu tur.
      *
-     * refreshMedia altyazi ogelerinde calismazsa eski yola dusuyoruz,
-     * ama o zaman da kullaniciya ne oldugunu soyluyoruz.
+     * Premiere altyazi timeline'ini betige hic acmadigi icin var olani
+     * guncellemenin yolu yok. Geriye iki secenek kaliyor ve ikisi de
+     * kullanicinin karari:
+     *   - Dosyayi kaydet, sekansa dokunma (Premiere'in kendi altyazi
+     *     panelinden duzenlemeye devam edilebilir)
+     *   - Yeni bir timeline ekle ve eskisini elle sil
+     *
+     * Kaydetme artik yalnizca birincisini yapiyor; ikincisi ayri bir
+     * dugme. Kullanicinin istemedigi bir seyi varsayilan yapmiyoruz.
      */
-    CEP.call('trRefreshMedia("' + esPath(subsYol) + '")').then(function (r) {
-      if (String(r.refreshed) === 'true') {
-        subsNot('Kaydedildi — sekanstaki altyazı yerinde güncellendi.');
-        return null;
+    subsNot('Kaydedildi: ' + subsYol.split(/[\\/]/).pop() +
+            '  ·  Sekanstaki altyazı değişmedi.');
+    $('btnSubsPlace').disabled = false;
+  }
+
+  /** Duzenlenen dosyayi sekansa YENI bir altyazi timeline'i olarak koyar */
+  function subsYerlestir() {
+    if (!subsYol) return;
+    var btn = $('btnSubsPlace');
+    btn.disabled = true;
+    subsNot('yerleştiriliyor…');
+
+    CEP.call('trPlaceCaptions("' + esPath(subsYol) + '")').then(function (pl) {
+      if (String(pl.placed) === 'true') {
+        subsNot('Yeni altyazı timeline’ı eklendi. Eskisi sekansta duruyor — ' +
+                'Premiere altyazı timeline’ını betiğe açmadığı için onu ' +
+                'silmek bize kapalı.');
+      } else {
+        subsNot('Yerleştirilemedi; dosyayı proje panelinden sürükleyebilirsiniz.');
+        btn.disabled = false;
       }
-      // Tazeleme yok: yeni timeline eklemekten baska yol kalmiyor
-      return CEP.call('trPlaceCaptions("' + esPath(subsYol) + '")').then(function (pl) {
-        if (String(pl.placed) === 'true') {
-          subsNot('Kaydedildi. Premiere dosyayı yerinde tazeleyemedi (' +
-                  esc(r.method) + '), bu yüzden yeni bir altyazı timeline’ı ' +
-                  'eklendi — eskisini silebilirsiniz.');
-        } else {
-          subsNot('Kaydedildi ama yerleştirilemedi; dosyayı elle sürükleyebilirsiniz.');
-        }
-      });
     }).catch(function (e) {
-      subsNot('Kaydedildi ama sekansa yansıtılamadı: ' + e.message);
+      subsNot('Yerleştirilemedi: ' + e.message);
+      btn.disabled = false;
     });
   }
 
@@ -2284,6 +2297,7 @@
     refreshPlatformNote();
     cipleriTazele();
     $('btnSubsSave').addEventListener('click', subsKaydet);
+    $('btnSubsPlace').addEventListener('click', subsYerlestir);
     $('btnCutScan').addEventListener('click', autocutTara);
     $('btnCutApply').addEventListener('click', autocutUygula);
     $('optCutMin').addEventListener('input', kesEtiketleri);

@@ -1,7 +1,7 @@
 {
-  "version": "0.9.18",
-  "updated": "2026-09-21T17:04:12.348Z",
-  "notes": "duzenleme artik yeni timeline eklemeyi deniyor degil",
+  "version": "0.9.19",
+  "updated": "2026-09-21T17:07:14.898Z",
+  "notes": "kaydetme sekansa dokunmuyor; yerlestirme ayri dugme",
   "files": [
     {
       "path": "core/package.json",
@@ -101,12 +101,12 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "5884dd9b0a590043e228d243d8ffcf9a1b757f5eea9192265766860a7fe5325a"
+      "sha": "171a3f6f66d6f4eb199a3e2d525c1fd43e11388b9876a78199500d3d367c0a55"
     },
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "51aff78bd2a627066ea9d20000dd858c178a95b47867687288aa61f6c9c84ba6"
+      "sha": "9159cc6b4519490fe568b954b9d00567db1c8e154a1ebec489009cc7058e458f"
     },
     {
       "path": "js/cep.js",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "3ed0ecb0244140050e63f48a653fb1ad6d7e99ec35f7a883b00e03ef05058473"
+      "sha": "423bebef3c3a5527e60b372c779daaafad975ebf13f49c9ccb3713c38334d1a5"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "4b8289f82f75c6f316a1ed8ad7036dd799c3c5899de3cc8a0dd80cc503b9d956"
+      "sha": "b76d4b207949ca237d1c6ff3f441737f16d9bd1dcc302f93bde0bca49901f0ef"
     },
     {
       "path": "LICENSE",
