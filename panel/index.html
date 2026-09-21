@@ -8,7 +8,9 @@
 </head>
 <body>
 
-  <header class="head">
+  <!-- Ust bar: kimlik solda, surum sagda. Panel bir cerceve icinde
+       yasiyor; ust ve alt bar o cerceveyi kuruyor. -->
+  <header class="topbar">
     <span class="mark">TK</span>
     <span class="titles">
       <h1>TK Caption</h1>
@@ -17,21 +19,18 @@
     <span class="ver" id="ver"></span>
   </header>
 
-  <!-- Sekans ozeti: ayri kart degil, tek satir. Calistirmadan once neyin
-       islenecegi gorunur olmali ama bir kart hak etmiyor. -->
+  <!-- Sekans ozeti: ad, cozunurluk, kare hizi, sure -->
   <div class="seqline">
     <span id="seqName" class="dim">sekans okunmadı</span>
     <span id="seqMeta"></span>
     <button class="refresh" id="btnSeq" type="button">yenile</button>
   </div>
 
-  <!-- Ilk calistirmada model inecegini ONCEDEN soyle -->
   <p class="first-run" id="firstRun" hidden>
     İlk çalıştırmada model indirilecek
     (<strong id="firstRunSize">~570 MB</strong>). Bir kez iner.
   </p>
 
-  <!-- Guncelleme bildirimi -->
   <div class="update-box" id="updateBox" hidden>
     <div class="update-head">
       <span id="updateTitle">Yeni sürüm var</span>
@@ -41,19 +40,57 @@
     <div id="updateBar" class="bar" hidden><div id="updateFill" class="fill"></div></div>
   </div>
 
-  <!-- ASIL EYLEM — tek basina, en ustte, her sekmede gorunur -->
-  <div class="hero">
-    <button id="btnRun" class="btn primary big">Altyazı Oluştur</button>
-    <button id="btnCancel" class="btn" hidden>İptal</button>
+  <!-- ANA EYLEM — ikonlu buyuk kart, tek basina bir satir.
+       Gozun ilk dustugu yer burasi olmali. -->
+  <button class="action main" id="btnRun" type="button">
+    <span class="ico-box cc">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+        <rect x="2.5" y="5" width="19" height="14" rx="3"/>
+        <path d="M9.6 10.6a2.2 2.2 0 1 0 0 2.8M15.6 10.6a2.2 2.2 0 1 0 0 2.8"/>
+      </svg>
+    </span>
+    <span class="action-txt">
+      <b>Altyazı Oluştur</b>
+      <i id="runHint">sekanstan Türkçe altyazı üretir</i>
+    </span>
+  </button>
+
+  <div class="row" id="cancelRow" hidden>
+    <button id="btnCancel" class="btn small">İptal</button>
   </div>
   <div id="runBar" class="bar" hidden><div id="runFill" class="fill"></div></div>
   <div id="runOut" class="out" hidden></div>
 
-  <!-- Uc bolum sekmede: ayni anda yalnizca biri gorunur -->
-  <div class="tabs" id="tabs">
-    <button class="tab on" data-tab="ayar" type="button">Ayarlar</button>
-    <button class="tab" data-tab="safe" type="button">Güvenli Alan</button>
-    <button class="tab" data-tab="stil" type="button">Stil</button>
+  <!-- Bolum kartlari: ikonlu izgara; secili olanin icerigi altta acilir -->
+  <div class="grid" id="tabs">
+    <button class="action" data-tab="ayar" type="button">
+      <span class="ico-box set">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+          <circle cx="12" cy="12" r="3.2"/>
+          <path d="M12 3.2v2.4M12 18.4v2.4M20.8 12h-2.4M5.6 12H3.2M18.2 5.8l-1.7 1.7M7.5 16.5l-1.7 1.7M18.2 18.2l-1.7-1.7M7.5 7.5L5.8 5.8"/>
+        </svg>
+      </span>
+      <span class="action-txt"><b>Ayarlar</b><i>model, biçim, satır</i></span>
+    </button>
+
+    <button class="action" data-tab="safe" type="button">
+      <span class="ico-box safe">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+          <rect x="3.2" y="3.2" width="17.6" height="17.6" rx="3"/>
+          <rect x="7.4" y="7.4" width="9.2" height="9.2" rx="1.4" stroke-dasharray="2.4 2"/>
+        </svg>
+      </span>
+      <span class="action-txt"><b>Güvenli Alan</b><i>platform kılavuzu</i></span>
+    </button>
+
+    <button class="action wide" data-tab="stil" type="button">
+      <span class="ico-box stil">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+          <path d="M5 6.6h14M12 6.6V18M9.2 18h5.6"/>
+        </svg>
+      </span>
+      <span class="action-txt"><b>Stilize Altyazı</b><i>şablonla video pistine yazar</i></span>
+    </button>
   </div>
 
   <!-- ============ AYARLAR ============ -->
@@ -139,7 +176,7 @@
   <!-- ============ STILIZE ALTYAZI ============ -->
   <div class="panelbody" id="tab-stil" hidden>
     <div class="row spread">
-      <span class="note nomargin">Altyazıyı şablonla <b>video pistine</b> yazar; dışa aktarmada gömülü olur.</span>
+      <span class="note nomargin">Yazı tipi ve renk şablondan gelir; dışa aktarmada gömülü olur.</span>
       <span class="ver" id="mogrtCount"></span>
     </div>
 
@@ -169,36 +206,32 @@
     <div id="mogrtOut" class="out" hidden></div>
   </div>
 
-  <!-- ============ SORUN GIDERME ============ -->
-  <details class="advanced">
-    <summary>Sorun giderme</summary>
+  <!-- ============ ALT BAR ============ -->
+  <footer class="botbar">
+    <button id="btnAdv" class="botlink" type="button">Sorun giderme</button>
+    <button id="btnCopy" class="botlink" type="button">Raporu kopyala</button>
+  </footer>
 
-    <section class="card">
-      <h2>Ortam</h2>
-      <dl class="env">
-        <dt>CEP</dt><dd id="envCep" class="pending">—</dd>
-        <dt>Node.js</dt><dd id="envNode" class="pending">—</dd>
-        <dt>Premiere</dt><dd id="envHost" class="pending">—</dd>
-        <dt>Köprü</dt><dd id="envBridge" class="pending">—</dd>
-        <dt>Çekirdek</dt><dd id="envCore" class="pending">—</dd>
-        <dt>Veri</dt><dd id="envData" class="pending">—</dd>
-      </dl>
-    </section>
-
-    <section class="card">
-      <div class="row">
-        <button id="btnProbe" class="btn small">Altyazı API yoklaması</button>
-        <button id="btnExportProbe" class="btn small">Dışa aktarma teşhisi</button>
-        <button id="btnPresets" class="btn small">Preset'ler</button>
-        <button id="btnCaption" class="btn small">createCaptionTrack denemesi</button>
-      </div>
-      <div id="probeOut" class="out" hidden></div>
-      <div id="presetOut" class="out" hidden></div>
-      <div id="captionOut" class="out" hidden></div>
-    </section>
-
-    <button id="btnCopy" class="link">Teşhis raporunu kopyala</button>
-  </details>
+  <!-- Sorun giderme govdesi: alt bardaki dugme aciyor -->
+  <div class="panelbody" id="advBody" hidden>
+    <dl class="env">
+      <dt>CEP</dt><dd id="envCep" class="pending">—</dd>
+      <dt>Node.js</dt><dd id="envNode" class="pending">—</dd>
+      <dt>Premiere</dt><dd id="envHost" class="pending">—</dd>
+      <dt>Köprü</dt><dd id="envBridge" class="pending">—</dd>
+      <dt>Çekirdek</dt><dd id="envCore" class="pending">—</dd>
+      <dt>Veri</dt><dd id="envData" class="pending">—</dd>
+    </dl>
+    <div class="row">
+      <button id="btnProbe" class="btn small">Altyazı API</button>
+      <button id="btnExportProbe" class="btn small">Dışa aktarma</button>
+      <button id="btnPresets" class="btn small">Preset'ler</button>
+      <button id="btnCaption" class="btn small">createCaptionTrack</button>
+    </div>
+    <div id="probeOut" class="out" hidden></div>
+    <div id="presetOut" class="out" hidden></div>
+    <div id="captionOut" class="out" hidden></div>
+  </div>
 
   <script src="js/cep.js"></script>
   <script src="js/main.js"></script>

@@ -1,7 +1,7 @@
 {
-  "version": "0.9.4",
-  "updated": "2026-09-21T15:38:43.144Z",
-  "notes": "arayuz TK Labs temasina gore yenilendi",
+  "version": "0.9.5",
+  "updated": "2026-09-21T15:53:54.139Z",
+  "notes": "arayuz: eylem kartlari ve izgara ritmi",
   "files": [
     {
       "path": "core/package.json",
@@ -96,17 +96,17 @@
     {
       "path": "css/style.css",
       "source": "panel/css/style.css",
-      "sha": "f65979416881d564941a7a76fd3ac799ea9f24684b1e528002b8d1931be424aa"
+      "sha": "7c84f5b41ef663d78274b9c103bec3e4e72ab5add3715a58dafd2c487458f86b"
     },
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "7cf4e97131502f9d8a0901d777e748c5df94617e826ef72ad7123ddcac5b6925"
+      "sha": "eafab334b7366d0d97060ae535da7105fb54d3fa78ea763ea5928382074a4ef7"
     },
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "a737c4b37a655c9ad70da4cfba745087783c2ff8c882d43e1508a5caf1bbaba7"
+      "sha": "d509fa2e97037b5598ff1159400021ba6053009c380afe9249573a43b3599825"
     },
     {
       "path": "js/cep.js",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "653e0693f0600145f65bc1361fbaad7c40d8cea54a6851e072218418c2101fb3"
+      "sha": "955a88db8e4b1537da7e65b35ee59ab3aafaf2dc78126992aef28ecea7d343df"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "9fe6d4877cd8561339d5c645727171721cd3441839f828cb04a788430d588030"
+      "sha": "d1873befb5d2953b8b8e9b27f8fecf7df35f45150f4c25be2ff403e502d9816b"
     },
     {
       "path": "LICENSE",
