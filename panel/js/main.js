@@ -678,6 +678,166 @@
   }
 
   /* ---------------------------------------------------------------- */
+  /*  ALTYAZI LISTESI — gor ve duzenle                                 */
+  /* ---------------------------------------------------------------- */
+
+  /*
+   * Uretilen altyazilari panelde gosterip metni duzenlemeye aciyoruz.
+   * Konusma tanima hicbir zaman kusursuz degil; ozel isimler ve teknik
+   * terimler icin kullanicinin dosyayi disarida acmasini beklemek
+   * gereksiz bir adim.
+   *
+   * ZAMANLARA DOKUNMUYORUZ. Zaman duzenlemek tek basina bir is: blok
+   * cakismasi, minimum sure, okuma hizi kurallarinin hepsini yeniden
+   * dogrulamak gerekir. Metin duzenleme bu kurallari bozmaz — satir
+   * uzunlugu disinda, onu da uyari olarak gosteriyoruz.
+   */
+
+  var subsBloklar = null;
+  var subsYol = null;
+  var subsDegisti = false;
+
+  function subsYukle(srtYolu) {
+    var core = resolveCore();
+    if (!core || !srtYolu) return;
+
+    try {
+      var srtMod = nodeReq(npath.join(core, 'src', 'srt.js'));
+      subsBloklar = srtMod.parseSrt(nfs.readFileSync(srtYolu, 'utf8'));
+      subsYol = srtYolu;
+    } catch (e) {
+      return;
+    }
+    if (!subsBloklar || !subsBloklar.length) return;
+
+    subsDegisti = false;
+    subsCiz();
+    $('subsBox').hidden = false;
+  }
+
+  function subsCiz() {
+    var kap = $('subsList');
+    if (!kap || !subsBloklar) return;
+
+    var html = '';
+    for (var i = 0; i < subsBloklar.length; i++) {
+      var b = subsBloklar[i];
+      var metin = b.lines ? b.lines.join('\n') : '';
+      html += '<div class="sub" data-i="' + i + '">' +
+              '<span class="tm">' + sn2kisa(b.start) + '</span>' +
+              '<textarea class="tx" rows="2">' + esc(metin) + '</textarea>' +
+              '</div>';
+    }
+    kap.innerHTML = html;
+
+    var alanlar = kap.querySelectorAll('.tx');
+    for (var a = 0; a < alanlar.length; a++) {
+      alanlar[a].addEventListener('input', function () {
+        var satir = this.parentNode;
+        var idx = parseInt(satir.getAttribute('data-i'), 10);
+        subsBloklar[idx].lines = this.value.split('\n');
+        satir.className = 'sub degisti';
+        subsDegisti = true;
+        $('btnSubsSave').disabled = false;
+        subsBilgiTazele();
+      });
+    }
+    subsBilgiTazele();
+  }
+
+  /** Saniyeyi kisa okunur bicime cevirir: 75.4 -> 1:15 */
+  function sn2kisa(sn) {
+    var t = Math.max(0, Math.floor(Number(sn) || 0));
+    var d = Math.floor(t / 60);
+    var s = t % 60;
+    return d + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  function subsBilgiTazele() {
+    if (!subsBloklar) return;
+    var sinir = parseInt($('optChars').value, 10) || 42;
+    var uzun = 0;
+    for (var i = 0; i < subsBloklar.length; i++) {
+      var ls = subsBloklar[i].lines || [];
+      for (var j = 0; j < ls.length; j++) if (ls[j].length > sinir) uzun++;
+    }
+    setText('subsInfo', subsBloklar.length + ' blok' +
+      (uzun ? '  ·  ' + uzun + ' satır ' + sinir + ' karakteri aşıyor' : '') +
+      (subsDegisti ? '  ·  kaydedilmedi' : ''));
+  }
+
+  /**
+   * Duzenlenen metni dosyaya yazar ve sekansa YENIDEN yerlestirir.
+   *
+   * Premiere'in altyazi timeline'ina erisemedigimiz icin var olani
+   * guncelleyemiyoruz; yeni bir dosya yazip yeniden yerlestiriyoruz.
+   * Eskisi sekansta kalir — kullaniciya bunu acikca soyluyoruz, cunku
+   * sessizce iki altyazi birden gostermek daha kotu olurdu.
+   */
+  function subsKaydet() {
+    if (!subsBloklar || !subsYol) return;
+    var btn = $('btnSubsSave');
+    btn.disabled = true;
+
+    var core = resolveCore();
+    var srtMod, configMod, cfg;
+    try {
+      srtMod = nodeReq(npath.join(core, 'src', 'srt.js'));
+      configMod = nodeReq(npath.join(core, 'src', 'config.js'));
+      cfg = configMod.load();
+    } catch (e) {
+      subsNot('Çekirdek yüklenemedi: ' + e.message);
+      btn.disabled = false;
+      return;
+    }
+
+    // Bos bloklari atiyoruz: kullanici metni silmisse o altyazi olmamali
+    var temiz = [];
+    for (var i = 0; i < subsBloklar.length; i++) {
+      var ls = (subsBloklar[i].lines || []).filter(function (l) { return l.trim() !== ''; });
+      if (!ls.length) continue;
+      temiz.push({ start: subsBloklar[i].start, end: subsBloklar[i].end, lines: ls });
+    }
+    if (!temiz.length) { subsNot('Tüm bloklar boş — kaydedilmedi.'); btn.disabled = false; return; }
+
+    try {
+      // Zaman kodu kaymasi SRT'nin icinde ZATEN var; tekrar eklersek iki
+      // kat kayar. parseSrt kaydirilmis zamanlari okudu, oldugu gibi yaziyoruz.
+      cfg.output.timecodeOffsetSec = 0;
+      srtMod.write(subsYol, srtMod.toSrt(temiz, cfg), cfg);
+    } catch (e) {
+      subsNot('Yazılamadı: ' + e.message);
+      btn.disabled = false;
+      return;
+    }
+
+    subsDegisti = false;
+    subsBilgiTazele();
+    subsNot('Kaydedildi. Sekansa yeniden yerleştirmek için aşağıdaki düğmeyi kullanın.');
+
+    var satirlar = $('subsList').querySelectorAll('.sub');
+    for (var s = 0; s < satirlar.length; s++) satirlar[s].className = 'sub';
+
+    CEP.call('trPlaceCaptions("' + esPath(subsYol) + '")').then(function (pl) {
+      if (String(pl.placed) === 'true') {
+        subsNot('Kaydedildi ve yeni altyazı timeline’ı eklendi. ' +
+                'Eski timeline sekansta duruyor — istemiyorsanız silin.');
+      } else {
+        subsNot('Kaydedildi ama yerleştirilemedi; dosyayı elle sürükleyebilirsiniz.');
+      }
+    }).catch(function (e) {
+      subsNot('Kaydedildi ama yerleştirilemedi: ' + e.message);
+    });
+  }
+
+  function subsNot(msg) {
+    var el = $('subsNote');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.hidden = !msg;
+  }
+
+  /* ---------------------------------------------------------------- */
   /*  AUTOCUT — sessiz bolumleri kesip silme                           */
   /* ---------------------------------------------------------------- */
 
@@ -1818,6 +1978,7 @@
       lastResult = res;
       // Stilize altyazi bolumu bu dosyayi okuyup MOGRT olarak dizecek
       sonAltyaziYolu = srtPath;
+      subsYukle(srtPath);
       mogrtDurumTazele();
       setBar(0.95);
       appendRun('<span class="ok">' + res.blocks + ' blok, ' + res.words + ' kelime</span>  ' +
@@ -2104,6 +2265,7 @@
     }
     refreshPlatformNote();
     cipleriTazele();
+    $('btnSubsSave').addEventListener('click', subsKaydet);
     $('btnCutScan').addEventListener('click', autocutTara);
     $('btnCutApply').addEventListener('click', autocutUygula);
     $('optCutMin').addEventListener('input', kesEtiketleri);

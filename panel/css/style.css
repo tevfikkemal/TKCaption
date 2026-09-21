@@ -796,3 +796,53 @@ details > summary:hover { color: var(--text-2); }
 /* Yeniden yuklerken donsun ki bir sey oldugu anlasilsin */
 .iconbtn.spin svg { animation: tk-spin .8s linear infinite; }
 @keyframes tk-spin { to { transform: rotate(360deg); } }
+
+/* ---------------------------------------------------------------- */
+/*  Altyazi listesi — gor ve duzenle                                 */
+/* ---------------------------------------------------------------- */
+
+/* Uzun listede panel sonsuz uzamasin; kendi icinde kaysin. */
+.subs {
+  max-height: 260px;
+  overflow-y: auto;
+  margin: 8px 0 0;
+  padding-right: 2px;
+}
+
+.sub {
+  display: flex;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.sub:last-child { border-bottom: none; }
+
+/* Zaman sutunu sabit genislikte: metinler ayni hizada baslasin */
+.sub .tm {
+  flex: none;
+  width: 58px;
+  font: 9.5px/1.5 var(--mono);
+  color: var(--text-3);
+  padding-top: 3px;
+}
+
+/* Duzenlenebilir metin: gorunuste duz yazi, odaklaninca kutu */
+.sub .tx {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font: 11px/1.45 "Segoe UI", system-ui, sans-serif;
+  padding: 2px 5px;
+  resize: vertical;
+  min-height: 34px;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.sub .tx:hover { border-color: var(--line); }
+.sub .tx:focus { border-color: var(--accent); outline: none; background: var(--surface-2); }
+
+/* Degismis blok: kaydedilmemis oldugu gorunsun */
+.sub.degisti .tm { color: var(--accent-text); }

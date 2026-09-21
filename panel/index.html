@@ -79,12 +79,22 @@
   <div id="runBar" class="bar" hidden><div id="runFill" class="fill"></div></div>
   <div id="runOut" class="out" hidden></div>
 
+  <!-- Uretilen altyazilar: gor, duzenle, yeniden yerlestir -->
+  <div class="panelbody" id="subsBox" hidden>
+    <div class="row spread">
+      <span class="note nomargin" id="subsInfo">altyazı yok</span>
+      <button id="btnSubsSave" class="btn small" disabled>Kaydet</button>
+    </div>
+    <div id="subsList" class="subs"></div>
+    <p class="note" id="subsNote" hidden></p>
+  </div>
+
   <!-- Uc bolum sekmede: ayni anda yalnizca biri gorunur -->
   <div class="tabs" id="tabs">
     <button class="tab on" data-tab="ayar" type="button">Ayarlar</button>
     <button class="tab" data-tab="safe" type="button">Güvenli Alan</button>
     <button class="tab" data-tab="stil" type="button">Stil</button>
-    <button class="tab" data-tab="kes" type="button">Kesim</button>
+    <button class="tab" data-tab="kes" type="button">Auto Cut</button>
   </div>
 
   <!-- ============ AYARLAR ============ -->

@@ -1,7 +1,7 @@
 {
-  "version": "0.9.16",
-  "updated": "2026-09-21T16:56:26.333Z",
-  "notes": "autocut: sessiz bolumleri kesip silme",
+  "version": "0.9.17",
+  "updated": "2026-09-21T16:59:36.487Z",
+  "notes": "altyazilari panelde gorme ve duzenleme",
   "files": [
     {
       "path": "core/package.json",
@@ -96,17 +96,17 @@
     {
       "path": "css/style.css",
       "source": "panel/css/style.css",
-      "sha": "e9e2bb9c65d0fc2a6ad1f299a31a0bab4f8a91ca2e4f1a6b53a384ce14fdaab6"
+      "sha": "f9200e6d88574648e4c4e52415157650974e8be1ab92fc471eee23fb62bcd7f7"
     },
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "78b59e83f38e5afefe9c1221f728b7a8acf4b1afd62b43e762ce7a8424cee74b"
+      "sha": "d0d144f764e47d32141453efa45c7e30c5780efdfba4b440511804838df053b9"
     },
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "adaf7666a6ac31343e958382f9afcc7ec354507763bcd5465586d7542e3ba899"
+      "sha": "51aff78bd2a627066ea9d20000dd858c178a95b47867687288aa61f6c9c84ba6"
     },
     {
       "path": "js/cep.js",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "d11b737f7bf8ca31d0087ae5714ab890f64c68cdbba311f4673fe128e0fe75ee"
+      "sha": "1e8d098082f2f9963bffc3d95d675d70252fda06513eba1cc1453042f660a27d"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "c7b98542dfa7b35a590a230d15f4cde3aee221c70919e63f5d9fb4ae39c624fc"
+      "sha": "d0c2039088e933a6efb7b480733f21d287d9eda825b18cf5d765ab9f1f13403d"
     },
     {
       "path": "LICENSE",
