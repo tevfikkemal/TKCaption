@@ -1,7 +1,7 @@
 {
-  "version": "0.9.19",
-  "updated": "2026-09-21T17:07:14.898Z",
-  "notes": "kaydetme sekansa dokunmuyor; yerlestirme ayri dugme",
+  "version": "0.9.20",
+  "updated": "2026-09-21T17:10:05.597Z",
+  "notes": "yerlestirmeden once duzenleme secenegi",
   "files": [
     {
       "path": "core/package.json",
@@ -101,12 +101,12 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "171a3f6f66d6f4eb199a3e2d525c1fd43e11388b9876a78199500d3d367c0a55"
+      "sha": "35f56dbca14615152cc5e87d23691895e8502528db6338b493c4906a86041d33"
     },
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "9159cc6b4519490fe568b954b9d00567db1c8e154a1ebec489009cc7058e458f"
+      "sha": "74b4837f144b26c60c97c67f63a83b26f650e9df2b784d8215238ae84dd56755"
     },
     {
       "path": "js/cep.js",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "423bebef3c3a5527e60b372c779daaafad975ebf13f49c9ccb3713c38334d1a5"
+      "sha": "9b719901a9c27cf5ef9c1183ccc51315ee1bdbafdc0bfde9e08363409d22ff60"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "b76d4b207949ca237d1c6ff3f441737f16d9bd1dcc302f93bde0bca49901f0ef"
+      "sha": "0ece0cf52797413077873cb36d37ac38a925c66c761c7fd47cc72acd4af1f295"
     },
     {
       "path": "LICENSE",

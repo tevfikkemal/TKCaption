@@ -848,9 +848,11 @@
 
     CEP.call('trPlaceCaptions("' + esPath(subsYol) + '")').then(function (pl) {
       if (String(pl.placed) === 'true') {
-        subsNot('Yeni altyazı timeline’ı eklendi. Eskisi sekansta duruyor — ' +
-                'Premiere altyazı timeline’ını betiğe açmadığı için onu ' +
-                'silmek bize kapalı.');
+        var ilk = $('optPlaceMode') && $('optPlaceMode').value === 'manual';
+        subsNot(ilk
+          ? 'Altyazı timeline’ı eklendi.'
+          : 'Yeni altyazı timeline’ı eklendi. Eskisi sekansta duruyor — ' +
+            'Premiere altyazı timeline’ını betiğe açmadığı için onu silmek bize kapalı.');
       } else {
         subsNot('Yerleştirilemedi; dosyayı proje panelinden sürükleyebilirsiniz.');
         btn.disabled = false;
@@ -2043,6 +2045,23 @@
       // Iki bicimi de sirayla dene. TTML kare hizini tasir ama Premiere'in
       // hangi uzantiyi altyazi olarak kabul ettigi belirsiz; SRT calisiyor
       // ama kare hizi tasimiyor. Tahmin etmek yerine ikisini de veriyoruz.
+      /*
+       * ONCE DUZENLE secilmisse burada duruyoruz.
+       *
+       * Akisin sirasi yanlisti: uret -> yerlestir -> duzenle -> yeniden
+       * yerlestir. Premiere altyazi timeline'ini betige acmadigi icin
+       * ikinci yerlestirme her zaman YENI bir timeline yaratiyor ve
+       * eskisi sekansta kaliyordu. Duzenlemeyi yerlestirmeden ONCE
+       * yapinca tek timeline yetiyor.
+       */
+      var yerlestirmeModu = $('optPlaceMode') ? $('optPlaceMode').value : 'auto';
+      if (yerlestirmeModu === 'manual') {
+        appendRun('<span class="ok">Altyazı hazır — aşağıdan düzenleyip ' +
+                  'Yerleştir düğmesine basın.</span>');
+        $('btnSubsPlace').disabled = false;
+        return null;
+      }
+
       // Hedef GRAFIK ise altyazi timeline'ina hic dokunmuyoruz; ayni
       // altyazi MOGRT klipleri olarak grafik timeline'a diziliyor.
       if (kapsamHedef === 'graphic') {
@@ -2058,6 +2077,7 @@
       return CEP.call('trPlaceCaptions("' + esPath(adaylar.join(';')) + '")');
     }).then(function (pl) {
       setBar(1);
+      if (!pl) { setStatus('tamam'); return; }   // 'önce düzenle' modunda
       if (pl && pl.grafik) {
         // Grafik yolunda rapor zaten mogrtYerlestir icinde yazildi;
         // asagidaki altyazi-timeline raporu burada anlamsiz olurdu.
