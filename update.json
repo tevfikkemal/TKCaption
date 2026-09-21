@@ -1,7 +1,7 @@
 {
-  "version": "0.9.6",
-  "updated": "2026-09-21T16:00:57.624Z",
-  "notes": "In/Out araligi ve ses pisti secimi",
+  "version": "0.9.7",
+  "updated": "2026-09-21T16:05:09.246Z",
+  "notes": "panel odaklaninca sekansi kendi taziyor",
   "files": [
     {
       "path": "core/package.json",
@@ -101,7 +101,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "72d28021018880ff63dd4b7fa60e905cbbd35e0dc6f6e5e3f6032b4853e48737"
+      "sha": "b92731df99f818886d7e6c18c62000bd5185d262c5d8563afe5dc7b85496ec7f"
     },
     {
       "path": "index.html",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "7ee4ed2870084525be7258301b5e1d18cac80e0847dfa2026d4e6bfe2f42af7a"
+      "sha": "885f2618207693d1e8d56d1ae6d79505362e4817de9ce2d048618dd48d9e4e32"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "f19981b2582857c4f2bf0516a7f931b03a6a1d22048c365da8d09cfdff021df3"
+      "sha": "9c28c6b797aeada55485d41fd48c1c0e1cd279969e1deac904ad8055baa50595"
     },
     {
       "path": "LICENSE",

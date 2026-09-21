@@ -243,6 +243,42 @@
    * Ayri bir kart yerine baslik altinda duruyor; calistirmadan once neyin
    * islenecegini gostermek icin bu kadari yetiyor.
    */
+  /*
+   * OTOMATIK TAZELEME
+   *
+   * Premiere, sekans degistiginde ya da In/Out isaretlendiginde CEP
+   * paneline haber vermiyor; panel bayat bilgi gosteriyor ve kullanici
+   * her seferinde "yenile"ye basmak zorunda kaliyordu.
+   *
+   * Cozum: panel odagi geri aldiginda kendisi okuyor. Kullanicinin akisi
+   * zaten "Premiere'de isaretle -> panele don" oldugu icin bu an tam
+   * dogru an. Polling yapmiyoruz — panel gorunmezken bile Premiere'i
+   * saniyede bir mesgul etmenin anlami yok.
+   *
+   * Cok sik cagirmayi engellemek icin kisa bir bekleme var: Premiere
+   * odak degisimlerinde arka arkaya birkac olay gonderebiliyor.
+   */
+  var sonTazeleme = 0;
+
+  function tazeleGerekirse() {
+    var simdi = new Date().getTime();
+    if (simdi - sonTazeleme < 700) return;
+    sonTazeleme = simdi;
+    readSequence(true);
+  }
+
+  function initAutoRefresh() {
+    try {
+      window.addEventListener('focus', tazeleGerekirse);
+      document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) tazeleGerekirse();
+      });
+      // Panelin uzerine gelmek de guvenilir bir isaret: kullanici
+      // Premiere'de bir sey yapip fareyi panele getiriyor.
+      document.addEventListener('mouseenter', tazeleGerekirse);
+    } catch (e) { /* olay baglanamadi: "yenile" dugmesi hep duruyor */ }
+  }
+
   function readSequence(auto) {
     var btn = $('btnSeq');
     if (btn) btn.disabled = true;
@@ -1698,6 +1734,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     checkEnvironment();
     readSequence(true);
+    initAutoRefresh();
     refreshSafeState();
     checkUpdate();  // sekans ozeti dugme beklemeden gorunsun
     $('btnUpdate').addEventListener('click', runUpdate);
