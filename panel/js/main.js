@@ -877,11 +877,14 @@
 
     CEP.call('trPlaceCaptions("' + esPath(subsYol) + '")').then(function (pl) {
       if (String(pl.placed) === 'true') {
-        var ilk = $('optPlaceMode') && $('optPlaceMode').value === 'manual';
-        subsNot(ilk
-          ? 'Altyazı timeline’ı eklendi.'
-          : 'Yeni altyazı timeline’ı eklendi. Eskisi sekansta duruyor — ' +
-            'Premiere altyazı timeline’ını betiğe açmadığı için onu silmek bize kapalı.');
+        var dosyaAdi = subsYol.split(/[\/]/).pop();
+        var duzeltme = /-dd+.[^.]+$/.test(dosyaAdi);
+        subsNot(duzeltme
+          ? 'Düzeltilmiş metin YENİ bir timeline olarak eklendi (' + esc(dosyaAdi) +
+            '). Eski timeline sekansta duruyor ve değişmez — düzeltmeyi görmek ' +
+            'için onu silin. Premiere altyazı timeline’ını betiğe açmadığı için ' +
+            'silmek bize kapalı.'
+          : 'Altyazı timeline’ı eklendi (' + esc(dosyaAdi) + ').');
       } else {
         subsNot('Yerleştirilemedi; dosyayı proje panelinden sürükleyebilirsiniz.');
         btn.disabled = false;
