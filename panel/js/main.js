@@ -590,7 +590,10 @@
         ? 'grafik timeline’a — şablon: ' + it.ad
         : 'grafik timeline’a — önce Stilize Altyazı’dan şablon seçin';
     } else {
-      ipucu.textContent = 'altyazı timeline’ına — kapatılabilir altyazı';
+      var mod = $('optPlaceMode') ? $('optPlaceMode').value : 'auto';
+      ipucu.textContent = mod === 'manual'
+        ? 'altyazı timeline’ına — önce listede gösterilir, Yerleştir’e basınca konur'
+        : 'altyazı timeline’ına — kapatılabilir altyazı';
     }
   }
 
@@ -2351,6 +2354,7 @@
     cipleriTazele();
     $('btnSubsSave').addEventListener('click', subsKaydet);
     $('btnSubsPlace').addEventListener('click', subsYerlestir);
+    if ($('optPlaceMode')) $('optPlaceMode').addEventListener('change', hedefiYansit);
     $('btnCutScan').addEventListener('click', autocutTara);
     $('btnCutApply').addEventListener('click', autocutUygula);
     $('optCutMin').addEventListener('input', kesEtiketleri);
