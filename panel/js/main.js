@@ -678,6 +678,199 @@
   }
 
   /* ---------------------------------------------------------------- */
+  /*  AUTOCUT — sessiz bolumleri kesip silme                           */
+  /* ---------------------------------------------------------------- */
+
+  /*
+   * IKI ADIM: once tara, sonra uygula.
+   *
+   * Tek dugme olsaydi kullanici neyin silinecegini gormeden sekansini
+   * degistirmis olurdu. Once kac bolge ve kac saniye oldugunu
+   * gosteriyoruz; "Uygula" ancak ondan sonra aciliyor.
+   *
+   * Sessizlik tespiti icin altyazi boru hattinin kullandigi VAD'i
+   * kullaniyoruz — ayni ses, ayni olcum. Ayri bir esik mantigi yazmak
+   * iki yerde farkli davranan bir sistem uretirdi.
+   */
+
+  var kesBolgeler = null;   // [{start,end}] sekans saniyesi
+  var kesSeqBilgi = null;
+
+  function kesYaz(html) {
+    var el = $('cutOut');
+    if (!el) return;
+    el.hidden = false;
+    el.innerHTML += html + '\n';
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function kesBar(oran) {
+    var b = $('cutBar'), f = $('cutFill');
+    if (b) b.hidden = false;
+    if (f) f.style.width = Math.round(Math.max(0, Math.min(1, oran)) * 100) + '%';
+  }
+
+  /**
+   * Kaydirici etiketleri.
+   *
+   * OLCULEN: kenar payi sessizligi IKI taraftan yiyor, yani gercekte
+   * kesilen esik (esik + 2*pay). Yalnizca esigi gostermek kullaniciyi
+   * yaniltir — "0.8 dedim ama 1 sn'lik bosluk kesilmedi" der. Efektif
+   * degeri de yaziyoruz.
+   */
+  function kesEtiketleri() {
+    var e = kesMinSn(), pd = kesPadSn();
+    var efektif = e + 2 * pd;
+    setText('cutMinVal', e.toFixed(1) + ' sn');
+    setText('cutPadVal', pd.toFixed(1) + ' sn');
+    var n = $('cutNote');
+    if (n) {
+      n.textContent = pd > 0
+        ? 'Kenar payı ile birlikte ' + efektif.toFixed(1) +
+          ' sn ve üzeri sessizlikler kesilecek.'
+        : e.toFixed(1) + ' sn ve üzeri sessizlikler kesilecek.';
+    }
+  }
+
+  /** Kaydirici degerleri: 8 -> 0.8 sn */
+  function kesMinSn() { return (Number($('optCutMin').value) || 8) / 10; }
+  function kesPadSn() { return (Number($('optCutPad').value) || 0) / 10; }
+
+  function autocutTara() {
+    var btn = $('btnCutScan');
+    btn.disabled = true;
+    $('btnCutApply').disabled = true;
+    $('cutOut').innerHTML = '';
+    kesBolgeler = null;
+    kesBar(0);
+
+    var core = resolveCore();
+    if (!core) { kesYaz('<span class="err">Çekirdek bulunamadı.</span>'); btn.disabled = false; return; }
+
+    var tmp = nos.tmpdir();
+    var wav = npath.join(tmp, 'tkcaption-kesim.wav');
+
+    CEP.call('trGetSequenceInfo()').then(function (d) {
+      kesSeqBilgi = d;
+      kesYaz('<span class="dim">sekans:</span> ' + esc(d.name) + '  ' +
+             Number(d.durationSec).toFixed(1) + ' sn');
+      kesBar(0.1);
+      kesYaz('<span class="dim">ses çıkarılıyor…</span>');
+      // Kesim her zaman TUM sekansta calisir: bir bolumu kesip digerini
+      // birakmak zaman cizgisini tutarsiz birakirdi.
+      return CEP.call('trExportAudioAuto("' + esPath(wav) + '", 0, "")');
+    }).then(function (e) {
+      kesBar(0.45);
+      kesYaz('<span class="ok">ses hazır</span> ' +
+             (Number(e.bytes) / 1048576).toFixed(1) + ' MB');
+
+      var au = nodeReq(npath.join(core, 'src', 'audio.js'));
+      var vad = nodeReq(npath.join(core, 'src', 'vad.js'));
+      var dec = au.decodeWav(wav);
+      var pcm = au.resample(dec.samples, dec.sampleRate, 16000);
+      kesBar(0.7);
+
+      var pad = kesPadSn();
+      var minSn = kesMinSn();
+
+      /* VAD'in varsayilan esigi 2 saniye: altyazi icin dogru, kesim icin
+       * degil. O esik whisper'in uydurma metin urettigi UZUN sessizlikleri
+       * atmak icin secilmisti; burada kullanicinin verdigi esigi
+       * gecirmezsek 0.8 sn ayari hicbir sey yapmaz ve panel sessizce
+       * yalan soylemis olur.
+       *
+       * padMs'i de biz veriyoruz: VAD konusma bolgesini o kadar genisletiyor,
+       * yani sessizlik o kadar daraliyor — kullanicinin "kenar payi"
+       * ayarinin karsiligi tam olarak bu. */
+      var bolgeler = vad.detectSpeech(pcm, 16000, {
+        minRemovableSilenceMs: Math.round(minSn * 1000),
+        padMs: Math.round(pad * 1000)
+      });
+      if (!bolgeler || !bolgeler.length) {
+        kesYaz('<span class="warn">Konuşma bulunamadı — kesim yapılmayacak.</span>');
+        return null;
+      }
+      var toplamSn = dec.durationSec;
+      var sessiz = [];
+      var oncekiBitis = 0;
+
+      for (var i = 0; i < bolgeler.length; i++) {
+        var bas = bolgeler[i].start / 16000;
+        var bit = bolgeler[i].end / 16000;
+        // Pay VAD icinde uygulandi; burada tekrar daraltmak cift kirpma olur
+        if (bas - oncekiBitis > 0) {
+          sessiz.push({ start: oncekiBitis, end: bas });
+        }
+        oncekiBitis = bit;
+      }
+      if (toplamSn - oncekiBitis > 0) {
+        sessiz.push({ start: oncekiBitis, end: toplamSn });
+      }
+
+      // Cok kisa olanlari atiyoruz: her yarim saniyeyi kesmek videoyu
+      // tanimaz hale getirir ve yuzlerce kesim yaratir.
+      var suzulmus = [];
+      for (var s = 0; s < sessiz.length; s++) {
+        var uz = sessiz[s].end - sessiz[s].start;
+        if (uz >= minSn) suzulmus.push(sessiz[s]);
+      }
+
+      kesBar(1);
+      if (!suzulmus.length) {
+        kesYaz('<span class="warn">' + minSn.toFixed(1) +
+               ' sn ve üzeri sessizlik bulunamadı.</span>');
+        return null;
+      }
+
+      var kazanc = 0;
+      for (var k = 0; k < suzulmus.length; k++) kazanc += suzulmus[k].end - suzulmus[k].start;
+
+      kesBolgeler = suzulmus;
+      kesYaz('<span class="ok">' + suzulmus.length + ' sessiz bölüm, toplam ' +
+             kazanc.toFixed(1) + ' sn</span>');
+      kesYaz('<span class="dim">sekans ' + toplamSn.toFixed(1) + ' sn → ' +
+             (toplamSn - kazanc).toFixed(1) + ' sn olacak</span>');
+      return CEP.call('trAutoCut("' + esPath(JSON.stringify(suzulmus)) + '", ' +
+                      Number(kesSeqBilgi.fps) + ', "1")');
+    }).then(function (r) {
+      if (r) {
+        kesYaz('<span class="dim">etkilenecek timeline:</span> ' +
+               r.videoTracks + ' video, ' + r.audioTracks + ' ses');
+        $('btnCutApply').disabled = false;
+      }
+    }).catch(function (e) {
+      kesYaz('<span class="err">' + esc(e.message || String(e)) + '</span>');
+    }).then(function () {
+      btn.disabled = false;
+    });
+  }
+
+  function autocutUygula() {
+    if (!kesBolgeler || !kesBolgeler.length) return;
+    var btn = $('btnCutApply');
+    btn.disabled = true;
+    kesYaz('<span class="dim">kesiliyor…</span>');
+
+    CEP.call('trAutoCut("' + esPath(JSON.stringify(kesBolgeler)) + '", ' +
+             Number(kesSeqBilgi.fps) + ', "0")').then(function (r) {
+      kesYaz('<span class="ok">' + r.cuts + ' kesim, ' + r.removed +
+             ' parça silindi</span>');
+      kesYaz('<span class="dim">zaman biçimi:</span> ' + esc(r.format));
+      var hs = asArray(r.errors);
+      if (hs.length) {
+        kesYaz('<span class="warn">' + hs.length + ' sorun</span>');
+        for (var i = 0; i < Math.min(4, hs.length); i++) {
+          kesYaz('<span class="dim">  ' + esc(hs[i]) + '</span>');
+        }
+      }
+      kesBolgeler = null;   // ayni bolgeler iki kez uygulanmasin
+    }).catch(function (e) {
+      kesYaz('<span class="err">' + esc(e.message || String(e)) + '</span>');
+      btn.disabled = false;
+    });
+  }
+
+  /* ---------------------------------------------------------------- */
   /*  Sekmeler                                                         */
   /* ---------------------------------------------------------------- */
 
@@ -1911,6 +2104,11 @@
     }
     refreshPlatformNote();
     cipleriTazele();
+    $('btnCutScan').addEventListener('click', autocutTara);
+    $('btnCutApply').addEventListener('click', autocutUygula);
+    $('optCutMin').addEventListener('input', kesEtiketleri);
+    $('optCutPad').addEventListener('input', kesEtiketleri);
+    kesEtiketleri();
     initScope();
     initTabs();
     initMogrt();

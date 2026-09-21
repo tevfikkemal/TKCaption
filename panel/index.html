@@ -84,6 +84,7 @@
     <button class="tab on" data-tab="ayar" type="button">Ayarlar</button>
     <button class="tab" data-tab="safe" type="button">Güvenli Alan</button>
     <button class="tab" data-tab="stil" type="button">Stil</button>
+    <button class="tab" data-tab="kes" type="button">Kesim</button>
   </div>
 
   <!-- ============ AYARLAR ============ -->
@@ -194,6 +195,34 @@
     <p class="note" id="mogrtNote" hidden></p>
     <div id="mogrtBar" class="bar" hidden><div id="mogrtFill" class="fill"></div></div>
     <div id="mogrtOut" class="out" hidden></div>
+  </div>
+
+  <!-- ============ AUTOCUT ============ -->
+  <div class="panelbody" id="tab-kes" hidden>
+    <p class="note nomargin">
+      Sessiz bölümleri keser ve siler; kalan klipler sola kayar.
+      <b>Sekansı değiştirir</b> — geri almak için Premiere'de Ctrl+Z.
+    </p>
+
+    <div class="set">
+      <span>En kısa sessizlik</span>
+      <input id="optCutMin" type="range" min="3" max="30" value="8">
+      <b class="val" id="cutMinVal">0.8 sn</b>
+    </div>
+    <div class="set">
+      <span>Kenar payı</span>
+      <input id="optCutPad" type="range" min="0" max="10" value="2">
+      <b class="val" id="cutPadVal">0.2 sn</b>
+    </div>
+
+    <p class="note" id="cutNote"></p>
+
+    <div class="row">
+      <button id="btnCutScan" class="btn">Sessizlikleri Bul</button>
+      <button id="btnCutApply" class="btn primary" disabled>Uygula</button>
+    </div>
+    <div id="cutBar" class="bar" hidden><div id="cutFill" class="fill"></div></div>
+    <div id="cutOut" class="out" hidden></div>
   </div>
 
   <!-- ============ ALT BAR ============ -->

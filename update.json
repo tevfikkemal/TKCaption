@@ -1,7 +1,7 @@
 {
-  "version": "0.9.15",
-  "updated": "2026-09-21T16:49:33.959Z",
-  "notes": "kesme metodlari adiyla yoklaniyor",
+  "version": "0.9.16",
+  "updated": "2026-09-21T16:56:26.333Z",
+  "notes": "autocut: sessiz bolumleri kesip silme",
   "files": [
     {
       "path": "core/package.json",
@@ -101,12 +101,12 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "e456f6196c6c934087d3817273d8598a8679399e0b1da30af2beaf06aff5b3db"
+      "sha": "78b59e83f38e5afefe9c1221f728b7a8acf4b1afd62b43e762ce7a8424cee74b"
     },
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "c84a7e950e86d62c038f1438e9f9f93d4f90936b2ab5dc455f2ed23e5bc58c5a"
+      "sha": "adaf7666a6ac31343e958382f9afcc7ec354507763bcd5465586d7542e3ba899"
     },
     {
       "path": "js/cep.js",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "9b50941f840b38dcb58022a89b50ba0d9d9187bf3045fcf93af848c24c676feb"
+      "sha": "d11b737f7bf8ca31d0087ae5714ab890f64c68cdbba311f4673fe128e0fe75ee"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "a6328ceeb7ffe3a5d82f83fb88b764aece544e0b01d9199ddbb33367684862ec"
+      "sha": "c7b98542dfa7b35a590a230d15f4cde3aee221c70919e63f5d9fb4ae39c624fc"
     },
     {
       "path": "LICENSE",

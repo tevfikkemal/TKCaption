@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.9.15';
+var TR_ALTYAZI_VERSION = '0.9.16';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -1919,6 +1919,160 @@ function trSeqSignature() {
         return ok([kv('sig', parts.join('|'))]);
     } catch (e) {
         return ok([kv('sig', 'hata')]);
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/*  AUTOCUT — sessiz bolumleri kesip silme                             */
+/* ------------------------------------------------------------------ */
+
+/** Saniyeyi Premiere zaman koduna cevirir (QE razor bunu bekliyor olabilir) */
+function saniyeTimecode(sn, fps) {
+    var f = Math.round(sn * fps);
+    var ff = f % Math.round(fps);
+    var t = Math.floor(f / fps);
+    function iki(n) { return (n < 10 ? '0' : '') + n; }
+    return iki(Math.floor(t / 3600)) + ':' + iki(Math.floor(t / 60) % 60) + ':' +
+           iki(t % 60) + ':' + iki(ff);
+}
+
+/**
+ * Bir pistte verilen zamanda keser.
+ *
+ * OLCULEN DEGIL, DENENEN: QE razor'un zaman bicimi belgelenmemis.
+ * Timecode dizgisi ve duz saniye sirayla deneniyor; hangisinin ise
+ * yaradigini KLIP SAYISINDAKI DEGISIME bakarak anliyoruz. Donus degerine
+ * guvenmiyoruz cunku QE cagrilarinin cogu sessizce basarisiz oluyor.
+ *
+ * @returns {string} kullanilan bicim ('tc' | 'sn' | '') — bos ise kesilemedi
+ */
+function qeKes(qtrack, sn, fps) {
+    var once = 0;
+    try { once = qtrack.numItems; } catch (e) { return ''; }
+
+    // 1) Zaman kodu
+    try {
+        qtrack.razor(saniyeTimecode(sn, fps));
+        if (qtrack.numItems > once) return 'tc';
+    } catch (e) {}
+
+    // 2) Duz saniye
+    try {
+        qtrack.razor(String(sn));
+        if (qtrack.numItems > once) return 'sn';
+    } catch (e) {}
+
+    return '';
+}
+
+/**
+ * Sessiz araliklari keser ve ripple silme ile bosluklari kapatir.
+ *
+ * SONDAN BASA isliyoruz: ripple silme kendinden sonraki her seyi sola
+ * kaydiriyor. Bastan islenirse ikinci araligin zamani artik gecersiz
+ * olur ve yanlis yerden kesilir.
+ *
+ * @param bolgelerJson  [{start,end}] silinecek araliklar, sekans saniyesi
+ * @param fps           sekans kare hizi
+ * @param kuru          '1' ise HICBIR SEY DEGISTIRILMEZ, yalnizca rapor
+ */
+function trAutoCut(bolgelerJson, fps, kuru) {
+    try {
+        var seq = app.project.activeSequence;
+        if (!seq) return err('Aktif sekans yok.');
+
+        var kareHizi = parseFloat(fps) || 25;
+        var kuruCalisma = (String(kuru) === '1');
+
+        var bolgeler;
+        try { bolgeler = eval('(' + bolgelerJson + ')'); }
+        catch (e) { return err('Bölge listesi okunamadı: ' + e); }
+        if (!bolgeler || !bolgeler.length) return err('Silinecek bölge yok.');
+
+        if (typeof qe === 'undefined') app.enableQE();
+        if (typeof qe === 'undefined' || !qe) {
+            return err('QE DOM açılamadı — kesme yapılamıyor.');
+        }
+        var qseq = qe.project.getActiveSequence();
+
+        // Dolu pistleri topla: bos piste kesme uygulamanin anlami yok
+        var vPistler = [], aPistler = [];
+        try {
+            for (var v = 0; v < qseq.numVideoTracks; v++) {
+                var qv = qseq.getVideoTrackAt(v);
+                if (qv && qv.numItems > 0) vPistler.push(qv);
+            }
+        } catch (e) {}
+        try {
+            for (var a = 0; a < qseq.numAudioTracks; a++) {
+                var qa = qseq.getAudioTrackAt(a);
+                if (qa && qa.numItems > 0) aPistler.push(qa);
+            }
+        } catch (e) {}
+
+        if (kuruCalisma) {
+            var toplam = 0;
+            for (var i = 0; i < bolgeler.length; i++) {
+                toplam += Math.max(0, Number(bolgeler[i].end) - Number(bolgeler[i].start));
+            }
+            return ok([
+                kv('dry', 'true', true),
+                kv('regions', String(bolgeler.length), true),
+                kv('seconds', toplam.toFixed(2), true),
+                kv('videoTracks', String(vPistler.length), true),
+                kv('audioTracks', String(aPistler.length), true)
+            ]);
+        }
+
+        var kesim = 0, silinen = 0, bicim = '';
+        var hatalar = [];
+
+        // SONDAN BASA
+        for (var b = bolgeler.length - 1; b >= 0; b--) {
+            var bas = Number(bolgeler[b].start);
+            var bit = Number(bolgeler[b].end);
+            if (!(bit > bas)) continue;
+
+            var tumPistler = vPistler.concat(aPistler);
+
+            // Once iki uctan kes
+            for (var t = 0; t < tumPistler.length; t++) {
+                var f1 = qeKes(tumPistler[t], bas, kareHizi);
+                var f2 = qeKes(tumPistler[t], bit, kareHizi);
+                if (f1) { kesim++; bicim = f1; }
+                if (f2) { kesim++; bicim = f2; }
+            }
+
+            // Sonra aradaki parcayi ripple sil
+            for (var t2 = 0; t2 < tumPistler.length; t2++) {
+                try {
+                    var qt = tumPistler[t2];
+                    var n = qt.numItems;
+                    for (var k = n - 1; k >= 0; k--) {
+                        var it = qt.getItemAt(k);
+                        if (!it) continue;
+                        var s = 0, e2 = 0;
+                        try { s = parseFloat(it.start.secs); } catch (er) { continue; }
+                        try { e2 = parseFloat(it.end.secs); } catch (er) { continue; }
+                        // Tam bolge icinde kalan parca
+                        if (s >= bas - 0.01 && e2 <= bit + 0.01) {
+                            try { it.rippleDelete(); silinen++; }
+                            catch (er2) { hatalar.push('ripple: ' + String(er2.message || er2)); }
+                            break;
+                        }
+                    }
+                } catch (e3) { hatalar.push(String(e3.message || e3)); }
+            }
+        }
+
+        return ok([
+            kv('cuts', String(kesim), true),
+            kv('removed', String(silinen), true),
+            kv('format', bicim || 'bilinmiyor'),
+            kv('errors', arrToJson(hatalar), true)
+        ]);
+    } catch (e) {
+        return err('Autocut basarisiz', e);
     }
 }
 
