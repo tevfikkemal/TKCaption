@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.9.9';
+var TR_ALTYAZI_VERSION = '0.9.10';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -990,6 +990,68 @@ function trProbeCaptionApi() {
             }
             found.push('videoTracks (' + vn + '): ' + pistler.join(' | '));
         } catch (e) { notes.push('videoTracks gezilemedi: ' + e); }
+
+        // --- KESME API'SI: sessizlikleri silebilir miyiz? ---
+        // Silme tarafi bilinen: trackItem.remove(bRipple, bAlignToVideo) —
+        // safe zone temizliginde kullaniyoruz. Eksik olan KESME (razor):
+        // sessiz araligin iki ucundan kesmeden silecek bir parca olusmuyor.
+        // ExtendScript DOM'unda razor yok; QE DOM'unda olabilir.
+        try {
+            if (seq.videoTracks.numTracks > 0) {
+                var vt0 = seq.videoTracks[0];
+                var kn = 0;
+                try { kn = vt0.clips.numItems; } catch (e) {}
+                if (kn > 0) {
+                    var cl0 = vt0.clips[0];
+                    var clKeys = [];
+                    for (var k8 in cl0) {
+                        try { clKeys.push(k8 + (typeof cl0[k8] === 'function' ? '()' : '')); }
+                        catch (e) {}
+                    }
+                    clKeys.sort();
+                    found.push('trackItem TUM UYELER: ' + clKeys.join(', '));
+                } else {
+                    notes.push('V1 bos — trackItem uyeleri dokulemedi');
+                }
+            }
+        } catch (e) { notes.push('trackItem yoklanamadi: ' + e); }
+
+        try {
+            if (typeof qe === 'undefined') app.enableQE();
+            if (typeof qe !== 'undefined' && qe) {
+                var qs = qe.project.getActiveSequence();
+                var qKeys = [];
+                for (var k9 in qs) {
+                    try { qKeys.push(k9 + (typeof qs[k9] === 'function' ? '()' : '')); }
+                    catch (e) {}
+                }
+                qKeys.sort();
+                found.push('QE sequence TUM UYELER: ' + qKeys.join(', '));
+
+                // Razor QE'de pist ya da klip duzeyinde olabilir
+                try {
+                    var qvt = qs.getVideoTrackAt(0);
+                    var qtKeys = [];
+                    for (var kA in qvt) {
+                        try { qtKeys.push(kA + (typeof qvt[kA] === 'function' ? '()' : '')); }
+                        catch (e) {}
+                    }
+                    qtKeys.sort();
+                    found.push('QE videoTrack TUM UYELER: ' + qtKeys.join(', '));
+
+                    var qit = qvt.getItemAt(0);
+                    if (qit) {
+                        var qiKeys = [];
+                        for (var kB in qit) {
+                            try { qiKeys.push(kB + (typeof qit[kB] === 'function' ? '()' : '')); }
+                            catch (e) {}
+                        }
+                        qiKeys.sort();
+                        found.push('QE trackItem TUM UYELER: ' + qiKeys.join(', '));
+                    }
+                } catch (e) { notes.push('QE pist/klip okunamadi: ' + e); }
+            }
+        } catch (e) { notes.push('QE DOM acilamadi: ' + e); }
 
         // --- QE DOM (belgelenmemis ama bazen caption islevleri barindirir) ---
         var qeAvailable = false;

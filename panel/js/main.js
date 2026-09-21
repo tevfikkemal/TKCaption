@@ -648,19 +648,14 @@
    * aradigi bolume gitmeye zorlamaktan iyi.
    */
   function initTabs() {
-    var tablar = document.querySelectorAll('.action[data-tab]');
+    var tablar = document.querySelectorAll('.tab');
     if (!tablar.length) return;
-
-    /* "wide" gibi yerlesim sinifini korur; yalnizca secim durumu degisir */
-    function klas(t) {
-      return t.getAttribute('data-tab') === 'stil' ? 'action wide' : 'action';
-    }
 
     function gec(ad) {
       for (var i = 0; i < tablar.length; i++) {
         var t = tablar[i];
         var secili = t.getAttribute('data-tab') === ad;
-        t.className = secili ? klas(t) + ' on' : klas(t);
+        t.className = secili ? 'tab on' : 'tab';
         var govde = $('tab-' + t.getAttribute('data-tab'));
         if (govde) govde.hidden = !secili;
       }

@@ -47,20 +47,11 @@
     <div id="updateBar" class="bar" hidden><div id="updateFill" class="fill"></div></div>
   </div>
 
-  <!-- ANA EYLEM — ikonlu buyuk kart, tek basina bir satir.
-       Gozun ilk dustugu yer burasi olmali. -->
-  <button class="action main" id="btnRun" type="button">
-    <span class="ico-box cc">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
-        <rect x="2.5" y="5" width="19" height="14" rx="3"/>
-        <path d="M9.6 10.6a2.2 2.2 0 1 0 0 2.8M15.6 10.6a2.2 2.2 0 1 0 0 2.8"/>
-      </svg>
-    </span>
-    <span class="action-txt">
-      <b>Altyazı Oluştur</b>
-      <i id="runHint">sekanstan Türkçe altyazı üretir</i>
-    </span>
-  </button>
+  <!-- ASIL EYLEM — tek basina, en ustte -->
+  <div class="hero">
+    <button id="btnRun" class="btn primary big">Altyazı Oluştur</button>
+  </div>
+  <p class="note nomargin runhint" id="runHint">sekanstan Türkçe altyazı üretir</p>
 
   <!-- Kapsam: neyin islenecegi. Ana eylemin hemen altinda cunku her
        calistirmada degisebiliyor; Ayarlar'a gomulse her seferinde
@@ -88,36 +79,11 @@
   <div id="runBar" class="bar" hidden><div id="runFill" class="fill"></div></div>
   <div id="runOut" class="out" hidden></div>
 
-  <!-- Bolum kartlari: ikonlu izgara; secili olanin icerigi altta acilir -->
-  <div class="grid" id="tabs">
-    <button class="action" data-tab="ayar" type="button">
-      <span class="ico-box set">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
-          <circle cx="12" cy="12" r="3.2"/>
-          <path d="M12 3.2v2.4M12 18.4v2.4M20.8 12h-2.4M5.6 12H3.2M18.2 5.8l-1.7 1.7M7.5 16.5l-1.7 1.7M18.2 18.2l-1.7-1.7M7.5 7.5L5.8 5.8"/>
-        </svg>
-      </span>
-      <span class="action-txt"><b>Ayarlar</b><i>model, biçim, satır</i></span>
-    </button>
-
-    <button class="action" data-tab="safe" type="button">
-      <span class="ico-box safe">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
-          <rect x="3.2" y="3.2" width="17.6" height="17.6" rx="3"/>
-          <rect x="7.4" y="7.4" width="9.2" height="9.2" rx="1.4" stroke-dasharray="2.4 2"/>
-        </svg>
-      </span>
-      <span class="action-txt"><b>Güvenli Alan</b><i>platform kılavuzu</i></span>
-    </button>
-
-    <button class="action wide" data-tab="stil" type="button">
-      <span class="ico-box stil">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
-          <path d="M5 6.6h14M12 6.6V18M9.2 18h5.6"/>
-        </svg>
-      </span>
-      <span class="action-txt"><b>Stilize Altyazı</b><i>şablon ve konum</i></span>
-    </button>
+  <!-- Uc bolum sekmede: ayni anda yalnizca biri gorunur -->
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-tab="ayar" type="button">Ayarlar</button>
+    <button class="tab" data-tab="safe" type="button">Güvenli Alan</button>
+    <button class="tab" data-tab="stil" type="button">Stil</button>
   </div>
 
   <!-- ============ AYARLAR ============ -->

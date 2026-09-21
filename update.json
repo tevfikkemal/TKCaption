@@ -1,7 +1,7 @@
 {
-  "version": "0.9.9",
-  "updated": "2026-09-21T16:15:09.924Z",
-  "notes": "hedef secimi: altyazi timeline ya da grafik timeline",
+  "version": "0.9.10",
+  "updated": "2026-09-21T16:36:13.095Z",
+  "notes": "sekme cubuklu duzene donuldu; kesme API yoklamasi",
   "files": [
     {
       "path": "core/package.json",
@@ -96,17 +96,17 @@
     {
       "path": "css/style.css",
       "source": "panel/css/style.css",
-      "sha": "70183f46fc2b37a200d9ea291fff52fbaefe89efaf69e54cc33def9870cefe19"
+      "sha": "e9e2bb9c65d0fc2a6ad1f299a31a0bab4f8a91ca2e4f1a6b53a384ce14fdaab6"
     },
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "4436b7d72970363907ee49d15ed02a9eed8ae154bf29f82222aaf682df885d80"
+      "sha": "f50a375c4beb9139a1939de57a71cd91d2ce6a48b7c83c87a093e968ece60a66"
     },
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "48d2cd6bf1d59279f882d96ac532ebdf8ab74aac1df568bf0eb1a0fb3bdc7a77"
+      "sha": "c84a7e950e86d62c038f1438e9f9f93d4f90936b2ab5dc455f2ed23e5bc58c5a"
     },
     {
       "path": "js/cep.js",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "ea85854d7c721baeb9302d77fa536497c7e9e26a5a9f12a291ff603b8d1258c4"
+      "sha": "6632222c6b7924059361892dd5619ef7a51a4e0dcfee68656e8e4897b378965b"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "a1e6f04105e52e63fe93d1eeaf6057ad8a69bf6287df8d9d31209757ccf0fd14"
+      "sha": "3e13cbf533c70a24cbd9e911b98baa578edf20366d9e51e2db51823f4d617b21"
     },
     {
       "path": "LICENSE",
