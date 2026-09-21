@@ -24,6 +24,6 @@ tools/.bin/
 stil-denemesi/
 
 
-# Demo MOGRT sablonlari — satin alinmis bir paketten geldi, yeniden
-# dagitim izni teyit edilmedi. Teyit gelince bu satir kaldirilacak.
-panel/mogrt/demo/
+
+# Kullanicinin kendi MOGRT sablonlari — baskasinin tasarimi, depoya girmez
+mogrt sablonlar/

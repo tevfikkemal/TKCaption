@@ -322,13 +322,36 @@ function writeUpdateManifest(version, notes) {
   gez(OUT);
 
   // Depoda gercekten var mi? Yoksa guncelleme 404 alir.
-  const eksik = files.filter((f) => !fs.existsSync(path.join(ROOT, f.source)));
-  if (eksik.length) {
-    console.log('  UYARI: ' + eksik.length + ' dosya depoda bulunamadi, ' +
-                'guncelleme listesinden cikarildi:');
-    for (const f of eksik) console.log('    ' + f.source);
+  //
+  // DISKTE OLMASI YETMIYOR — git'e girmesi de gerekiyor. Guncelleme
+  // dosyalari raw.githubusercontent'tan indiriyor; .gitignore'daki bir
+  // dosya diskte durur ama depoda olmaz ve indirme 404 alir.
+  // OLCULEN: 0.9.2'de demo MOGRT sablonlari once paketlendi, .gitignore'a
+  // SONRA eklendi. Disk kontrolu o an gectigi icin update.json onlari
+  // listeledi ve guncelleme tumuyle basarisiz oldu.
+  let gitYoksay = new Set();
+  try {
+    const aday = files.map((f) => f.source).join('\n');
+    const r = execFileSync('git', ['check-ignore', '--stdin'],
+      { cwd: ROOT, input: aday, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
+    gitYoksay = new Set(r.split('\n').map((s) => s.trim()).filter(Boolean));
+  } catch (e) {
+    // check-ignore hicbir eslesme bulamazsa 1 ile cikar — hata degil
   }
-  const gecerli = files.filter((f) => fs.existsSync(path.join(ROOT, f.source)));
+
+  const uygun = (f) =>
+    fs.existsSync(path.join(ROOT, f.source)) && !gitYoksay.has(f.source);
+
+  const eksik = files.filter((f) => !uygun(f));
+  if (eksik.length) {
+    console.log('  UYARI: ' + eksik.length + ' dosya depoya girmiyor, ' +
+                'guncelleme listesinden cikarildi:');
+    for (const f of eksik) {
+      const sebep = gitYoksay.has(f.source) ? 'gitignore' : 'diskte yok';
+      console.log('    ' + f.source + '  (' + sebep + ')');
+    }
+  }
+  const gecerli = files.filter(uygun);
 
   const manifest = {
     version,
