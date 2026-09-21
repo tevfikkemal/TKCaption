@@ -461,7 +461,12 @@
 
     updateDurum = 'kontrol ediliyor…';
     updater.check(root).then(function (r) {
-      updateDurum = 'kurulu v' + r.current + ' / depoda v' + r.latest +
+      if (r.apiLimit) {
+        // Kullanici 'guncelleme gelmedi' diye ugrasmasin: sebebi soyluyoruz
+        mogrtNot && null;
+      }
+      updateDurum = (r.apiLimit ? '[GitHub saatlik istek limiti doldu — birkaç dakika sonra] ' : '') +
+        'kurulu v' + r.current + ' / depoda v' + r.latest +
         (r.available ? ' — güncelleme var' : ' — güncel') +
         (r.writable === false ? ' (klasör yazılamıyor, yetki istenecek)' : '');
       if (!r.available) return;

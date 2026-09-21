@@ -49,15 +49,25 @@ const MANIFEST_URL = RAW_BASE + '/update.json';
  */
 const API_BASE = 'https://api.github.com/repos/tevfikkemal/TKCaption/contents';
 
+/* API limiti dolduysa bunu biliyoruz; panel kullaniciya soyleyebilsin. */
+let apiLimitDoldu = false;
+function apiDurumu() { return { limitDoldu: apiLimitDoldu }; }
+
 /** Bir depo yolunu once API'den, olmazsa raw'dan okur. */
 async function fetchRepoFile(relPath) {
   const kodlu = relPath.split('/').map(encodeURIComponent).join('/');
   try {
-    return await fetchBuffer(API_BASE + '/' + kodlu, 0, {
+    const b = await fetchBuffer(API_BASE + '/' + kodlu, 0, {
       'Accept': 'application/vnd.github.raw'
     });
+    apiLimitDoldu = false;
+    return b;
   } catch (e) {
-    // Limit dolmus, ag hatasi ya da API bicimi degismis olabilir
+    /* 403/429 = kimliksiz saatlik limit (60) dolmus. Bu sik surum
+     * cikarildiginda gercekten oluyor. Raw'a dusuyoruz ama onun 5
+     * dakikalik onbellegi var; yani kullanici bir sure eski surum
+     * gorecek. Sessizce "guncelleme yok" demek yaniltici olur. */
+    if (/HTTP (403|429)/.test(String(e.message))) apiLimitDoldu = true;
     return await fetchBuffer(RAW_BASE + '/' + kodlu + '?t=' + Date.now());
   }
 }
@@ -177,7 +187,8 @@ async function check(extensionDir) {
     version: m.version,
     files: m.files,
     notes: m.notes || '',
-    writable: yazilabilir(extensionDir)
+    writable: yazilabilir(extensionDir),
+    apiLimit: apiLimitDoldu
   };
 }
 
@@ -399,5 +410,5 @@ async function apply(extensionDir, manifest, onProgress) {
 
 module.exports = {
   check, apply, fetchManifest, installedVersion, yazilabilir, tasimaBetigiYaz,
-  isNewer, parseVersion, sha256, RAW_BASE, MANIFEST_URL, API_BASE, fetchRepoFile
+  isNewer, parseVersion, sha256, RAW_BASE, MANIFEST_URL, API_BASE, fetchRepoFile, apiDurumu
 };

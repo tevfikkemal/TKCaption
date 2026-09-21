@@ -1,7 +1,7 @@
 {
-  "version": "0.9.24",
-  "updated": "2026-09-21T17:25:00.875Z",
-  "notes": "varsayilan yeniden hemen yerlestir",
+  "version": "0.9.25",
+  "updated": "2026-09-21T17:28:11.433Z",
+  "notes": "API limiti doldugunda panel sebebi soyluyor",
   "files": [
     {
       "path": "core/package.json",
@@ -76,7 +76,7 @@
     {
       "path": "core/src/updater.js",
       "source": "core/src/updater.js",
-      "sha": "5dde2570459454e8e8a404170deabda7239540ddf5c28a9ad366d9e36739ce67"
+      "sha": "5860e3b6168e4f3fba2f56072b0145bde8d4d343f2f9c5a960d44a57638720c2"
     },
     {
       "path": "core/src/vad.js",
@@ -101,7 +101,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "82061d78654d94278bdf155c17bdb66d6527c81509b049db3357a56a6f106a81"
+      "sha": "0b8a307c919e21475d7237c660b7e36580d9b4e1c77b38a1c26f00bf76deb6d4"
     },
     {
       "path": "index.html",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "2d00c6b601ded6a7245eb9308647afbb0d258f47e2697973d1cea9d6cd3b38d8"
+      "sha": "db23ec93b36e6b01d70e1777e716aa077bcf683df7c777781238e18c98b76390"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "35c38a2c892c5b02333efda5474fc74e9883540248947d388aa1d0ddf3949e9b"
+      "sha": "910193abd283bbd72f2cbec21ce8946c712bb49683e74b8c6840c25eccbbb612"
     },
     {
       "path": "LICENSE",
