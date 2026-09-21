@@ -1731,12 +1731,41 @@
     } catch (e) { setStatus('kopyalanamadı'); }
   }
 
+  /**
+   * Paneli yeniden yukler — Premiere'i kapatmadan.
+   *
+   * IKI PARCA var ve ikincisi kolayca atlaniyor:
+   *   1. Panel sayfasi (HTML/CSS/JS) — location.reload() yetiyor.
+   *   2. Kopru (bridge.jsx) — Premiere onu bir kez yukleyip BELLEKTE
+   *      tutuyor. Sayfayi yenilemek onu tazelemiyor; $.evalFile ile
+   *      acikca yeniden okutmak gerekiyor. Guncelleme sonrasi kopru eski
+   *      kalirsa panel yeni, kopru eski olur ve hata "sebepsiz" gorunur.
+   *
+   * Kopru tazelenemezse yine de sayfayi yeniliyoruz: yarim yenileme
+   * hic yenilememekten iyi, ve kullaniciya durumu soyluyoruz.
+   */
+  function reloadPanel() {
+    var btn = $('btnReload');
+    if (btn) { btn.disabled = true; btn.className = 'iconbtn spin'; }
+
+    var ext = CEP.available() ? CEP.extensionPath() : null;
+    var bitir = function () { window.location.reload(); };
+
+    if (!ext) { bitir(); return; }
+
+    var jsx = ext + '/jsx/bridge.jsx';
+    CEP.evalScript('$.evalFile("' + esPath(jsx) + '")')
+      .catch(function () { /* kopru tazelenemedi; sayfa yine de yenilensin */ })
+      .then(bitir);
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     checkEnvironment();
     readSequence(true);
     initAutoRefresh();
     refreshSafeState();
     checkUpdate();  // sekans ozeti dugme beklemeden gorunsun
+    $('btnReload').addEventListener('click', reloadPanel);
     $('btnUpdate').addEventListener('click', runUpdate);
     $('btnRun').addEventListener('click', generate);
     $('btnSafe').addEventListener('click', toggleSafeZone);

@@ -1,7 +1,7 @@
 {
-  "version": "0.9.7",
-  "updated": "2026-09-21T16:05:09.246Z",
-  "notes": "panel odaklaninca sekansi kendi taziyor",
+  "version": "0.9.8",
+  "updated": "2026-09-21T16:07:16.765Z",
+  "notes": "paneli yeniden yukleme dugmesi",
   "files": [
     {
       "path": "core/package.json",
@@ -96,17 +96,17 @@
     {
       "path": "css/style.css",
       "source": "panel/css/style.css",
-      "sha": "306fc39d989a44acd628e4b1847d86e01bb0fca11b59f20c1620dd10a0f99f7b"
+      "sha": "70183f46fc2b37a200d9ea291fff52fbaefe89efaf69e54cc33def9870cefe19"
     },
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "b92731df99f818886d7e6c18c62000bd5185d262c5d8563afe5dc7b85496ec7f"
+      "sha": "4fd64e7a1412de23bdb6ae3b31fab7803544ecb635752d4bd43c3ad14b8fe9b0"
     },
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "f64c5e1864339498bd0fa53224fcb24b73cbcf1031af87f84e6dfc02736142bc"
+      "sha": "4143e752b85eeb33fbe95b7c6931cb1db11cd799182de45de164dc5ba4d8b359"
     },
     {
       "path": "js/cep.js",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "885f2618207693d1e8d56d1ae6d79505362e4817de9ce2d048618dd48d9e4e32"
+      "sha": "b488b27cfd75fc345a59a98f10fa42d35be362397a68f2e1900c6e45f72f9aa9"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "9c28c6b797aeada55485d41fd48c1c0e1cd279969e1deac904ad8055baa50595"
+      "sha": "629c03fa6f56dff0f3e36bf04b1ef9cb1c0b573a1030e61dd9eea442c456de98"
     },
     {
       "path": "LICENSE",

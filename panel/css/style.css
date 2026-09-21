@@ -850,3 +850,26 @@ details > summary:hover { color: var(--text-2); }
   font-weight: 600;
 }
 .mini:disabled { opacity: .35; cursor: default; }
+
+/* Ust bardaki ikon dugme — yeniden yukleme */
+.iconbtn {
+  flex: none;
+  margin-left: 8px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  color: var(--text-3);
+  cursor: pointer;
+  transition: color .14s ease, border-color .14s ease;
+}
+.iconbtn svg { width: 13px; height: 13px; }
+.iconbtn:hover { color: var(--accent-text); border-color: var(--text-3); }
+.iconbtn:disabled { opacity: .4; cursor: default; }
+/* Yeniden yuklerken donsun ki bir sey oldugu anlasilsin */
+.iconbtn.spin svg { animation: tk-spin .8s linear infinite; }
+@keyframes tk-spin { to { transform: rotate(360deg); } }
