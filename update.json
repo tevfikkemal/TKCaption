@@ -1,7 +1,7 @@
 {
-  "version": "0.9.25",
-  "updated": "2026-09-21T17:28:11.433Z",
-  "notes": "API limiti doldugunda panel sebebi soyluyor",
+  "version": "0.9.26",
+  "updated": "2026-09-21T17:33:54.404Z",
+  "notes": "yerlestirme modu gorunur yerde, kullanici seciyor",
   "files": [
     {
       "path": "core/package.json",
@@ -101,12 +101,12 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "0b8a307c919e21475d7237c660b7e36580d9b4e1c77b38a1c26f00bf76deb6d4"
+      "sha": "298f8de02fbcecf0b7cf7cd2537efca366a5ef56213153f76b593f59eb9f6a84"
     },
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "c32f4e34df5d175bd24246770c1ee1c95768d6c5b5bfac06bc8581820b608a27"
+      "sha": "f22df2f07d3571cf3719c33aa4aef7dece9b45b4f40254679fdfb9e45f0588ea"
     },
     {
       "path": "js/cep.js",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "db23ec93b36e6b01d70e1777e716aa077bcf683df7c777781238e18c98b76390"
+      "sha": "60bd159608483353fe299139526e2d0d33fb87daa73c12eacc7ed8e8569aa9aa"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "910193abd283bbd72f2cbec21ce8946c712bb49683e74b8c6840c25eccbbb612"
+      "sha": "e5f43a13debf0a6b06d0ab1d1e13d1cf6fc3072189ec5510426f46fb73847d62"
     },
     {
       "path": "LICENSE",

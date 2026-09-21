@@ -533,6 +533,9 @@
    */
 
   var kapsamHedef = 'caption';   // 'caption' = altyazi timeline, 'graphic' = grafik timeline
+  /* 'auto' = uretince hemen yerlestir, 'manual' = once listede goster.
+     Ayarlar'a gomuluyken bulunamiyordu; kapsam satirina alindi. */
+  var kapsamYerlestirme = 'auto';
   var kapsamAralik = 'entire';   // 'entire' | 'inout'
   var kapsamSes = [];            // bos = tumu; dolu = secili ses timeline indeksleri
   var sonSeqBilgi = null;
@@ -557,11 +560,29 @@
   function initScope() {
     grupSecimi($('rangeGrp'), 'data-range', function (v) { kapsamAralik = v; });
 
+    grupSecimi($('placeGrp'), 'data-place', function (v) {
+      kapsamYerlestirme = v;
+      yerelYaz('tkcaption.yerlestirme', v);
+      hedefiYansit();
+    });
+
     grupSecimi($('targetGrp'), 'data-target', function (v) {
       kapsamHedef = v;
       yerelYaz(HEDEF_ANAHTAR, v);
       hedefiYansit();
     });
+
+    var kayitliY = yerelOku('tkcaption.yerlestirme');
+    if (kayitliY === 'manual' || kayitliY === 'auto') {
+      kapsamYerlestirme = kayitliY;
+      var gy = $('placeGrp');
+      if (gy) {
+        var hy = gy.querySelectorAll('.mini');
+        for (var iy = 0; iy < hy.length; iy++) {
+          hy[iy].className = hy[iy].getAttribute('data-place') === kayitliY ? 'mini on' : 'mini';
+        }
+      }
+    }
 
     // Son secilen hedefi hatirla
     var kayitli = yerelOku(HEDEF_ANAHTAR);
@@ -595,7 +616,7 @@
         ? 'grafik timeline’a — şablon: ' + it.ad
         : 'grafik timeline’a — önce Stilize Altyazı’dan şablon seçin';
     } else {
-      var mod = $('optPlaceMode') ? $('optPlaceMode').value : 'auto';
+      var mod = kapsamYerlestirme;
       ipucu.textContent = mod === 'manual'
         ? 'altyazı timeline’ına — önce listede gösterilir, Yerleştir’e basınca konur'
         : 'altyazı timeline’ına — kapatılabilir altyazı';
@@ -2095,7 +2116,7 @@
        * eskisi sekansta kaliyordu. Duzenlemeyi yerlestirmeden ONCE
        * yapinca tek timeline yetiyor.
        */
-      var yerlestirmeModu = $('optPlaceMode') ? $('optPlaceMode').value : 'auto';
+      var yerlestirmeModu = kapsamYerlestirme;
       if (yerlestirmeModu === 'manual') {
         appendRun('<span class="ok">Altyazı hazır — aşağıdan düzenleyip ' +
                   'Yerleştir düğmesine basın.</span>');
@@ -2359,7 +2380,7 @@
     cipleriTazele();
     $('btnSubsSave').addEventListener('click', subsKaydet);
     $('btnSubsPlace').addEventListener('click', subsYerlestir);
-    if ($('optPlaceMode')) $('optPlaceMode').addEventListener('change', hedefiYansit);
+
     $('btnCutScan').addEventListener('click', autocutTara);
     $('btnCutApply').addEventListener('click', autocutUygula);
     $('optCutMin').addEventListener('input', kesEtiketleri);

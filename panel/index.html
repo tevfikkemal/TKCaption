@@ -67,6 +67,11 @@
       <button class="mini on" data-range="entire" type="button">Tüm sekans</button>
       <button class="mini" data-range="inout" type="button" id="btnInOut" disabled>In → Out</button>
     </div>
+    <div class="scope-grp" id="placeGrp">
+      <span class="mini-lbl">Yerleştir</span>
+      <button class="mini on" data-place="auto" type="button">Hemen</button>
+      <button class="mini" data-place="manual" type="button">Düzelttikten sonra</button>
+    </div>
     <div class="scope-grp" id="audioGrp">
       <span class="mini-lbl">Ses</span>
       <button class="mini on" data-audio="all" type="button">Tümü</button>
@@ -116,13 +121,6 @@
       <select id="optFormat">
         <option value="srt">SRT — alt ortada</option>
         <option value="ttml">TTML — kare hızlı, üst solda</option>
-      </select>
-    </div>
-    <div class="set">
-      <span>Yerleştirme</span>
-      <select id="optPlaceMode">
-        <option value="auto">Üretince hemen yerleştir</option>
-        <option value="manual">Önce göster, sonra yerleştir</option>
       </select>
     </div>
     <div class="set">
