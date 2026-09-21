@@ -1551,23 +1551,37 @@
                 (Number(e.bytes) / 1048576).toFixed(1) + ' MB, ' +
                 Number(e.elapsedSec).toFixed(1) + ' sn');
 
-      /* SES SEKANSIN TAMAMINI KAPSIYOR MU?
+      /* SES BEKLENEN KADAR MI?
        *
-       * Yanlis aralik turu ile disari aktarilirsa (in/out veya work area)
-       * ses sekanstan kisa cikar ve altyazi sekansin bastaki kucuk bir
-       * bolumune sikisir. Bu sessizce gecerse sebebi bulmak cok zor —
-       * bu yuzden WAV'in gercek suresini okuyup karsilastiriyoruz. */
+       * Yanlis aralik turu ile disari aktarilirsa ses beklenenden kisa
+       * cikar ve altyazi sekansin kucuk bir bolumune sikisir. Sessizce
+       * gecerse sebebi bulmak cok zor — bu yuzden WAV'in gercek suresini
+       * okuyup karsilastiriyoruz.
+       *
+       * ONEMLI: In/Out secildiginde sesin kisa olmasi BEKLENEN durumdur.
+       * Onceden burada her durumda sekans suresiyle karsilastiriliyordu
+       * ve kullanici bilerek In/Out sectiginde de kirmizi uyari
+       * goruyordu — dogru calisan bir islemde yanlis alarm. */
       try {
         var au = nodeReq(npath.join(core, 'src', 'audio.js'));
         var dec = au.decodeWav(wav);
         var seqSec = Number(seqInfo.durationSec) || 0;
+        var inout = (kapsamAralik === 'inout');
+        var beklenen = inout
+          ? Math.max(0, Number(seqInfo.outSec) - Number(seqInfo.inSec))
+          : seqSec;
+
         appendRun('<span class="dim">ses süresi:</span> ' + dec.durationSec.toFixed(1) +
-                  ' sn / sekans ' + seqSec.toFixed(1) + ' sn');
-        if (seqSec > 1 && dec.durationSec < seqSec * 0.9) {
-          appendRun('<span class="err">UYARI: ses sekanstan ' +
-            (seqSec - dec.durationSec).toFixed(1) + ' sn kısa. ' +
-            'Sekansta in/out işareti veya work area sınırı olabilir — ' +
-            'altyazı yalnızca bu bölümü kapsayacak.</span>');
+                  ' sn / ' + (inout ? 'seçili aralık ' : 'sekans ') +
+                  beklenen.toFixed(1) + ' sn');
+
+        if (beklenen > 1 && dec.durationSec < beklenen * 0.9) {
+          appendRun('<span class="err">UYARI: ses beklenenden ' +
+            (beklenen - dec.durationSec).toFixed(1) + ' sn kısa. ' +
+            (inout
+              ? 'In/Out işareti değişmiş olabilir — altyazı eksik kalabilir.'
+              : 'Sekansta in/out işareti veya work area sınırı olabilir — ' +
+                'altyazı yalnızca bu bölümü kapsayacak.') + '</span>');
         }
       } catch (err) {
         appendRun('<span class="dim">ses süresi okunamadı: ' + esc(err.message) + '</span>');

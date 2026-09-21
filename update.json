@@ -1,7 +1,7 @@
 {
-  "version": "0.9.13",
-  "updated": "2026-09-21T16:45:55.616Z",
-  "notes": "guncelleme artik CDN onbellegini beklemiyor",
+  "version": "0.9.14",
+  "updated": "2026-09-21T16:48:08.727Z",
+  "notes": "In/Out secildiginde yanlis alarm kaldirildi",
   "files": [
     {
       "path": "core/package.json",
@@ -101,7 +101,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "567081a7b5a2387f75783604a54bed7fdeaf49dc095ce900b32b0d438d5bb5c0"
+      "sha": "ec218b4610b5b703065ce1de003370482263635d3d066c440a4d65113c7c350f"
     },
     {
       "path": "index.html",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "85639c086523761040ca57b8322016e8863e0ef915c711c39cc7795ad1e90502"
+      "sha": "9b50941f840b38dcb58022a89b50ba0d9d9187bf3045fcf93af848c24c676feb"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "3810b473fe9d51532fa7811f090dbadc4641ff4c61bfa33fbf2b0ab46614ba40"
+      "sha": "44417c17c50441b1ff5cce3da321229f877f007dbf4ffdb4306f382fd05cf132"
     },
     {
       "path": "LICENSE",
