@@ -1,7 +1,7 @@
 {
-  "version": "0.9.11",
-  "updated": "2026-09-21T16:39:06.378Z",
-  "notes": "sekans degisimi 1 sn icinde yakalaniyor",
+  "version": "0.9.12",
+  "updated": "2026-09-21T16:42:51.004Z",
+  "notes": "In/Out dugmesi her zaman secilebilir; kapsam kararı loglanıyor",
   "files": [
     {
       "path": "core/package.json",
@@ -101,7 +101,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "3a38f36a3cf39a159b8e6c850c1effab1d60340bb4baea0044b4eccc70965d35"
+      "sha": "c2307c9d281f03fca0a81fce3e9dfdfb3aba0a2d8701f4356cc90d6ca732b5a6"
     },
     {
       "path": "index.html",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "e20b203b148462d78d8eda8f4e34514dedd6028b23cf90866c66f04792c89997"
+      "sha": "85639c086523761040ca57b8322016e8863e0ef915c711c39cc7795ad1e90502"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "2111a4e33e4dee130cec0ffae29cd52b6870c30d832a725fe99f88e8b15ba401"
+      "sha": "52b08c5a2ab6f38e082330af5449653ba594f4bd63b27eb3ef3212c033942dc3"
     },
     {
       "path": "LICENSE",

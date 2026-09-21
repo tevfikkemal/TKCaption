@@ -598,28 +598,27 @@
   function kapsamiTazele(d) {
     sonSeqBilgi = d;
 
-    // In/Out yalnizca gercekten isaret varsa secilebilir
+    /*
+     * In/Out dugmesi HER ZAMAN tiklanabilir.
+     *
+     * Once isaret yokken disabled yapiyorduk ve secimi sessizce tum
+     * sekansa dusuruyorduk. Ikisi de yanlis cikti: kullanici dugmeye
+     * bastigini saniyor, panel ona "tamam" diyor ama arkada tum sekans
+     * isleniyordu. Kullanicinin secimini geri almak yerine durumu
+     * yaziyoruz; ne oldugunu gormesi daha iyi.
+     */
     var btn = $('btnInOut');
     if (btn) {
+      btn.disabled = false;
       var varMi = String(d.hasInOut) === 'true';
-      btn.disabled = !varMi;
       if (varMi) {
         var uz = Number(d.outSec) - Number(d.inSec);
         btn.textContent = 'In → Out (' + uz.toFixed(0) + ' sn)';
+        btn.title = 'In ' + Number(d.inSec).toFixed(2) + ' sn → Out ' +
+                    Number(d.outSec).toFixed(2) + ' sn';
       } else {
-        btn.textContent = 'In → Out';
-        if (kapsamAralik === 'inout') {
-          // Isaret kalkmissa sessizce tum sekansa dus
-          kapsamAralik = 'entire';
-          var g = $('rangeGrp');
-          if (g) {
-            var hepsi = g.querySelectorAll('.mini');
-            for (var k = 0; k < hepsi.length; k++) {
-              hepsi[k].className = hepsi[k].getAttribute('data-range') === 'entire'
-                ? 'mini on' : 'mini';
-            }
-          }
-        }
+        btn.textContent = 'In → Out (işaret yok)';
+        btn.title = 'Sekansta In/Out işareti okunamadı — Premiere tüm sekansı işleyebilir.';
       }
     }
 
@@ -1527,6 +1526,13 @@
       // Aralik: In/Out secildiyse Premiere'in kendi sabitini kullaniyoruz;
       // sabit sayi yazmak belgelenmemis bir varsayim olurdu.
       var aralik = (kapsamAralik === 'inout') ? 1 : 0;
+      // Kapsam kararini acikca yaziyoruz: In/Out secili sanilip tum
+      // sekansin islendigi bir durum yasandi ve sebebi loga bakilarak
+      // ayirt edilemedi (dugme mi kapaliydi, isaret mi okunamadi).
+      appendRun('<span class="dim">kapsam:</span> ' + kapsamAralik +
+                '  in=' + Number(d.inSec).toFixed(2) +
+                '  out=' + Number(d.outSec).toFixed(2) +
+                '  isaretVar=' + String(d.hasInOut));
       var sesArg = kapsamSes.length ? kapsamSes.join(',') : '';
       if (kapsamAralik === 'inout') {
         appendRun('<span class="dim">kapsam:</span> In → Out  ' +
