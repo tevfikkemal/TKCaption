@@ -1,7 +1,7 @@
 {
-  "version": "0.9.2",
-  "updated": "2026-09-21T09:14:19.361Z",
-  "notes": "telifli sablonlar kaldirildi",
+  "version": "0.9.3",
+  "updated": "2026-09-21T09:33:10.076Z",
+  "notes": "sablonlar calisma aninda taraniyor",
   "files": [
     {
       "path": "core/package.json",
@@ -32,6 +32,11 @@
       "path": "core/src/models.js",
       "source": "core/src/models.js",
       "sha": "41d189b9ba75db0958b9d924d2cd10ff04a16f221fcc8a4181f8329d25601d90"
+    },
+    {
+      "path": "core/src/mogrt.js",
+      "source": "core/src/mogrt.js",
+      "sha": "a29850b9d3896f7a0941dd92253b9b2fd79d5eca6746b3c197e7ef0a59d774ee"
     },
     {
       "path": "core/src/pipeline.js",
@@ -84,6 +89,11 @@
       "sha": "a31a72cb25acec5d2711a4375f77eba58c66ccd7c2b09a6025744172a33b95a4"
     },
     {
+      "path": "core/src/zip.js",
+      "source": "core/src/zip.js",
+      "sha": "745e750c5c7959904499b53cec4911d42efbed4ae11d1c67e91ca4f6b5bf0449"
+    },
+    {
       "path": "css/style.css",
       "source": "panel/css/style.css",
       "sha": "1432bde439ec9608b16b27a7d8ab5aec3b7945beeb910189f17bf1eb8451efac"
@@ -91,7 +101,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "22bbcc70ee8405bd27a7c4f142109f61dd9ae6871293609bcad7a6b9fa578850"
+      "sha": "59383ab2e498cc5f75a6b2ff76ac1c67a0707439d03acd185607dd6adefdf529"
     },
     {
       "path": "index.html",
@@ -106,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "3b9b3310addebb5db551ae1bdfe12cfcb8e2d16e0e36a6ed38b3f2219dec1d2b"
+      "sha": "238b8af95ba531add4e46bf7bd2f0ecab4a3ca418fa62882b455c86567d3a0f9"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "89ead3fbb8e311b2003a03e1fa92a280339159c2e58fd1bf37db9d5f32f71c73"
+      "sha": "062bffffa8f87d3befc08aa74dbd5e8c239083331826578d8d0830082b7086bb"
     },
     {
       "path": "LICENSE",

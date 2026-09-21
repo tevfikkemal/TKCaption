@@ -463,37 +463,79 @@
     try { window.localStorage.setItem(k, v); } catch (e) {}
   }
 
+  var mogrtMod = null;
+
+  /**
+   * Katalog PAKETTE DEGIL, calisma aninda uretiliyor.
+   *
+   * Bir donem hazir katalog ve onizlemeler pakete konmustu; o veriler
+   * satin alinmis bir sablon paketinden cikarilmisti ve dagitma hakkimiz
+   * yoktu. Artik panel kullanicinin gosterdigi klasoru kendisi tariyor.
+   */
   function initMogrt() {
     if (!nodeReq) { mogrtNot('Node.js kapalı — bu bölüm çalışmaz.'); return; }
 
-    var ext = CEP.extensionPath();
-    if (!ext) { mogrtNot('Eklenti yolu alınamadı.'); return; }
+    var core = resolveCore();
+    if (!core) { mogrtNot('Çekirdek bulunamadı.'); return; }
 
     try {
-      var kYol = npath.join(ext, 'mogrt', 'catalog.json');
-      if (!nfs.existsSync(kYol)) { mogrtNot('Şablon kataloğu pakette yok.'); return; }
-      mogrtKatalog = JSON.parse(nfs.readFileSync(kYol, 'utf8'));
+      mogrtMod = nodeReq(npath.join(core, 'src', 'mogrt.js'));
     } catch (e) {
-      mogrtNot('Katalog okunamadı: ' + e.message);
+      mogrtNot('Şablon okuyucu yüklenemedi: ' + e.message);
       return;
     }
-
-    setText('mogrtCount', mogrtKatalog.items.length + ' şablon');
 
     mogrtKlasor = yerelOku(MOGRT_KLASOR_ANAHTAR);
     mogrtSecili = yerelOku(MOGRT_SECIM_ANAHTAR);
 
-    // Klasor secilmediyse pakete gelen demo sablonlarini kullan. Boylece
-    // eklenti kurulur kurulmaz bu bolum calisiyor; kullanici kendi
-    // sablonlari icin isterse klasor secer.
+    klasorEtiketiTazele();
+
     if (!mogrtKlasor) {
-      var demo = npath.join(ext, 'mogrt', 'demo');
-      try { if (nfs.existsSync(demo)) mogrtKlasor = demo; } catch (e) {}
+      setText('mogrtCount', '');
+      mogrtNot('Şablon klasörünüzü seçin — .mogrt dosyalarının bulunduğu klasör.');
+      mogrtDurumTazele();
+      return;
     }
 
-    kartlariCiz(ext);
-    klasorEtiketiTazele();
-    mogrtDurumTazele();
+    katalogYukle(false);
+  }
+
+  /**
+   * Katalogu onbellekten alir; yoksa ya da klasor degistiyse tarar.
+   * @param {boolean} zorla onbellegi yok say
+   */
+  function katalogYukle(zorla) {
+    if (!mogrtMod || !mogrtKlasor) return;
+
+    try {
+      if (!zorla) {
+        var ob = mogrtMod.onbellek(mogrtKlasor);
+        if (ob) {
+          mogrtKatalog = ob;
+          kartlariCiz();
+          mogrtDurumTazele();
+          return;
+        }
+      }
+
+      mogrtNot('Şablonlar taranıyor…');
+      // Tarama 50 sablonda ~1 sn; arayuzu kilitlememek icin bir sonraki
+      // cerceveye birakiyoruz ki "taranıyor" yazisi gorunebilsin.
+      window.setTimeout(function () {
+        try {
+          mogrtKatalog = mogrtMod.tara(mogrtKlasor);
+          mogrtNot(mogrtKatalog.atlanan && mogrtKatalog.atlanan.length
+            ? mogrtKatalog.atlanan.length + ' şablon atlandı (metin alanı yok)'
+            : '');
+          kartlariCiz();
+          mogrtDurumTazele();
+        } catch (e) {
+          mogrtNot('Tarama başarısız: ' + e.message);
+        }
+      }, 30);
+    } catch (e) {
+      mogrtNot('Katalog okunamadı: ' + e.message);
+    }
   }
 
   /**
@@ -503,38 +545,30 @@
    * Hepsini gostermek kullaniciyi tiklayinca "dosya yok" diyen 47 kartla
    * bas basa birakirdi.
    */
-  function kartlariCiz(ext) {
+  /** Yerel bir dosyayi img src'de gosterilebilir hale getirir */
+  function dosyaUrl(p) {
+    return 'file:///' + String(p).replace(/\\/g, '/').split('/').map(encodeURIComponent).join('/');
+  }
+
+  function kartlariCiz() {
     var grid = $('mogrtGrid');
-    if (!grid) return;
+    if (!grid || !mogrtKatalog) return;
 
-    var mevcut = {};
-    try {
-      if (mogrtKlasor && nfs.existsSync(mogrtKlasor)) {
-        var liste = nfs.readdirSync(mogrtKlasor);
-        for (var d = 0; d < liste.length; d++) mevcut[liste[d].toLowerCase()] = true;
-      }
-    } catch (e) {}
-
+    var thumbKok = mogrtMod.thumbsDir();
     var html = '';
-    var gorunen = 0;
     for (var i = 0; i < mogrtKatalog.items.length; i++) {
       var it = mogrtKatalog.items[i];
-      if (!mevcut[String(it.dosya).toLowerCase()]) continue;
-      gorunen++;
       var secili = (it.id === mogrtSecili) ? ' on' : '';
-      // Onizleme dosya yolu; CEP'te file:// gerekmiyor, goreli yol yeter
+      // Onizlemeler veri klasorunde (pakette degil) — mutlak yol gerekiyor
       var gorsel = it.thumb
-        ? '<img src="mogrt/' + encodeURI(it.thumb) + '" alt="">'
+        ? '<img src="' + dosyaUrl(npath.join(thumbKok, it.thumb)) + '" alt="">'
         : '<span class="yok">önizleme yok</span>';
       html += '<div class="mogrt-card' + secili + '" data-id="' + esc(it.id) + '">' +
               gorsel + '<span class="ad">' + esc(it.ad) + '</span></div>';
     }
     grid.innerHTML = html;
     grid.hidden = false;
-    setText('mogrtCount', gorunen + ' şablon');
-    if (!gorunen) {
-      mogrtNot('Bu klasörde katalogdaki şablonlardan hiçbiri yok.');
-    }
+    setText('mogrtCount', mogrtKatalog.items.length + ' şablon');
 
     var kartlar = grid.querySelectorAll('.mogrt-card');
     for (var k = 0; k < kartlar.length; k++) {
@@ -569,8 +603,7 @@
     mogrtKlasor = String(r.data[0]);
     yerelYaz(MOGRT_KLASOR_ANAHTAR, mogrtKlasor);
     klasorEtiketiTazele();
-    kartlariCiz(CEP.extensionPath());
-    mogrtDurumTazele();
+    katalogYukle(true);   // yeni klasor: onbellegi yok say
   }
 
   function mogrtNot(msg) {
@@ -585,8 +618,8 @@
     var btn = $('btnMogrtRun');
     if (!btn) return;
 
+    if (!mogrtKlasor) { btn.disabled = true; return; }
     if (!mogrtKatalog) { btn.disabled = true; return; }
-    if (!mogrtKlasor) { btn.disabled = true; mogrtNot('Şablon klasörünü seçin.'); return; }
     if (!mogrtSecili) { btn.disabled = true; mogrtNot('Bir şablon seçin.'); return; }
     if (!sonAltyaziYolu) {
       btn.disabled = true;
