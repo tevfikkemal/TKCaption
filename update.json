@@ -1,7 +1,7 @@
 {
-  "version": "0.9.3",
-  "updated": "2026-09-21T15:19:31.482Z",
-  "notes": "sablonlar diskten de kaldirildi",
+  "version": "0.9.4",
+  "updated": "2026-09-21T15:38:43.144Z",
+  "notes": "arayuz TK Labs temasina gore yenilendi",
   "files": [
     {
       "path": "core/package.json",
@@ -96,17 +96,17 @@
     {
       "path": "css/style.css",
       "source": "panel/css/style.css",
-      "sha": "1432bde439ec9608b16b27a7d8ab5aec3b7945beeb910189f17bf1eb8451efac"
+      "sha": "f65979416881d564941a7a76fd3ac799ea9f24684b1e528002b8d1931be424aa"
     },
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "59383ab2e498cc5f75a6b2ff76ac1c67a0707439d03acd185607dd6adefdf529"
+      "sha": "7cf4e97131502f9d8a0901d777e748c5df94617e826ef72ad7123ddcac5b6925"
     },
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "8089846bb28f7949791e4ca0bdfe0cb6ea51c2919662953e0098ea5effad36c7"
+      "sha": "a737c4b37a655c9ad70da4cfba745087783c2ff8c882d43e1508a5caf1bbaba7"
     },
     {
       "path": "js/cep.js",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "238b8af95ba531add4e46bf7bd2f0ecab4a3ca418fa62882b455c86567d3a0f9"
+      "sha": "653e0693f0600145f65bc1361fbaad7c40d8cea54a6851e072218418c2101fb3"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "062bffffa8f87d3befc08aa74dbd5e8c239083331826578d8d0830082b7086bb"
+      "sha": "9fe6d4877cd8561339d5c645727171721cd3441839f828cb04a788430d588030"
     },
     {
       "path": "LICENSE",

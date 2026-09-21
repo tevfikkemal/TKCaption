@@ -9,16 +9,26 @@
 <body>
 
   <header class="head">
-    <h1>TK Caption</h1>
-    <span class="by">by TK Labs</span>
+    <span class="mark">TK</span>
+    <span class="titles">
+      <h1>TK Caption</h1>
+      <span class="by">by TK Labs</span>
+    </span>
     <span class="ver" id="ver"></span>
   </header>
 
+  <!-- Sekans ozeti: ayri kart degil, tek satir. Calistirmadan once neyin
+       islenecegi gorunur olmali ama bir kart hak etmiyor. -->
+  <div class="seqline">
+    <span id="seqName" class="dim">sekans okunmadı</span>
+    <span id="seqMeta"></span>
+    <button class="refresh" id="btnSeq" type="button">yenile</button>
+  </div>
+
   <!-- Ilk calistirmada model inecegini ONCEDEN soyle -->
   <p class="first-run" id="firstRun" hidden>
-    İlk çalıştırmada konuşma tanıma modeli indirilecek
-    (<strong id="firstRunSize">~570 MB</strong>). Bir kez iner, sonrasında
-    internet gerekmez.
+    İlk çalıştırmada model indirilecek
+    (<strong id="firstRunSize">~570 MB</strong>). Bir kez iner.
   </p>
 
   <!-- Guncelleme bildirimi -->
@@ -31,120 +41,124 @@
     <div id="updateBar" class="bar" hidden><div id="updateFill" class="fill"></div></div>
   </div>
 
-  <!-- ASIL IS -->
-  <section class="card generate">
-    <div class="row spread">
-      <button id="btnRun" class="btn primary big">Altyazı Oluştur</button>
-      <button id="btnCancel" class="btn" hidden>İptal</button>
+  <!-- ASIL EYLEM — tek basina, en ustte, her sekmede gorunur -->
+  <div class="hero">
+    <button id="btnRun" class="btn primary big">Altyazı Oluştur</button>
+    <button id="btnCancel" class="btn" hidden>İptal</button>
+  </div>
+  <div id="runBar" class="bar" hidden><div id="runFill" class="fill"></div></div>
+  <div id="runOut" class="out" hidden></div>
+
+  <!-- Uc bolum sekmede: ayni anda yalnizca biri gorunur -->
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-tab="ayar" type="button">Ayarlar</button>
+    <button class="tab" data-tab="safe" type="button">Güvenli Alan</button>
+    <button class="tab" data-tab="stil" type="button">Stil</button>
+  </div>
+
+  <!-- ============ AYARLAR ============ -->
+  <div class="panelbody" id="tab-ayar">
+    <div class="set">
+      <span>Model</span>
+      <select id="optModel">
+        <option value="large-v3-turbo-q5_0">Turbo — önerilen</option>
+        <option value="large-v3-turbo">Turbo tam</option>
+        <option value="large-v3-q5_0">Large-v3</option>
+        <option value="medium-q5_0">Medium — zayıf makine</option>
+      </select>
     </div>
+    <div class="set">
+      <span>Biçim</span>
+      <select id="optFormat">
+        <option value="srt">SRT — alt ortada</option>
+        <option value="ttml">TTML — kare hızlı, üst solda</option>
+      </select>
+    </div>
+    <div class="set">
+      <span>Satır uzunluğu</span>
+      <input id="optChars" type="number" min="20" max="60" value="42">
+    </div>
+    <div class="set">
+      <span>Okuma hızı</span>
+      <input id="optCps" type="number" min="10" max="30" value="17">
+    </div>
+    <p class="note">
+      TRT/Netflix ölçüleri. Satırlar Premiere'de üçe sarıyorsa uzunluğu
+      30–34'e düşürün.
+    </p>
+  </div>
 
-    <div id="runBar" class="bar" hidden><div id="runFill" class="fill"></div></div>
-    <div id="runOut" class="out" hidden></div>
-
-    <details class="opts-wrap">
-      <summary>Ayarlar</summary>
-      <div class="opts">
-        <label>
-          Model
-          <select id="optModel">
-            <option value="large-v3-turbo-q5_0">Turbo — hızlı, önerilen</option>
-            <option value="large-v3-turbo">Turbo tam — daha büyük</option>
-            <option value="large-v3-q5_0">Large-v3 — karşılaştırma</option>
-            <option value="medium-q5_0">Medium — zayıf makine</option>
-          </select>
-        </label>
-        <label>
-          Altyazı biçimi
-          <select id="optFormat">
-            <option value="srt">SRT — altyazı alt ortaya gelir (önerilen)</option>
-            <option value="ttml">TTML — kare hızını taşır, üst sola gelir</option>
-          </select>
-        </label>
-        <label>
-          Satır uzunluğu
-          <input id="optChars" type="number" min="20" max="60" value="42">
-        </label>
-        <label>
-          Okuma hızı (kar/sn)
-          <input id="optCps" type="number" min="10" max="30" value="17">
-        </label>
-      </div>
-      <p class="note">
-        Varsayılanlar TRT ve Netflix Türkçe altyazı ölçüleridir: satır başına
-        42 karakter, en fazla 2 satır, saniyede 17 karakter.
-      </p>
-      <p class="note">
-        Premiere altyazıyı kendi yazı tipiyle çizer ve bu tip geniştir;
-        42 karakterlik satır ekranda üçe sarabilir. Öyle olursa satır
-        uzunluğunu 30–34 arasına düşürün.
-      </p>
-    </details>
-  </section>
-
-  <!-- Guvenli alan katmani -->
-  <section class="card">
+  <!-- ============ GUVENLI ALAN ============ -->
+  <div class="panelbody" id="tab-safe" hidden>
     <div class="row spread">
-      <h2>Güvenli Alan</h2>
+      <span class="note nomargin">Kılavuz katmanı — dışa aktarmadan önce kapatın.</span>
       <button id="btnSafe" class="btn">Aç</button>
     </div>
-    <p class="desc">
-      Sekansın en üstüne saydam bir kılavuz katmanı koyar. Program
-      Monitor'de görünür — <strong>dışa aktarmadan önce kapatın.</strong>
-    </p>
-    <ul class="platforms" id="platformList">
-      <li><label><input type="checkbox" id="safeAll"> <span>Tümü</span></label></li>
-      <li><label><input type="checkbox" class="sf" value="instagram-reels" checked>
-        <span>Instagram Reels</span></label></li>
-      <li><label><input type="checkbox" class="sf" value="instagram-story">
-        <span>Instagram Story</span></label></li>
-      <li><label><input type="checkbox" class="sf" value="instagram-feed">
-        <span>Instagram Feed (4:5)</span></label></li>
-      <li><label><input type="checkbox" class="sf" value="tiktok">
+
+    <ul class="chips" id="platformList">
+      <li><label class="chip"><input type="checkbox" class="sf" value="instagram-reels" checked>
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/>
+          <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        <span>Reels</span></label></li>
+      <li><label class="chip"><input type="checkbox" class="sf" value="instagram-story">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="9" stroke-dasharray="3 2"/><circle cx="12" cy="12" r="4"/></svg>
+        <span>Story</span></label></li>
+      <li><label class="chip"><input type="checkbox" class="sf" value="instagram-feed">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="5" y="3" width="14" height="18" rx="3"/></svg>
+        <span>Feed 4:5</span></label></li>
+      <li><label class="chip"><input type="checkbox" class="sf" value="tiktok">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M14 4v10.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 4c.5 2.5 2 4 4.5 4.3"/></svg>
         <span>TikTok</span></label></li>
-      <li><label><input type="checkbox" class="sf" value="youtube-shorts">
-        <span>YouTube Shorts</span></label></li>
-      <li><label><input type="checkbox" class="sf" value="youtube-16x9">
-        <span>YouTube (yatay)</span></label></li>
+      <li><label class="chip"><input type="checkbox" class="sf" value="youtube-shorts">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="7" y="3" width="10" height="18" rx="4"/><path d="M11 9.5l4 2.5-4 2.5z" fill="currentColor" stroke="none"/></svg>
+        <span>Shorts</span></label></li>
+      <li><label class="chip"><input type="checkbox" class="sf" value="youtube-16x9">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="2.5" y="6" width="19" height="12" rx="3"/><path d="M10.5 9.5l4.5 2.5-4.5 2.5z" fill="currentColor" stroke="none"/></svg>
+        <span>YouTube</span></label></li>
+      <li><label class="chip subtle"><input type="checkbox" id="safeAll">
+        <span>Tümü</span></label></li>
     </ul>
-    <p class="note" id="safeMulti" hidden></p>
-    <div class="opts">
-      <label>
-        <span class="lbl-row">Karartma <b id="safeDimVal">%45</b></span>
-        <input id="optSafeDim" type="range" min="0" max="80" value="45">
-      </label>
+
+    <div class="set">
+      <span>Karartma</span>
+      <input id="optSafeDim" type="range" min="0" max="80" value="45">
+      <b class="val" id="safeDimVal">%45</b>
     </div>
+
+    <p class="note" id="safeMulti" hidden></p>
     <p class="note" id="safeNote" hidden></p>
     <div id="safeOut" class="out" hidden></div>
-  </section>
+  </div>
 
-  <!-- Stilize altyazi: MOGRT sablonuyla video pistine -->
-  <section class="card">
+  <!-- ============ STILIZE ALTYAZI ============ -->
+  <div class="panelbody" id="tab-stil" hidden>
     <div class="row spread">
-      <h2>Stilize Altyazı</h2>
+      <span class="note nomargin">Altyazıyı şablonla <b>video pistine</b> yazar; dışa aktarmada gömülü olur.</span>
       <span class="ver" id="mogrtCount"></span>
     </div>
-    <p class="desc">
-      Altyazıyı altyazı pistine değil, seçtiğiniz şablonla
-      <strong>video pistine</strong> yazar. Yazı tipi ve renk şablondan
-      gelir; dışa aktarmada videoya gömülü olur.
-    </p>
 
     <div class="row">
-      <button id="btnMogrtDir" class="btn">Şablon klasörü…</button>
-      <span id="mogrtDirLabel" class="dim">seçilmedi</span>
+      <button id="btnMogrtDir" class="btn small">Şablon klasörü…</button>
+      <span id="mogrtDirLabel" class="dim ellipsis">seçilmedi</span>
     </div>
 
     <div id="mogrtGrid" class="mogrt-grid" hidden></div>
 
-    <div class="opts">
-      <label>
-        <span class="lbl-row">Dikey konum <b id="mogrtPosVal">%80</b></span>
-        <input id="optMogrtPos" type="range" min="10" max="95" value="80">
-      </label>
-      <label>
-        <span class="lbl-row">Boyut <b id="mogrtScaleVal">otomatik</b></span>
-        <input id="optMogrtScale" type="range" min="20" max="150" value="0">
-      </label>
+    <div class="set">
+      <span>Dikey konum</span>
+      <input id="optMogrtPos" type="range" min="10" max="95" value="80">
+      <b class="val" id="mogrtPosVal">%80</b>
+    </div>
+    <div class="set">
+      <span>Boyut</span>
+      <input id="optMogrtScale" type="range" min="0" max="150" value="0">
+      <b class="val" id="mogrtScaleVal">otomatik</b>
     </div>
 
     <p class="note" id="mogrtNote" hidden></p>
@@ -153,81 +167,38 @@
     </div>
     <div id="mogrtBar" class="bar" hidden><div id="mogrtFill" class="fill"></div></div>
     <div id="mogrtOut" class="out" hidden></div>
-  </section>
+  </div>
 
-  <!-- Sekans ozeti: calistirmadan once ne islenecegi belli olsun -->
-  <section class="card">
-    <div class="row spread">
-      <h2>Sekans</h2>
-      <button id="btnSeq" class="btn small">Yenile</button>
-    </div>
-    <dl class="env" id="seqInfo" hidden>
-      <dt>Ad</dt><dd id="seqName">—</dd>
-      <dt>Kare hızı</dt><dd id="seqFps">—</dd>
-      <dt>Başlangıç TC</dt><dd id="seqZero">—</dd>
-      <dt>Süre</dt><dd id="seqDur">—</dd>
-    </dl>
-    <p class="hint" id="seqHint" hidden></p>
-  </section>
-
-  <!-- Teshis araclari: normal kullanicinin isine yaramaz, kapali dursun -->
+  <!-- ============ SORUN GIDERME ============ -->
   <details class="advanced">
-    <summary>Gelişmiş / Teşhis</summary>
+    <summary>Sorun giderme</summary>
 
     <section class="card">
       <h2>Ortam</h2>
-      <dl class="env" id="env">
-        <dt>CEP</dt><dd id="envCep" class="pending">kontrol ediliyor…</dd>
+      <dl class="env">
+        <dt>CEP</dt><dd id="envCep" class="pending">—</dd>
         <dt>Node.js</dt><dd id="envNode" class="pending">—</dd>
         <dt>Premiere</dt><dd id="envHost" class="pending">—</dd>
         <dt>Köprü</dt><dd id="envBridge" class="pending">—</dd>
         <dt>Çekirdek</dt><dd id="envCore" class="pending">—</dd>
-        <dt>Veri klasörü</dt><dd id="envData" class="pending">—</dd>
+        <dt>Veri</dt><dd id="envData" class="pending">—</dd>
       </dl>
     </section>
 
     <section class="card">
-      <h2>Altyazı Pisti API Yoklaması</h2>
-      <p class="desc">
-        Premiere'in bu sürümünde altyazı pistlerine hangi betik API'lerinin açık
-        olduğunu çalışma anında ölçer.
-      </p>
       <div class="row">
-        <button id="btnProbe" class="btn">Yoklamayı Çalıştır</button>
+        <button id="btnProbe" class="btn small">Altyazı API yoklaması</button>
+        <button id="btnExportProbe" class="btn small">Dışa aktarma teşhisi</button>
+        <button id="btnPresets" class="btn small">Preset'ler</button>
+        <button id="btnCaption" class="btn small">createCaptionTrack denemesi</button>
       </div>
       <div id="probeOut" class="out" hidden></div>
-    </section>
-
-    <section class="card">
-      <h2>Dışa Aktarma Teşhisi</h2>
-      <p class="desc">
-        Ses çıkarma başarısız olursa: klasör izinlerini, yol biçimini, aralık
-        türünü ve preset'leri tek tek dener.
-      </p>
-      <div class="row">
-        <button id="btnExportProbe" class="btn">Teşhisi Çalıştır</button>
-        <button id="btnPresets" class="btn">Preset'ler</button>
-      </div>
       <div id="presetOut" class="out" hidden></div>
-    </section>
-
-    <section class="card">
-      <h2>createCaptionTrack Denemesi</h2>
-      <p class="warn-box">
-        Başarılı bir çağrı <strong>projenizi değiştirir</strong> (altyazı pisti
-        oluşturur). Geri almak için Ctrl+Z.
-      </p>
-      <div class="row">
-        <button id="btnCaption" class="btn">SRT Seç ve Dene</button>
-      </div>
       <div id="captionOut" class="out" hidden></div>
     </section>
-  </details>
 
-  <footer class="foot">
     <button id="btnCopy" class="link">Teşhis raporunu kopyala</button>
-    <span id="status"></span>
-  </footer>
+  </details>
 
   <script src="js/cep.js"></script>
   <script src="js/main.js"></script>

@@ -19,7 +19,11 @@
     });
   }
 
-  function setStatus(msg) { $('status').textContent = msg || ''; }
+  /* Ayri bir durum satiri yok; kisa bildirimler sekans satirinda gorunuyor. */
+  function setStatus(msg) {
+    var el = $('seqMeta');
+    if (el && msg) el.textContent = msg;
+  }
 
   /**
    * Bir yolu ExtendScript string sabitine guvenle gomer.
@@ -234,40 +238,38 @@
    *   Acilista sekans yoksa bu bir hata degildir; kullaniciya kirmizi
    *   mesaj gostermek yerine sessizce geciyoruz.
    */
+  /**
+   * Sekans ozeti — tek satir: ad, cozunurluk, kare hizi, sure.
+   * Ayri bir kart yerine baslik altinda duruyor; calistirmadan once neyin
+   * islenecegini gostermek icin bu kadari yetiyor.
+   */
   function readSequence(auto) {
     var btn = $('btnSeq');
     if (btn) btn.disabled = true;
-    if (!auto) setStatus('sekans okunuyor…');
-    $('seqHint').hidden = true;
 
     CEP.call('trGetSequenceInfo()').then(function (d) {
-      $('seqInfo').hidden = false;
       setText('seqName', d.name);
-      setText('seqFps', Number(d.fps).toFixed(3) + ' fps');
-      setText('seqZero', fmtTimecode(Number(d.zeroPointSec), Number(d.fps)) +
-        '  (' + Number(d.zeroPointSec).toFixed(2) + ' sn)');
-      setText('seqDur', Number(d.durationSec).toFixed(1) + ' sn');
-      setText('seqTracks', d.videoTracks + ' video · ' + d.audioTracks + ' ses');
+      var parca = [];
+      if (Number(d.width) > 0) parca.push(d.width + '×' + d.height);
+      parca.push(Number(d.fps).toFixed(d.fps % 1 ? 3 : 0) + ' fps');
+      parca.push(Number(d.durationSec).toFixed(0) + ' sn');
 
-      // Sifirdan farkli baslangic zaman kodu en sik altyazi kaymasi sebebidir.
+      // Sifirdan farkli baslangic zaman kodu en sik altyazi kaymasi
+      // sebebidir; sessizce gecmek yerine satirda gosteriyoruz.
       if (Number(d.zeroPointSec) > 0.001) {
-        var h = $('seqHint');
-        h.hidden = false;
-        h.textContent = 'Sekans 0’dan başlamıyor. Altyazı üretilirken ' +
-          Number(d.zeroPointSec).toFixed(2) + ' saniyelik kayma otomatik uygulanacak — ' +
-          'aksi hâlde altyazı sekansa yanlış yere düşerdi.';
+        parca.push('başlangıç ' + fmtTimecode(Number(d.zeroPointSec), Number(d.fps)));
       }
-      setStatus('');
+      setText('seqMeta', parca.join(' · '));
+      var el = $('seqName');
+      if (el) el.className = '';
     }).catch(function (e) {
-      if (auto) {
-        $('seqInfo').hidden = true;   // acilista sekans yoksa sessizce gec
-      } else {
-        var hh = $('seqHint');
-        hh.hidden = false;
-        hh.textContent = e.message;
-        setStatus('');
+      if (!auto) {
+        setText('seqName', 'sekans okunamadı');
+        setText('seqMeta', e.message);
       }
-    }).then(function () { if (btn) btn.disabled = false; });
+    }).then(function () {
+      if (btn) btn.disabled = false;
+    });
   }
 
   /* ---------------------------------------------------------------- */
@@ -430,6 +432,53 @@
       setText('updateNote', e.message);
       btn.disabled = false;
     });
+  }
+
+  /* ---------------------------------------------------------------- */
+  /*  Sekmeler                                                         */
+  /* ---------------------------------------------------------------- */
+
+  var SEKME_ANAHTAR = 'tkcaption.tab';
+
+  /**
+   * Uc bolum arasinda gecis. Son secilen sekme hatirlaniyor: panel her
+   * acildiginda kullaniciyi ayni yere birakmak, onu her seferinde
+   * aradigi bolume gitmeye zorlamaktan iyi.
+   */
+  function initTabs() {
+    var tablar = document.querySelectorAll('.tab');
+    if (!tablar.length) return;
+
+    function gec(ad) {
+      for (var i = 0; i < tablar.length; i++) {
+        var t = tablar[i];
+        var secili = t.getAttribute('data-tab') === ad;
+        t.className = secili ? 'tab on' : 'tab';
+        var govde = $('tab-' + t.getAttribute('data-tab'));
+        if (govde) govde.hidden = !secili;
+      }
+      try { window.localStorage.setItem(SEKME_ANAHTAR, ad); } catch (e) {}
+    }
+
+    for (var i = 0; i < tablar.length; i++) {
+      tablar[i].addEventListener('click', function () {
+        gec(this.getAttribute('data-tab'));
+      });
+    }
+
+    var kayitli = null;
+    try { kayitli = window.localStorage.getItem(SEKME_ANAHTAR); } catch (e) {}
+    gec(kayitli || 'ayar');
+  }
+
+  /** Cip gorunumu onay kutusunu takip etsin (CSS :has'e guvenmiyoruz) */
+  function cipleriTazele() {
+    var kutular = document.querySelectorAll('.chip input');
+    for (var i = 0; i < kutular.length; i++) {
+      var lab = kutular[i].parentNode;
+      var temel = lab.className.indexOf('subtle') >= 0 ? 'chip subtle' : 'chip';
+      lab.className = kutular[i].checked ? temel + ' on' : temel;
+    }
   }
 
   /* ---------------------------------------------------------------- */
@@ -788,7 +837,7 @@
   /** Isaretli platformlar. Bos birakilirsa Reels varsayilir. */
   function selectedPresets() {
     var out = [];
-    var boxes = document.querySelectorAll('.platforms input.sf');
+    var boxes = document.querySelectorAll('.chips input.sf');
     for (var i = 0; i < boxes.length; i++) {
       if (boxes[i].checked) out.push(boxes[i].value);
     }
@@ -1036,7 +1085,7 @@
     } catch (e) {}
 
     // "Tümü" kutusu gercek durumu yansitsin
-    var boxes = document.querySelectorAll('.platforms input.sf');
+    var boxes = document.querySelectorAll('.chips input.sf');
     var hepsi = true;
     for (var i = 0; i < boxes.length; i++) if (!boxes[i].checked) hepsi = false;
     if ($('safeAll')) $('safeAll').checked = hepsi;
@@ -1522,15 +1571,21 @@
     });
     $('safeAll').addEventListener('change', function () {
       var on = $('safeAll').checked;
-      var boxes = document.querySelectorAll('.platforms input.sf');
+      var boxes = document.querySelectorAll('.chips input.sf');
       for (var i = 0; i < boxes.length; i++) boxes[i].checked = on;
       refreshPlatformNote();
+      cipleriTazele();
     });
-    var sfBoxes = document.querySelectorAll('.platforms input.sf');
+    var sfBoxes = document.querySelectorAll('.chips input.sf');
     for (var b = 0; b < sfBoxes.length; b++) {
-      sfBoxes[b].addEventListener('change', refreshPlatformNote);
+      sfBoxes[b].addEventListener('change', function () {
+        refreshPlatformNote();
+        cipleriTazele();
+      });
     }
     refreshPlatformNote();
+    cipleriTazele();
+    initTabs();
     initMogrt();
     $('btnMogrtDir').addEventListener('click', chooseMogrtDir);
     $('btnMogrtRun').addEventListener('click', runMogrtCaptions);
