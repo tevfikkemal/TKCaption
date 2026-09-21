@@ -265,3 +265,34 @@ kaymanın bir kısmı buradan geliyordu; düzelme sanılan şey aslında
 Ders: "dosyayı yazdık, Premiere aldı" yetmiyor — **hangi** dosyanın
 alındığını raporlamak gerekiyor. `trPlaceCaptions` denemeleri satır satır
 yazdığı için bu yakalanabildi.
+
+## Kesme ve ripple silme (ölçüldü, Premiere 2026)
+
+**`for...in` yanıltıcıdır.** İlk yoklamada hiçbir nesnede `razor` görünmedi
+ve "autocut imkânsız" sonucuna varılabilirdi. ExtendScript'te host
+nesnelerinin metodları çoğu zaman enumerable değildir — QE DOM nesneleri
+tipik örneği. Adıyla sorunca ortaya çıktı:
+
+```
+QE videoTrack : razor()
+QE trackItem  : remove(), rippleDelete(), move()
+sequence      : insertClip(), overwriteClip(), setInPoint(), setOutPoint()
+trackItem     : remove(), move()
+```
+
+Ders: bir API'nin yokluğuna karar vermeden önce `typeof nesne.ad ===
+'function'` ile doğrudan sorun.
+
+**`razor` zaman biçimi: timecode dizgisi.** Belgelenmemiş; ölçüldü.
+`razor("00:00:05:12")` çalışıyor, düz saniye çalışmıyor. Kod ikisini de
+sırayla deniyor ve başarıyı **klip sayısındaki değişime** bakarak
+anlıyor — QE çağrılarının dönüş değeri güvenilir değil, çoğu sessizce
+başarısız oluyor.
+
+**Sondan başa işlenmeli.** `rippleDelete()` kendinden sonraki her şeyi
+sola kaydırıyor. Baştan işlenirse ikinci aralığın zamanı geçersiz olur
+ve yanlış yerden kesilir.
+
+**Bağlı klipler birlikte kesiliyor.** Ölçülen: tek sessiz bölüm için
+V1'de iki kesim yapıldığında ses de kesildi ve iki parça (video + ses)
+silindi. Her piste ayrı ayrı razor uygulamak gerekmiyor.
