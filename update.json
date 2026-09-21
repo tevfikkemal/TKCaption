@@ -1,7 +1,7 @@
 {
   "version": "0.9.3",
-  "updated": "2026-09-21T09:33:10.076Z",
-  "notes": "sablonlar calisma aninda taraniyor",
+  "updated": "2026-09-21T15:19:31.482Z",
+  "notes": "sablonlar diskten de kaldirildi",
   "files": [
     {
       "path": "core/package.json",
