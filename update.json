@@ -1,7 +1,7 @@
 {
-  "version": "0.9.20",
-  "updated": "2026-09-21T17:10:05.597Z",
-  "notes": "yerlestirmeden once duzenleme secenegi",
+  "version": "0.9.21",
+  "updated": "2026-09-21T17:15:17.770Z",
+  "notes": "duzenleme yeni dosyaya yaziliyor; Premiere eski kopyayi kullaniyordu",
   "files": [
     {
       "path": "core/package.json",
@@ -101,7 +101,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "35f56dbca14615152cc5e87d23691895e8502528db6338b493c4906a86041d33"
+      "sha": "c299ea1e49cbb2b3e41833e1b6f738122642e0ed5cdf362ad618fe6ac81342e5"
     },
     {
       "path": "index.html",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "9b719901a9c27cf5ef9c1183ccc51315ee1bdbafdc0bfde9e08363409d22ff60"
+      "sha": "cb51b7cca64db74892035326318e5d950e2b3584ba2d95d2d1e7fc2ba04b72f3"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "0ece0cf52797413077873cb36d37ac38a925c66c761c7fd47cc72acd4af1f295"
+      "sha": "80c96bc13f9ef0c3879b6cc86f21c37e2accc06220aac3bdbd571b12d89261fe"
     },
     {
       "path": "LICENSE",

@@ -696,6 +696,10 @@
   var subsBloklar = null;
   var subsYol = null;
   var subsDegisti = false;
+  /* Her kaydetme YENI bir dosyaya yaziliyor (Premiere ayni yolu yeniden
+     okumuyor); sayac ad uretiyor, onceki iz temizlik icin tutuluyor. */
+  var subsDuzeltmeNo = 0;
+  var subsOncekiDuzeltme = null;
 
   function subsYukle(srtYolu) {
     var core = resolveCore();
@@ -711,6 +715,8 @@
     if (!subsBloklar || !subsBloklar.length) return;
 
     subsDegisti = false;
+    subsDuzeltmeNo = 0;
+    subsOncekiDuzeltme = null;
     subsCiz();
     $('subsBox').hidden = false;
   }
@@ -800,11 +806,34 @@
     }
     if (!temiz.length) { subsNot('Tüm bloklar boş — kaydedilmedi.'); btn.disabled = false; return; }
 
+    /*
+     * DUZENLEME YENI BIR DOSYAYA YAZILIYOR.
+     *
+     * OLCULEN: app.project.importFiles ayni yolu daha once aldiysa
+     * projedeki ESKI kopyayi kullaniyor; diskteki dosya degisse bile
+     * yeniden okumuyor. Bu yuzden duzenlenen metin sekansa hic
+     * ulasmiyordu — dosya dogruydu, Premiere bakmiyordu.
+     *
+     * Ayni ada yazip "Premiere tazelesin" beklemek denendi ve olmadi
+     * (refreshMedia altyazi ogelerinde sessizce etkisiz). Tek guvenilir
+     * yol Premiere'in TANIMADIGI bir ad vermek.
+     *
+     * Eski duzenleme dosyalarini siliyoruz ki klasor birikmesin; asil
+     * uretilen dosyaya dokunmuyoruz.
+     */
+    var yeniYol = subsYol.replace(/(-d\d+)?(\.[^.]+)$/, '-d' + (++subsDuzeltmeNo) + '$2');
     try {
       // Zaman kodu kaymasi SRT'nin icinde ZATEN var; tekrar eklersek iki
       // kat kayar. parseSrt kaydirilmis zamanlari okudu, oldugu gibi yaziyoruz.
       cfg.output.timecodeOffsetSec = 0;
-      srtMod.write(subsYol, srtMod.toSrt(temiz, cfg), cfg);
+      srtMod.write(yeniYol, srtMod.toSrt(temiz, cfg), cfg);
+
+      // Bir onceki duzenleme dosyasi artik gereksiz
+      if (subsOncekiDuzeltme && subsOncekiDuzeltme !== yeniYol) {
+        try { nfs.unlinkSync(subsOncekiDuzeltme); } catch (e) {}
+      }
+      subsOncekiDuzeltme = yeniYol;
+      subsYol = yeniYol;
     } catch (e) {
       subsNot('Yazılamadı: ' + e.message);
       btn.disabled = false;
