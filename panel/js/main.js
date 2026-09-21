@@ -367,7 +367,7 @@
         html += '<span class="dim">Varlıkları çalıştıkları anlamına gelmiyor; ' +
                 'her biri ayrıca denenmeli.</span>';
       } else {
-        html += '<span class="warn">Altyazı pisti API’si bulunamadı.</span>\n';
+        html += '<span class="warn">Altyazı timeline API’si bulunamadı.</span>\n';
         html += '<span class="dim">Yarı otomatik yola geçiyoruz: kullanıcı tek tıkla ' +
                 'Türkçe altyazısını alır, yalnızca son sürükleme elde kalır.</span>';
       }
@@ -485,23 +485,70 @@
    * aktariyor ve eski durumlarini aynen geri koyuyor.
    */
 
+  var kapsamHedef = 'caption';   // 'caption' = altyazi timeline, 'graphic' = grafik timeline
   var kapsamAralik = 'entire';   // 'entire' | 'inout'
-  var kapsamSes = [];            // bos = tumu; dolu = secili pist indeksleri
+  var kapsamSes = [];            // bos = tumu; dolu = secili ses timeline indeksleri
   var sonSeqBilgi = null;
 
+  var HEDEF_ANAHTAR = 'tkcaption.hedef';
+
+  /** Bir dugme grubunda tek secim; secilen degeri dondurur */
+  function grupSecimi(grp, oznitelik, geriCagri) {
+    if (!grp) return;
+    var dugmeler = grp.querySelectorAll('.mini');
+    for (var i = 0; i < dugmeler.length; i++) {
+      dugmeler[i].addEventListener('click', function () {
+        if (this.disabled) return;
+        var hepsi = grp.querySelectorAll('.mini');
+        for (var j = 0; j < hepsi.length; j++) hepsi[j].className = 'mini';
+        this.className = 'mini on';
+        geriCagri(this.getAttribute(oznitelik));
+      });
+    }
+  }
+
   function initScope() {
-    var grp = $('rangeGrp');
-    if (grp) {
-      var dugmeler = grp.querySelectorAll('.mini');
-      for (var i = 0; i < dugmeler.length; i++) {
-        dugmeler[i].addEventListener('click', function () {
-          if (this.disabled) return;
-          var hepsi = grp.querySelectorAll('.mini');
-          for (var j = 0; j < hepsi.length; j++) hepsi[j].className = 'mini';
-          this.className = 'mini on';
-          kapsamAralik = this.getAttribute('data-range');
-        });
+    grupSecimi($('rangeGrp'), 'data-range', function (v) { kapsamAralik = v; });
+
+    grupSecimi($('targetGrp'), 'data-target', function (v) {
+      kapsamHedef = v;
+      yerelYaz(HEDEF_ANAHTAR, v);
+      hedefiYansit();
+    });
+
+    // Son secilen hedefi hatirla
+    var kayitli = yerelOku(HEDEF_ANAHTAR);
+    if (kayitli === 'graphic' || kayitli === 'caption') {
+      kapsamHedef = kayitli;
+      var g = $('targetGrp');
+      if (g) {
+        var hepsi = g.querySelectorAll('.mini');
+        for (var i = 0; i < hepsi.length; i++) {
+          hepsi[i].className = hepsi[i].getAttribute('data-target') === kayitli
+            ? 'mini on' : 'mini';
+        }
       }
+    }
+    hedefiYansit();
+  }
+
+  /**
+   * Hedef secimini ana eylemin uzerinde gorunur kilar.
+   *
+   * Grafik timeline secildiginde sablon sart; sablon yoksa kullanici
+   * dugmeye basip hata almadan once bunu bilmeli.
+   */
+  function hedefiYansit() {
+    var ipucu = $('runHint');
+    if (!ipucu) return;
+
+    if (kapsamHedef === 'graphic') {
+      var it = mogrtSecili ? mogrtItem(mogrtSecili) : null;
+      ipucu.textContent = it
+        ? 'grafik timeline’a — şablon: ' + it.ad
+        : 'grafik timeline’a — önce Stilize Altyazı’dan şablon seçin';
+    } else {
+      ipucu.textContent = 'altyazı timeline’ına — kapatılabilir altyazı';
     }
   }
 
@@ -822,32 +869,31 @@
     el.hidden = !msg;
   }
 
-  /** Dugmeyi ancak her sart tamamsa acar; neyin eksik oldugunu yazar. */
+  /**
+   * Sablon durumunu bildirir.
+   *
+   * Ayri bir "Stilize Altyazi Olustur" dugmesi yok artik — ana eylem
+   * hedefe gore dallaniyor. Burada yalnizca eksik olani soyluyoruz ve
+   * ana eylemin ipucunu tazeliyoruz.
+   */
   function mogrtDurumTazele() {
-    var btn = $('btnMogrtRun');
-    if (!btn) return;
+    if (!mogrtKlasor) { mogrtNot('Şablon klasörünü seçin.'); hedefiYansit(); return; }
+    if (!mogrtKatalog) { hedefiYansit(); return; }
+    if (!mogrtSecili) { mogrtNot('Bir şablon seçin.'); hedefiYansit(); return; }
 
-    if (!mogrtKlasor) { btn.disabled = true; return; }
-    if (!mogrtKatalog) { btn.disabled = true; return; }
-    if (!mogrtSecili) { btn.disabled = true; mogrtNot('Bir şablon seçin.'); return; }
-    if (!sonAltyaziYolu) {
-      btn.disabled = true;
-      mogrtNot('Önce yukarıdan altyazı oluşturun; stilize sürüm o bloklardan yazılır.');
-      return;
-    }
     var it = mogrtItem(mogrtSecili);
     if (it) {
       var dosya = npath.join(mogrtKlasor, it.dosya);
       var varMi = false;
       try { varMi = nfs.existsSync(dosya); } catch (e) {}
       if (!varMi) {
-        btn.disabled = true;
         mogrtNot('Seçilen şablon dosyası klasörde yok: ' + it.dosya);
+        hedefiYansit();
         return;
       }
     }
-    btn.disabled = false;
     mogrtNot('');
+    hedefiYansit();
   }
 
   function mogrtItem(id) {
@@ -873,13 +919,21 @@
     el.scrollTop = el.scrollHeight;
   }
 
-  function runMogrtCaptions() {
+  /**
+   * Uretilmis altyaziyi MOGRT klipleri olarak grafik timeline'a dizer.
+   *
+   * Ana eylemden cagriliyor: kullanici 'Nereye: Grafik timeline' sectiyse
+   * altyazi uretildikten sonra bu calisiyor. Ayri bir dugme yoktu cunku
+   * ayni isin iki dugmesi olmasi kullaniciyi 'hangisine basayim' diye
+   * dusundurmustu.
+   *
+   * @returns {Promise} yerlestirme bitince cozulur
+   */
+  function mogrtYerlestir() {
     var it = mogrtItem(mogrtSecili);
-    if (!it || !sonAltyaziYolu) return;
+    if (!it) return Promise.reject(new Error('Şablon seçilmedi.'));
+    if (!sonAltyaziYolu) return Promise.reject(new Error('Önce altyazı üretilmeli.'));
 
-    var btn = $('btnMogrtRun');
-    btn.disabled = true;
-    $('mogrtOut').innerHTML = '';
     mogrtBar(0);
     mogrtNot('');
 
@@ -889,19 +943,15 @@
       var srtMod = nodeReq(npath.join(core, 'src', 'srt.js'));
       bloklar = srtMod.parseSrt(nfs.readFileSync(sonAltyaziYolu, 'utf8'));
     } catch (e) {
-      mogrtYaz('<span class="err">Altyazı dosyası okunamadı: ' + esc(e.message) + '</span>');
-      btn.disabled = false;
-      return;
+      appendRun('<span class="err">Altyazı dosyası okunamadı: ' + esc(e.message) + '</span>');
+      return Promise.reject(new Error('Altyazı dosyası okunamadı.'));
     }
     if (!bloklar || !bloklar.length) {
-      mogrtYaz('<span class="err">Altyazı dosyasında blok yok.</span>');
-      btn.disabled = false;
-      return;
+      return Promise.reject(new Error('Altyazı dosyasında blok yok.'));
     }
 
     var dosya = npath.join(mogrtKlasor, it.dosya);
-    mogrtYaz('<span class="dim">Şablon:</span> ' + esc(it.ad));
-    mogrtYaz('<span class="dim">Blok:</span> ' + bloklar.length);
+    appendRun('<span class="dim">şablon:</span> ' + esc(it.ad) + '  ' + bloklar.length + ' blok');
 
     // SRT zamanlari sekansin BASLANGIC ZAMAN KODUNA gore yazildi (pipeline
     // zeroPoint'i offset olarak ekliyor). importMGT ise sekansin basindan
@@ -911,7 +961,7 @@
     var olcek = 0;
     var dikey = Number($('optMogrtPos').value) / 100;
 
-    CEP.call('trGetSequenceInfo()').then(function (si) {
+    return CEP.call('trGetSequenceInfo()').then(function (si) {
       zeroSec = Number(si.zeroPointSec) || 0;
 
       // Sablonlarin tamami 16:9 uretilmis; dikey sekansta genislik tasiyor.
@@ -921,70 +971,69 @@
         olcek = elle;
       } else if (it.en > 0 && Number(si.width) > 0) {
         olcek = Math.round((Number(si.width) / it.en) * 1000) / 10;
-        mogrtYaz('<span class="dim">Şablon ' + it.en + 'x' + it.boy +
+        appendRun('<span class="dim">Şablon ' + it.en + 'x' + it.boy +
                  ', sekans ' + si.width + 'x' + si.height +
                  ' — ölçek %' + olcek + '</span>');
       }
       if (zeroSec > 0.0005) {
-        mogrtYaz('<span class="dim">Başlangıç zaman kodu düşülüyor:</span> ' +
+        appendRun('<span class="dim">Başlangıç zaman kodu düşülüyor:</span> ' +
                  zeroSec.toFixed(3) + ' sn');
       }
       // Once bos bir video pisti bul; var olan klipleri ezmek istemiyoruz
       return CEP.call('trFindFreeVideoTrack()');
     }).then(function (t) {
       var track = Number(t.track);
-      mogrtYaz('<span class="dim">Pist:</span> V' + (track + 1) +
+      appendRun('<span class="dim">timeline:</span> V' + (track + 1) +
                (String(t.created) === 'true' ? ' (yeni eklendi)' : ''));
 
-      // Grup grup gonderiyoruz: tek cagrida panel dakikalarca donardi
+      // Grup grup gonderiyoruz: tek cagrida panel dakikalarca donardi.
+      // Ozyinelemeli zinciri bir Promise'e sariyoruz ki cagiran taraf
+      // yerlestirmenin BITTIGINI ogrenebilsin — eskiden bitis sinyali
+      // yoktu ve ana akis yerlestirme surerken tamamlanmis sayiyordu.
       var GRUP = 10;
       var i = 0;
       var konan = 0;
       var hatalar = [];
 
-      function sonraki() {
-        if (i >= bloklar.length) {
-          mogrtBar(1);
-          mogrtYaz('<span class="ok">' + konan + ' / ' + bloklar.length +
-                   ' altyazı yerleştirildi</span>');
-          if (hatalar.length) {
-            mogrtYaz('<span class="warn">' + hatalar.length + ' blok atlandı</span>');
-            for (var h = 0; h < Math.min(5, hatalar.length); h++) {
-              mogrtYaz('<span class="dim">  ' + esc(hatalar[h]) + '</span>');
+      return new Promise(function (resolve, reject) {
+        function sonraki() {
+          if (i >= bloklar.length) {
+            mogrtBar(1);
+            appendRun('<span class="ok">' + konan + ' / ' + bloklar.length +
+                     ' altyazı yerleştirildi</span>');
+            if (hatalar.length) {
+              appendRun('<span class="warn">' + hatalar.length + ' blok atlandı</span>');
+              for (var h = 0; h < Math.min(5, hatalar.length); h++) {
+                appendRun('<span class="dim">  ' + esc(hatalar[h]) + '</span>');
+              }
             }
+            resolve({ placed: konan, total: bloklar.length });
+            return;
           }
-          btn.disabled = false;
-          return;
+
+          var grup = [];
+          for (var g = 0; g < GRUP && i < bloklar.length; g++, i++) {
+            grup.push({
+              start: Math.max(0, bloklar[i].start - zeroSec),
+              end: Math.max(0.05, bloklar[i].end - zeroSec),
+              text: bloklar[i].lines ? bloklar[i].lines.join('\n') : (bloklar[i].text || '')
+            });
+          }
+
+          var json = JSON.stringify(grup);
+          CEP.call('trPlaceMogrtBatch("' + esPath(dosya) + '", "' + esPath(json) +
+                   '", ' + track + ', ' + olcek + ', ' + dikey.toFixed(4) + ')')
+            .then(function (r) {
+              konan += Number(r.placed) || 0;
+              var hs = asArray(r.errors);
+              for (var e = 0; e < hs.length; e++) hatalar.push(hs[e]);
+              mogrtBar(i / bloklar.length);
+              sonraki();
+            })
+            .catch(reject);
         }
-
-        var grup = [];
-        for (var g = 0; g < GRUP && i < bloklar.length; g++, i++) {
-          grup.push({
-            start: Math.max(0, bloklar[i].start - zeroSec),
-            end: Math.max(0.05, bloklar[i].end - zeroSec),
-            text: bloklar[i].lines ? bloklar[i].lines.join('\n') : (bloklar[i].text || '')
-          });
-        }
-
-        var json = JSON.stringify(grup);
-        CEP.call('trPlaceMogrtBatch("' + esPath(dosya) + '", "' + esPath(json) +
-                 '", ' + track + ', ' + olcek + ', ' + dikey.toFixed(4) + ')').then(function (r) {
-          konan += Number(r.placed) || 0;
-          var hs = asArray(r.errors);
-          for (var e = 0; e < hs.length; e++) hatalar.push(hs[e]);
-          mogrtBar(i / bloklar.length);
-          sonraki();
-        }).catch(function (e) {
-          mogrtYaz('<span class="err">' + esc(e.message || String(e)) + '</span>');
-          btn.disabled = false;
-        });
-      }
-
-      sonraki();
-    }).catch(function (e) {
-      mogrtYaz('<span class="err">' + esc(e.message || String(e)) + '</span>');
-      if (e.detail) mogrtYaz('<span class="dim">' + esc(e.detail) + '</span>');
-      btn.disabled = false;
+        sonraki();
+      });
     });
   }
 
@@ -1552,11 +1601,27 @@
       // Iki bicimi de sirayla dene. TTML kare hizini tasir ama Premiere'in
       // hangi uzantiyi altyazi olarak kabul ettigi belirsiz; SRT calisiyor
       // ama kare hizi tasimiyor. Tahmin etmek yerine ikisini de veriyoruz.
+      // Hedef GRAFIK ise altyazi timeline'ina hic dokunmuyoruz; ayni
+      // altyazi MOGRT klipleri olarak grafik timeline'a diziliyor.
+      if (kapsamHedef === 'graphic') {
+        sonAltyaziYolu = srtPath;
+        return mogrtYerlestir().then(function (r) {
+          // Ortak rapor bicimi: sonraki adim ikisini de ayni sekilde okur
+          return { placed: 'true', grafik: true, konan: r.placed, attempts: [] };
+        });
+      }
+
       var adaylar = [srtPath];
       if (lastResult && lastResult.secondaryOutput) adaylar.push(lastResult.secondaryOutput);
       return CEP.call('trPlaceCaptions("' + esPath(adaylar.join(';')) + '")');
     }).then(function (pl) {
       setBar(1);
+      if (pl && pl.grafik) {
+        // Grafik yolunda rapor zaten mogrtYerlestir icinde yazildi;
+        // asagidaki altyazi-timeline raporu burada anlamsiz olurdu.
+        setStatus('tamam');
+        return;
+      }
       // Hangi bicimin kabul edildigi kritik bilgi — tahmin etmeyelim
       var denemeler = asArray(pl.attempts);
       for (var di = 0; di < denemeler.length; di++) {
@@ -1564,10 +1629,10 @@
         appendRun('<span class="' + dcls + '">' + esc(denemeler[di]) + '</span>');
       }
       if (String(pl.placed) === 'true') {
-        appendRun('<span class="ok">Altyazı pisti oluşturuldu' + (pl.usedFile ? ' — ' + esc(pl.usedFile) : '') + '</span>');
+        appendRun('<span class="ok">Altyazı timeline’ı oluşturuldu' + (pl.usedFile ? ' — ' + esc(pl.usedFile) : '') + '</span>');
         appendRun('<span class="dim">Dosya:</span> ' + esc(srtPath));
       } else {
-        appendRun('<span class="warn">Dosya projeye alındı ama piste yerleştirilemedi' +
+        appendRun('<span class="warn">Dosya projeye alındı ama timeline’a yerleştirilemedi' +
                   (pl.detail ? ': ' + esc(pl.detail) : '') + '</span>');
         appendRun('<span class="dim">Proje panelinden zaman çizelgesine sürükleyebilirsiniz.</span>');
       }
@@ -1793,7 +1858,6 @@
     initTabs();
     initMogrt();
     $('btnMogrtDir').addEventListener('click', chooseMogrtDir);
-    $('btnMogrtRun').addEventListener('click', runMogrtCaptions);
     $('optMogrtPos').addEventListener('input', function () {
       setText('mogrtPosVal', '%' + this.value);
     });

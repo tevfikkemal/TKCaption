@@ -1,7 +1,7 @@
 {
-  "version": "0.9.8",
-  "updated": "2026-09-21T16:07:16.765Z",
-  "notes": "paneli yeniden yukleme dugmesi",
+  "version": "0.9.9",
+  "updated": "2026-09-21T16:15:09.924Z",
+  "notes": "hedef secimi: altyazi timeline ya da grafik timeline",
   "files": [
     {
       "path": "core/package.json",
@@ -101,12 +101,12 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "4fd64e7a1412de23bdb6ae3b31fab7803544ecb635752d4bd43c3ad14b8fe9b0"
+      "sha": "4436b7d72970363907ee49d15ed02a9eed8ae154bf29f82222aaf682df885d80"
     },
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "4143e752b85eeb33fbe95b7c6931cb1db11cd799182de45de164dc5ba4d8b359"
+      "sha": "48d2cd6bf1d59279f882d96ac532ebdf8ab74aac1df568bf0eb1a0fb3bdc7a77"
     },
     {
       "path": "js/cep.js",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "b488b27cfd75fc345a59a98f10fa42d35be362397a68f2e1900c6e45f72f9aa9"
+      "sha": "ea85854d7c721baeb9302d77fa536497c7e9e26a5a9f12a291ff603b8d1258c4"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "629c03fa6f56dff0f3e36bf04b1ef9cb1c0b573a1030e61dd9eea442c456de98"
+      "sha": "a1e6f04105e52e63fe93d1eeaf6057ad8a69bf6287df8d9d31209757ccf0fd14"
     },
     {
       "path": "LICENSE",

@@ -66,7 +66,13 @@
        calistirmada degisebiliyor; Ayarlar'a gomulse her seferinde
        oraya gidip gelmek gerekirdi. -->
   <div class="scope">
+    <div class="scope-grp" id="targetGrp">
+      <span class="mini-lbl">Nereye</span>
+      <button class="mini on" data-target="caption" type="button">Altyazı timeline</button>
+      <button class="mini" data-target="graphic" type="button">Grafik timeline</button>
+    </div>
     <div class="scope-grp" id="rangeGrp">
+      <span class="mini-lbl">Kapsam</span>
       <button class="mini on" data-range="entire" type="button">Tüm sekans</button>
       <button class="mini" data-range="inout" type="button" id="btnInOut" disabled>In → Out</button>
     </div>
@@ -110,7 +116,7 @@
           <path d="M5 6.6h14M12 6.6V18M9.2 18h5.6"/>
         </svg>
       </span>
-      <span class="action-txt"><b>Stilize Altyazı</b><i>şablonla video pistine yazar</i></span>
+      <span class="action-txt"><b>Stilize Altyazı</b><i>şablon ve konum</i></span>
     </button>
   </div>
 
@@ -197,7 +203,7 @@
   <!-- ============ STILIZE ALTYAZI ============ -->
   <div class="panelbody" id="tab-stil" hidden>
     <div class="row spread">
-      <span class="note nomargin">Yazı tipi ve renk şablondan gelir; dışa aktarmada gömülü olur.</span>
+      <span class="note nomargin">Şablon seçin, sonra <b>Nereye: Grafik timeline</b> ile oluşturun.</span>
       <span class="ver" id="mogrtCount"></span>
     </div>
 
@@ -220,9 +226,6 @@
     </div>
 
     <p class="note" id="mogrtNote" hidden></p>
-    <div class="row">
-      <button id="btnMogrtRun" class="btn primary" disabled>Stilize Altyazı Oluştur</button>
-    </div>
     <div id="mogrtBar" class="bar" hidden><div id="mogrtFill" class="fill"></div></div>
     <div id="mogrtOut" class="out" hidden></div>
   </div>
