@@ -1,256 +1,97 @@
 # TK Caption
 
-**Adobe Premiere Pro için Türkçe otomatik altyazı — yerelde çalışır, ücretsizdir, hep öyle kalacaktır.**
+**Adobe Premiere Pro için Türkçe otomatik altyazı.**
+Bilgisayarınızda çalışır, sesiniz hiçbir yere gitmez, ücretsizdir — hep öyle kalacak.
 
-*by TK Labs*
+*by TK Labs · Türkiye'ye armağandır.*
 
 ---
 
-## Neden
+## Neden var
 
-Adobe Premiere Pro'nun dahili konuşma tanıma özelliği **18 dil** destekler. Türkçe bunlardan biri değildir.
+Premiere Pro'nun kendi altyazı özelliği 18 dil biliyor. Türkçe bunlardan biri değil — yıllardır da eklenmedi. Piyasadaki Türkçe eklentiler ya ücretli ya da sesinizi buluta gönderip dakika başı ücret alıyor.
 
-Bu bir iddia değil, kurulu programın kendi dosyasından okunabilir. Premiere Pro 2026 kurulumunda:
+TK Caption ikisini de yapmaz.
 
-```
-C:\Program Files\Adobe\Adobe Premiere Pro 2026\AutoTranscription\SupportedLanguages.json
-```
+## Neler yapar
 
-Dosyadaki tam liste: `en-us`, `en-gb`, `cmn-hans`, `cmn-hant`, `zh-hk`, `es-es`, `de-de`, `fr-fr`, `ja-jp`, `pt-pt`, `ko-kr`, `it-it`, `ru-ru`, `hi-in`, `nb-no`, `sv-se`, `da-dk`, `nl-nl`.
+**Altyazı** — Sekanstaki konuşmayı dinler, Türkçe altyazıyı üretir ve zaman çizgisine yerleştirir. Tek tık.
 
-Türkçe yok. Yıllardır da eklenmedi.
+Altyazıları düz bölmez, Türkçe'ye göre böler: `geldi | de`, `açıklamaya | göre`, `bu | özelliği` gibi yanlış kesimler yapmaz. Satır uzunluğu ve okuma hızı TRT/Netflix Türkçe ölçülerine uyar.
 
-Piyasadaki Türkçe altyazı eklentileri ya ücretli, ya bulut API'sine para ödetiyor, ya da ikisi birden. TK Caption ikisini de yapmaz: model bilgisayarınızda çalışır, ses hiçbir yere gitmez, hiçbir aşamada para istenmez.
+**Seçili aralık** — Tüm sekansı değil, sadece In/Out arasını işleyebilir.
 
-## Ne yapar
+**Ses kanalı seçimi** — Müzik ya da efekt ayrı kanaldaysa sadece konuşma kanalını dinletebilirsiniz.
 
-Türkçe konuşulan bir ses/video dosyasından, **düzgün bölünmüş** bir `.srt` altyazı dosyası üretir.
+**Düzenleme** — Üretilen altyazıyı panelde görüp düzeltebilirsiniz. Özel isimler, marka adları, teknik terimler için.
 
-"Düzgün bölünmüş" kısmı asıl mesele. Konuşma tanıma motorunun ham çıktısı altyazı için kullanılamaz — cümleleri ortasından keser, satırları rastgele böler. TK Caption kelime bazlı zaman damgalarından altyazı bloklarını Türkçe dilbilgisine göre yeniden kurar:
+**Auto Cut** — Sessiz bölümleri bulup keser, kalan klipleri birleştirir. Ne kadar sürenin kesileceğini önce gösterir, onaylarsanız uygular.
 
-- **Ekler koparılmaz** — `geldi | de`, `gördün | mü` diye bölmez
-- **Edatlar bağlı kalır** — `açıklamaya | göre` olmaz
-- **Belirteç–isim bağı korunur** — `bu | özelliği` olmaz
-- **Özel isim zincirleri bütün kalır** — `Adobe | Premiere Pro` olmaz
-- **Bağlaçlardan önce bölünür** — `ama`, `çünkü`, `ve` satır başına gelir
-- **İkilemeler korunur** — `yavaş yavaş`, `koşa koşa` tekrar filtresine takılmaz
-- **Kesme işareti düzeltilir** — `Türkiyede` → `Türkiye'de` (ama `Türkiyeli` bozulmaz, yapım eki kesme almaz)
-
-Ayrıca konuşma tanıma motorlarının Türkçe'de sessiz bölümlerde ürettiği uydurma metinleri (`Altyazı M.K.`, `Abone olmayı unutmayın` gibi) filtreler.
-
-## Durum
-
-| Katman | Durum |
-|---|---|
-| **1 — Çekirdek CLI** (ses → altyazı) | Çalışıyor |
-| **2 — ExtendScript köprüsü** (Premiere ↔ çekirdek) | Çalışıyor |
-| **3 — CEP paneli** (arayüz) | Çalışıyor |
-
-**Uçtan uca çalışıyor.** Premiere'de bir sekans açıp panelden tek düğmeye
-basıyorsunuz; ses çıkarılıyor, yerelde çözümleniyor, Türkçe kurallara göre
-bölünüyor ve sekansa altyazı pisti olarak yerleştiriliyor. Sürükle-bırak yok.
-
-### Kurulum paketi
-
-```bash
-node tools/build.js
-```
-
-`dist/TKCaption-<sürüm>.zip` üretir (~70 KB; model ve motor ilk çalıştırmada
-iner). İçindeki `KUR.ps1` `PlayerDebugMode` bayrağını açar ve eklentiyi
-kullanıcının CEP klasörüne kopyalar.
-
-### ZXP paketi (imzalı, tek dosya)
-
-```bash
-node tools/build.js "sürüm notu"
-node tools/make-zxp.js
-```
-
-`dist/TKCaption-<sürüm>.zxp` üretir. Kullanıcı
-[ZXP Installer](https://zxpinstaller.com) ile açıp kurar — PowerShell
-betiği çalıştırmaya gerek kalmaz.
-
-Sertifika ilk çalıştırmada üretilip `tools/.cert/` altına yazılır ve
-depoya **girmez**; özel anahtar oradadır.
-
-**Sınır:** sertifika kendinden imzalıdır (self-signed). Adobe'un güvendiği
-bir sağlayıcıdan alınmadığı için Creative Cloud uygulaması üzerinden
-kurulamaz; ZXP Installer gibi araçlar gerekir ve Premiere imzayı
-tanımazsa `PlayerDebugMode` yine gerekebilir. Güvenilir sertifika ücretli
-ve yıllık yenilenir — ücretsiz dağıtılan bir araç için self-signed yaygın
-ve kabul gören yoldur.
-
-### Otomatik güncelleme
-
-Panel açılışta depodaki `update.json` dosyasını okuyup kendi sürümüyle
-karşılaştırır; yeni sürüm varsa dosyaları indirip yerine koyar. Kullanıcıya
-düşen tek iş Premiere'i yeniden başlatmaktır.
-
-`update.json` her derlemede otomatik üretilir — ayrıca yayın oluşturmak
-gerekmez, `git push` yeterlidir. Her dosyanın SHA-256 özeti bildirimde
-yazılıdır ve indirme sonrası doğrulanır; tamamı doğrulanmadan hiçbir dosya
-yerine konmaz.
-
-**ZXP ile kurulduysa:** ZXP Installer eklentiyi `Program Files (x86)\Common
-Files\Adobe\CEP\extensions` altına kurar; orası normal kullanıcının
-yazamadığı bir konumdur. Panel bunu güncelleme öncesi ölçer ve yazamıyorsa
-Windows'tan yönetici izni ister (UAC penceresi çıkar, "Evet" demek
-yeterlidir). Yedekleme ve hata halinde geri alma yükseltilmiş adımın
-içinde yapılır. `KUR.ps1` ile kurulduğunda dosyalar kullanıcı klasöründe
-olduğu için izin sorulmaz.
-
-### Paneli kurmak (geliştirme)
-
-```powershell
-powershell -ExecutionPolicy Bypass -File tools\install-panel.ps1
-```
-
-İki şey yapar: Adobe'un imzasız panelleri yüklemesi için gereken `PlayerDebugMode`
-bayrağını açar (`HKCU` altında, yönetici gerektirmez) ve CEP eklenti klasöründen
-bu depodaki `panel/` klasörüne bir junction kurar — kodu değiştirdiğinizde
-kopyalamanız gerekmez.
-
-Premiere'i yeniden başlatın, ardından **Pencere > Uzantılar > TK Caption**.
-
-Geri almak için `-Uninstall` ekleyin.
-
-Paneli Premiere açmadan görmek için:
-
-```bash
-node tools/serve-panel.js
-```
-
-### Ölçülen sonuç
-
-88 saniyelik Türkçe atölye videosu, RTX 4070 Ti:
-
-```
-88.0 sn ses / 3.2 sn işlem  (27x gerçek zaman)
-32 altyazı bloğu, 169 kelime
-
-satır uzunluğu ihlali : 0
-2'den fazla satır     : 0
-süre ihlali           : 0
-çakışma               : 0
-
-senkron (sync-check.js):
-  medyan kayma        : +0.00 sn
-  en erken sapma      : -0.05 sn
-```
-
-Zamanlama doğruluğu `core/tools/sync-check.js` ile ölçülür — göz kararıyla
-değil, konuşma başlangıçlarıyla altyazı başlangıçları karşılaştırılarak.
+**Güvenli alan** — Instagram, TikTok, YouTube için ekranın hangi kısmının arayüz altında kalacağını gösterir. Altyazıyı doğru yere koymak için.
 
 ## Kurulum
 
-Node.js 16+ dışında hiçbir şey gerekmez. **Sıfır npm bağımlılığı** vardır.
+**1.** [ZXP Installer](https://zxpinstaller.com)'ı indirip kurun (ücretsiz).
 
-```bash
-git clone https://github.com/tevfikkemal/TKCaption.git
-cd TKCaption
-```
+**2.** `TKCaption-x.x.x.zxp` dosyasını ZXP Installer'a sürükleyin.
 
-Motor ve model ilk çalıştırmada otomatik iner (`models/` ve `bin/` klasörlerine, repoya girmez).
+**3.** Premiere'i açın → **Pencere → Uzantılar → TK Caption**
 
-```bash
-node core/tools/fetch.js
-```
-
-Ne indirileceğini görmek için:
-
-```bash
-node core/src/index.js --list-models
-```
-
-| Bileşen | Boyut | Not |
-|---|---|---|
-| `large-v3-turbo-q5_0` | 547 MB | Varsayılan model |
-| whisper.cpp (blas) | 20 MB | Her makinede çalışır |
-| whisper.cpp (cuda12) | 640 MB | NVIDIA kartı varsa, çok daha hızlı |
-
-NVIDIA kartınız varsa CUDA yapısı otomatik önerilir.
+**İlk çalıştırmada** konuşma tanıma modeli iner (~570 MB). Bir kez iner, sonra internet gerekmez. NVIDIA ekran kartınız varsa daha hızlı çalışan sürüm otomatik seçilir.
 
 ## Kullanım
 
-```bash
-node core/src/index.js -i roportaj.wav -o roportaj.srt
-```
+1. Premiere'de bir sekans açın
+2. Panelde **Altyazı Oluştur**'a basın
+3. Bitti — altyazı zaman çizgisinde
 
-Premiere'den gelen bir sekans için (zaman kodu kayması önemli):
+Ana düğmenin altındaki seçenekler:
 
-```bash
-node core/src/index.js -i sekans.wav --offset 01:00:00:00 --fps 25
-```
+| | |
+|---|---|
+| **Nereye** | Altyazı timeline'ı (kapatılabilir) ya da grafik timeline (videoya gömülü, şablonlu) |
+| **Kapsam** | Tüm sekans ya da sadece In/Out arası |
+| **Yerleştir** | Hemen ya da önce düzelttikten sonra |
+| **Ses** | Hangi ses kanalının dinleneceği |
 
-Tüm seçenekler için `--help`.
+### Altyazıyı düzeltmek istiyorsanız
 
-### Kendi sözlüğünüz
+**Yerleştir → "Düzelttikten sonra"** seçin. Altyazı üretilir ama sekansa konmaz; panelde liste açılır. Düzeltip **Kaydet**, sonra **Yerleştir**.
 
-Yanlış duyulan isimleri düzeltmek için bir JSON dosyası verebilirsiniz:
+Neden böyle: Premiere, altyazı timeline'ı bir kez yerleştikten sonra eklentilerin onu değiştirmesine izin vermiyor. Düzeltmeyi yerleştirmeden önce yapınca sekansta tek, doğru bir altyazı olur.
 
-```json
-[
-  { "from": "premyer", "to": "Premiere" },
-  { "from": "tevfik kemâl", "to": "Tevfik Kemal" },
-  "Kadıköy"
-]
-```
+## Güncelleme
 
-```bash
-node core/src/index.js -i video.mp4 --dict sozluk.json
-```
+Panel yeni sürüm çıkınca kendisi haber verir. **Güncelle**'ye basın, Windows izin isterse **Evet** deyin, sonra sağ üstteki yenileme düğmesine basın. Premiere'i kapatmanız gerekmez.
 
-Düz metin olarak yazılan isimler kesme işareti düzeltmesine dahil edilir (`Kadıköyde` → `Kadıköy'de`).
+## Sık sorulanlar
 
-### Altyazı biçimi
+**Sesim internete gidiyor mu?**
+Hayır. Her şey bilgisayarınızda çalışır. İnternet yalnızca ilk kurulumda model indirmek ve güncelleme kontrolü için kullanılır.
 
-Panel varsayılan olarak **TTML** üretir çünkü kare hızını dosyanın içinde
-taşır; SRT taşımaz ve Premiere içe alırken kendi varsayımını uygular.
-Her iki dosya da proje klasörüne yazılır, ikisini de kullanabilirsiniz.
+**Hangi Premiere sürümleri?**
+Premiere Pro 2026 (26.x) üzerinde test edildi. 2025 (25.x) sürümüne kurulur ama orada denenmedi — sorun yaşarsanız bildirin.
 
-### Ayarlar
+**Mac'te çalışır mı?**
+Şu an yalnızca Windows.
 
-`config.json` ile satır uzunluğu, okuma hızı, süre sınırları değiştirilebilir. Varsayılanlar TRT ve Netflix Türkçe altyazı ölçülerine dayanır: satır başına 42 karakter, en fazla 2 satır, 17 karakter/saniye, 0.833–7 saniye blok süresi.
+**Altyazılar ekranda üç satıra sarıyor.**
+Premiere altyazıyı kendi yazı tipiyle çizer ve bu tip geniştir. Ayarlar'dan satır uzunluğunu 30–34'e düşürün.
 
-## Girdi biçimleri
+**Panel açılmıyor.**
+Premiere'i tamamen kapatıp açın. Olmazsa panelin altındaki **Sorun giderme**'ye basıp çıkan raporu bize gönderin.
 
-WAV dosyaları **doğrudan** işlenir — çözümleme ve 16 kHz'e indirgeme saf JavaScript ile yapılır, harici araç gerekmez. Premiere zaten WAV ürettiği için eklentinin ana akışında hiçbir ek bağımlılık yoktur.
-
-MP4, MP3 gibi diğer biçimler için `ffmpeg` gerekir. Kurulu değilse `--ffmpeg <yol>` ile konumunu verebilirsiniz.
-
-## Kalite ölçümü
-
-Üretilen altyazının kurallara uyup uymadığını sayıyla görmek için:
-
-```bash
-node core/tools/analyze.js altyazi.srt
-```
-
-CPS dağılımı, ihlal sayıları ve en sorunlu blokları listeler.
-
-## Testler
-
-```bash
-node core/test/segmenter.test.js
-node core/test/srt-hallucination.test.js
-node core/test/postprocess.test.js
-node core/test/espath.test.js
-node core/test/vad.test.js
-node core/test/ttml.test.js
-node core/test/safezone.test.js
-node core/test/updater.test.js
-node core/test/updater-elevated.test.js
-```
-
-## Lisans
-
-MIT. Kullanın, değiştirin, dağıtın. Satmayın demiyorum — satın da, ama önce ücretsiz halinin var olduğunu söyleyin.
+**Güncelleme gelmiyor.**
+Birkaç dakika bekleyin; yeni sürümün yayılması zaman alabilir. Panelin altındaki **Sorun giderme** bölümünde durumu görebilirsiniz.
 
 ## Teşekkür
 
-[whisper.cpp](https://github.com/ggml-org/whisper.cpp) — Georgi Gerganov ve katkıda bulunanlar. Bu araç onun üzerine kuruludur.
+Konuşma tanıma: [whisper.cpp](https://github.com/ggml-org/whisper.cpp) — Georgi Gerganov ve katkıda bulunanlar. TK Caption onun üzerine kurulu.
+
+## Lisans
+
+MIT. Kullanın, değiştirin, dağıtın. Satmak isterseniz satın, ama ücretsiz halinin var olduğunu söyleyin.
 
 ---
 
-*Türkiye'ye armağandır.*
+*Geliştirici misiniz? Derleme, test ve mimari için → [docs/GELISTIRICI.md](docs/GELISTIRICI.md)*
