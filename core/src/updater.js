@@ -171,6 +171,56 @@ function yazilabilir(dir) {
 }
 
 /**
+ * ZXP imzasini kaldirir.
+ *
+ * OLCULEN VE CIDDI: ZXP imzasi (META-INF/signatures.xml) paketteki her
+ * dosyanin ozetini tasiyor. Guncelleme dosyalari degistirince ozetler
+ * tutmuyor ve Premiere bir sonraki ACILISTA eklentiyi reddediyor:
+ *   ERROR Signature verification failed for extension com.tklabs.tkcaption.panel
+ *
+ * Yenileme dugmesiyle calisirken fark edilmedi cunku Premiere imzayi
+ * yalnizca baslarken kontrol ediyor. Premiere yeniden basladigi an
+ * eklenti tamamen kayboldu — menude bile yoktu.
+ *
+ * PlayerDebugMode IMZASIZ eklentiye izin veriyor ama IMZALI VE BOZUK
+ * eklentiye vermiyor. Bu yuzden cozum imzayi duzeltmek degil (ozel
+ * anahtar kullanicida yok, olmamali) imzayi KALDIRMAK: eklenti imzasiz
+ * olur ve debug modda yuklenir.
+ */
+function imzayiKaldir(extensionDir) {
+  const d = path.join(extensionDir, 'META-INF');
+  try {
+    if (fs.existsSync(d)) fs.rmSync(d, { recursive: true, force: true });
+    return !fs.existsSync(d);
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * PlayerDebugMode'u acar (CSXS.9 - CSXS.14).
+ *
+ * imzayiKaldir ile birlikte gerekli: imzasiz eklenti ancak bu bayrak
+ * aciksa yukleniyor. ZXP ile kuran kullanicida bayrak hic acilmamis
+ * olabilir — imzayi kaldirip bayragi acmazsak guncelleme eklentiyi
+ * oldurur.
+ *
+ * HKCU altinda; yonetici gerektirmiyor.
+ */
+function debugModuAc() {
+  if (os.platform() !== 'win32') return false;
+  let hepsi = true;
+  for (let v = 9; v <= 14; v++) {
+    try {
+      execFileSync('reg', ['add', 'HKCU\\Software\\Adobe\\CSXS.' + v,
+        '/v', 'PlayerDebugMode', '/t', 'REG_SZ', '/d', '1', '/f'],
+        { stdio: 'ignore', timeout: 10000 });
+    } catch (e) { hepsi = false; }
+  }
+  return hepsi;
+}
+
+/**
  * Guncelleme var mi?
  * @returns {Promise<{available, current, latest, files, notes, writable}>}
  */
@@ -270,6 +320,10 @@ function tasimaBetigiYaz(staging, extensionDir, files) {
     '    Copy-Item -LiteralPath $src -Destination $dst -Force',
     '    $yazilan += $p',
     '  }',
+    '  # Imza artik gecersiz: dosyalar degisti. Birakirsak Premiere bir',
+    '  # sonraki acilista eklentiyi reddeder (bkz. imzayiKaldir).',
+    '  $imza = Join-Path $hedef "META-INF"',
+    '  if (Test-Path $imza) { Remove-Item -LiteralPath $imza -Recurse -Force }',
     '  "OK" | Set-Content -LiteralPath $sonuc -Encoding UTF8',
     '} catch {',
     '  foreach ($p in $yazilan) {',
@@ -356,7 +410,9 @@ async function apply(extensionDir, manifest, onProgress) {
     } finally {
       try { fs.rmSync(staging, { recursive: true, force: true }); } catch (_) {}
     }
-    return { updated: inen.length, skipped: atlanan, backup: null, version: manifest.version, elevated: true };
+    const debugAcik2 = inen.length ? debugModuAc() : true;
+    return { updated: inen.length, skipped: atlanan, backup: null, version: manifest.version,
+             elevated: true, signatureRemoved: true, debugMode: debugAcik2 };
   }
 
   const backup = path.join(os.tmpdir(), 'tkcaption-backup-' + Date.now().toString(36));
@@ -405,10 +461,16 @@ async function apply(extensionDir, manifest, onProgress) {
     try { fs.rmSync(staging, { recursive: true, force: true }); } catch (_) {}
   }
 
-  return { updated: inen.length, skipped: atlanan, skippedBytes: atlananBayt, backup, version: manifest.version };
+  // Dosya degistiyse imza gecersiz; kaldirmazsak Premiere yeniden
+  // basladiginda eklentiyi reddeder
+  const imzaKalkti = inen.length ? imzayiKaldir(extensionDir) : true;
+  const debugAcik = inen.length ? debugModuAc() : true;
+
+  return { updated: inen.length, skipped: atlanan, skippedBytes: atlananBayt, backup,
+           version: manifest.version, signatureRemoved: imzaKalkti, debugMode: debugAcik };
 }
 
 module.exports = {
   check, apply, fetchManifest, installedVersion, yazilabilir, tasimaBetigiYaz,
-  isNewer, parseVersion, sha256, RAW_BASE, MANIFEST_URL, API_BASE, fetchRepoFile, apiDurumu
+  isNewer, parseVersion, sha256, RAW_BASE, MANIFEST_URL, API_BASE, fetchRepoFile, apiDurumu, imzayiKaldir, debugModuAc
 };

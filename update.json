@@ -1,7 +1,7 @@
 {
-  "version": "0.9.26",
-  "updated": "2026-09-21T17:33:54.404Z",
-  "notes": "yerlestirme modu gorunur yerde, kullanici seciyor",
+  "version": "0.9.27",
+  "updated": "2026-09-23T10:11:09.288Z",
+  "notes": "guncelleme artik ZXP imzasini kaldiriyor",
   "files": [
     {
       "path": "core/package.json",
@@ -76,7 +76,7 @@
     {
       "path": "core/src/updater.js",
       "source": "core/src/updater.js",
-      "sha": "5860e3b6168e4f3fba2f56072b0145bde8d4d343f2f9c5a960d44a57638720c2"
+      "sha": "2a85e59da6a40d33c34a7ebdc5f9623d717de6a903b42a669fc760ed591dca9d"
     },
     {
       "path": "core/src/vad.js",
@@ -101,7 +101,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "298f8de02fbcecf0b7cf7cd2537efca366a5ef56213153f76b593f59eb9f6a84"
+      "sha": "474f3e00bb845a9a59e918a72fee24ae810cb66d42d61bfb8562db198b57fe11"
     },
     {
       "path": "index.html",
@@ -121,7 +121,7 @@
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "e5f43a13debf0a6b06d0ab1d1e13d1cf6fc3072189ec5510426f46fb73847d62"
+      "sha": "6a1f7f14d298a061eccad2a921e97a6be4af5e5e2240e5a6d1db4d0b4e074a2a"
     },
     {
       "path": "LICENSE",

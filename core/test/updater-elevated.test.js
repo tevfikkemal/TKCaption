@@ -123,6 +123,31 @@ console.log('\n=== YOLDA BOSLUK VE TEK TIRNAK ===');
   fs.rmSync(kok, { recursive: true, force: true });
 }
 
+console.log('\n=== ZXP IMZASI KALDIRILIYOR ===');
+{
+  // OLCULEN: guncelleme dosyalari degistirince ZXP imzasi gecersiz kaliyor
+  // ve Premiere bir sonraki acilista eklentiyi REDDEDIYOR:
+  //   ERROR Signature verification failed for extension com.tklabs.tkcaption.panel
+  // Tasima betigi imzayi kaldirmazsa her guncelleme eklentiyi oldurur.
+  const kok = fs.mkdtempSync(path.join(os.tmpdir(), 'tkc-imza-'));
+  const staging = path.join(kok, 'staging');
+  const hedef = path.join(kok, 'hedef');
+  yaz(staging, 'a.js', 'YENI');
+  yaz(hedef, 'a.js', 'ESKI');
+  yaz(hedef, 'META-INF/signatures.xml', '<imza/>');
+
+  const y = u.tasimaBetigiYaz(staging, hedef, [{ path: 'a.js' }]);
+  const sonuc = calistir(y);
+
+  t('tasima basarili', function () { esit(sonuc, 'OK'); });
+  t('dosya guncellendi', function () { esit(oku(hedef, 'a.js'), 'YENI'); });
+  t('gecersiz imza kaldirildi', function () {
+    esit(fs.existsSync(path.join(hedef, 'META-INF')), false);
+  });
+
+  fs.rmSync(kok, { recursive: true, force: true });
+}
+
 console.log('\n=== YAZILABILIRLIK OLCUMU ===');
 {
   t('gecici klasor yazilabilir', function () { esit(u.yazilabilir(os.tmpdir()), true); });
