@@ -33,14 +33,30 @@ const VAD_MODEL = {
 };
 
 /**
- * Windows binary secenekleri.
- * NOT: Resmi Vulkan yapisi YOKTUR. Secenekler CPU / BLAS / CUDA ile sinirlidir.
+ * Mac yapilari.
+ *
+ * OLCULEN: whisper.cpp Mac icin calistirilabilir YAYINLAMIYOR (yalnizca
+ * uygulamalara gomulecek xcframework). Bu yuzden ayni surumu kendi
+ * GitHub Actions is akisimizda derleyip kendi depomuzun surumune koyuyoruz:
+ * .github/workflows/whisper-mac.yml. Windows ile AYNI whisper.cpp surumu,
+ * ki iki platform ayni ciktiyi versin.
+ */
+const MAC_RELEASE = 'whisper-mac-' + WHISPER_RELEASE;
+const MAC_BASE = 'https://github.com/tevfikkemal/TKCaption/releases/download/' + MAC_RELEASE;
+
+/**
+ * Binary secenekleri.
+ * NOT: Windows icin resmi Vulkan yapisi YOKTUR; CPU / BLAS / CUDA ile sinirli.
+ * Mac yapilari Metal (GPU) + Accelerate ile derlenir; Apple Silicon'da
+ * ekran karti kendiliginden kullanilir.
  */
 const BINARIES = {
   cpu:    { asset: 'whisper-bin-x64.zip',              mb: 8,   note: 'Sade CPU. Her makinede calisir.' },
   blas:   { asset: 'whisper-blas-bin-x64.zip',         mb: 20,  note: 'CPU + OpenBLAS. Varsayilan evrensel secim.' },
   cuda11: { asset: 'whisper-cublas-11.8.0-bin-x64.zip', mb: 257, note: 'NVIDIA, eski suruculer (CUDA 11.8).' },
-  cuda12: { asset: 'whisper-cublas-12.4.0-bin-x64.zip', mb: 640, note: 'NVIDIA, guncel suruculer (CUDA 12.4).' }
+  cuda12: { asset: 'whisper-cublas-12.4.0-bin-x64.zip', mb: 640, note: 'NVIDIA, guncel suruculer (CUDA 12.4).' },
+  'mac-arm64': { asset: 'whisper-cli-macos-arm64.zip', base: MAC_BASE, mb: 1.2, note: 'Mac, Apple Silicon (M1 ve sonrasi). Metal.' },
+  'mac-x64':   { asset: 'whisper-cli-macos-x64.zip',   base: MAC_BASE, mb: 1.2, note: 'Mac, Intel islemci.' }
 };
 
 function repoRoot() { return path.resolve(__dirname, '..', '..'); }
@@ -262,6 +278,9 @@ function detectNvidia() {
 }
 
 function recommendVariant() {
+  // Premiere Rosetta altinda calisirsa process.arch 'x64' olur ve x64 yapisi
+  // da Rosetta altinda calisir. Sorulan islemci degil SURECIN mimarisi.
+  if (os.platform() === 'darwin') return process.arch === 'arm64' ? 'mac-arm64' : 'mac-x64';
   if (os.platform() !== 'win32') return 'blas';
   return detectNvidia() ? 'cuda12' : 'blas';
 }
@@ -294,7 +313,7 @@ async function ensureBinary(variant, onProgress) {
   const zip = path.join(binDir(), spec.asset);
   if (onProgress) onProgress({ phase: 'start', name: `whisper.cpp (${v})`, mb: spec.mb });
   if (!fs.existsSync(zip) || fs.statSync(zip).size < spec.mb * 1048576 * 0.9) {
-    await download(`${GH}/${WHISPER_RELEASE}/${spec.asset}`, zip, (p) => {
+    await download((spec.base || `${GH}/${WHISPER_RELEASE}`) + '/' + spec.asset, zip, (p) => {
       if (onProgress) onProgress({ phase: 'download', name: `whisper.cpp (${v})`, ...p });
     });
   }
@@ -302,6 +321,10 @@ async function ensureBinary(variant, onProgress) {
   extractZip(zip, target);
   exe = findExe(target);
   if (!exe) throw new Error(`Arsiv acildi ama calistirilabilir bulunamadi: ${target}`);
+  if (os.platform() !== 'win32') {
+    // Zip calistirma iznini her zaman tasimiyor; garantiye al
+    try { fs.chmodSync(exe, 0o755); } catch (_) {}
+  }
   try { fs.unlinkSync(zip); } catch (_) {}
   if (onProgress) onProgress({ phase: 'done', name: `whisper.cpp (${v})` });
   return { exe, variant: v, cached: false };

@@ -148,6 +148,79 @@ console.log('\n=== ZXP IMZASI KALDIRILIYOR ===');
   fs.rmSync(kok, { recursive: true, force: true });
 }
 
+/* ------------------------------------------------------------------ */
+/*  Mac betigi (POSIX sh). Windows'ta Git Bash'in sh'i ile calisir.     */
+/* ------------------------------------------------------------------ */
+
+function shBul() {
+  for (const aday of ['sh', 'C:\\Program Files\\Git\\bin\\sh.exe']) {
+    try { execFileSync(aday, ['-c', 'exit 0'], { stdio: 'ignore' }); return aday; } catch (_) {}
+  }
+  return null;
+}
+const SH = shBul();
+
+function shCalistir(y) {
+  try {
+    execFileSync(SH, [y.betik], { stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000 });
+  } catch (_) { /* hata yolunda exit 1; sonuc dosyasina bakiyoruz */ }
+  return fs.existsSync(y.sonuc) ? fs.readFileSync(y.sonuc, 'utf8').trim() : '';
+}
+
+if (!SH) {
+  console.log('\n(sh bulunamadi — Mac betigi testleri atlandi)');
+} else {
+  console.log('\n=== MAC: BASARILI TASIMA ===');
+  {
+    const kok = fs.mkdtempSync(path.join(os.tmpdir(), 'tkc-mac-'));
+    const staging = path.join(kok, 'staging');
+    const hedef = path.join(kok, "he def 'x");
+    const files = [{ path: 'core/a.js' }, { path: 'yeni/c.js' }];
+    files.forEach(function (f) { yaz(staging, f.path, 'YENI ' + f.path); });
+    yaz(hedef, 'core/a.js', 'ESKI core/a.js');
+    yaz(hedef, 'META-INF/signatures.xml', '<imza/>');
+
+    const y = u.macTasimaBetigiYaz(staging, hedef, files);
+    const sonuc = shCalistir(y);
+
+    t('sonuc OK', function () { esit(sonuc, 'OK'); });
+    t('var olan dosya guncellendi', function () { esit(oku(hedef, 'core/a.js'), 'YENI core/a.js'); });
+    t('yeni klasor acildi', function () { esit(oku(hedef, 'yeni/c.js'), 'YENI yeni/c.js'); });
+    t('eski surum yedeklendi', function () { esit(oku(y.yedek, 'core/a.js'), 'ESKI core/a.js'); });
+    t('imza kaldirildi', function () { esit(fs.existsSync(path.join(hedef, 'META-INF')), false); });
+
+    fs.rmSync(kok, { recursive: true, force: true });
+  }
+
+  console.log('\n=== MAC: YARIDA KALAN TASIMA GERI ALINIYOR ===');
+  {
+    const kok = fs.mkdtempSync(path.join(os.tmpdir(), 'tkc-macgeri-'));
+    const staging = path.join(kok, 'staging');
+    const hedef = path.join(kok, 'hedef');
+    const files = [{ path: 'a.js' }, { path: 'eksik.js' }, { path: 'c.js' }];
+    yaz(staging, 'a.js', 'YENI a');
+    yaz(staging, 'c.js', 'YENI c');
+    yaz(hedef, 'a.js', 'ESKI a');
+    yaz(hedef, 'eksik.js', 'ESKI eksik');
+    yaz(hedef, 'c.js', 'ESKI c');
+    yaz(hedef, 'META-INF/signatures.xml', '<imza/>');
+
+    const y = u.macTasimaBetigiYaz(staging, hedef, files);
+    const sonuc = shCalistir(y);
+
+    t('sonuc HATA bildiriyor', function () {
+      if (sonuc.indexOf('HATA') !== 0) throw new Error('gelen: ' + sonuc);
+    });
+    t('yazilan dosya eski haline dondu', function () { esit(oku(hedef, 'a.js'), 'ESKI a'); });
+    t('sonraki dosyaya dokunulmadi', function () { esit(oku(hedef, 'c.js'), 'ESKI c'); });
+    t('basarisizlikta imza yerinde', function () {
+      esit(fs.existsSync(path.join(hedef, 'META-INF')), true);
+    });
+
+    fs.rmSync(kok, { recursive: true, force: true });
+  }
+}
+
 console.log('\n=== YAZILABILIRLIK OLCUMU ===');
 {
   t('gecici klasor yazilabilir', function () { esit(u.yazilabilir(os.tmpdir()), true); });

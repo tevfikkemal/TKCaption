@@ -1,7 +1,7 @@
 {
-  "version": "0.9.27",
-  "updated": "2026-09-23T10:11:09.288Z",
-  "notes": "guncelleme artik ZXP imzasini kaldiriyor",
+  "version": "0.9.28",
+  "updated": "2026-09-24T13:31:26.660Z",
+  "notes": "Mac destegi (deneme): motor, kurulum betigi, guncelleme",
   "files": [
     {
       "path": "core/package.json",
@@ -31,7 +31,7 @@
     {
       "path": "core/src/models.js",
       "source": "core/src/models.js",
-      "sha": "41d189b9ba75db0958b9d924d2cd10ff04a16f221fcc8a4181f8329d25601d90"
+      "sha": "9c639881b9ee0a5c38f733892e536ca8f4ddbdb43d120f1d3c05520893e847e3"
     },
     {
       "path": "core/src/mogrt.js",
@@ -76,7 +76,7 @@
     {
       "path": "core/src/updater.js",
       "source": "core/src/updater.js",
-      "sha": "2a85e59da6a40d33c34a7ebdc5f9623d717de6a903b42a669fc760ed591dca9d"
+      "sha": "75367eb3a9bae16bfa53591b29694a4f42b36c47ff7c77927e8adabb353a31ca"
     },
     {
       "path": "core/src/vad.js",
@@ -101,7 +101,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "474f3e00bb845a9a59e918a72fee24ae810cb66d42d61bfb8562db198b57fe11"
+      "sha": "eb45f5160541f1f4ffba7d46f83388045e415e9d625794c30dfb3d0c7f068d0b"
     },
     {
       "path": "index.html",
@@ -116,12 +116,12 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "60bd159608483353fe299139526e2d0d33fb87daa73c12eacc7ed8e8569aa9aa"
+      "sha": "0ea7f0a3c7527c515990f07092c09ed29c9b8815d253e2ca2e90ca115916ab1f"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "6a1f7f14d298a061eccad2a921e97a6be4af5e5e2240e5a6d1db4d0b4e074a2a"
+      "sha": "a5cf24d98370c933b0739a87c346e103cff094d28eaedf09252a92c2f27e2d2b"
     },
     {
       "path": "LICENSE",

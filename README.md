@@ -37,6 +37,16 @@ Altyazıları düz bölmez, Türkçe'ye göre böler: `geldi | de`, `açıklamay
 
 **3.** Premiere'i açın → **Pencere → Uzantılar → TK Caption**
 
+### Mac (deneme aşamasında)
+
+ZXP Installer Mac'te bu paketi kurmayabiliyor; onun yerine **Terminal**'i açıp (Uygulamalar → İzlenceler → Terminal) şu satırı yapıştırın, Enter'a basın:
+
+```
+curl -fsSL https://raw.githubusercontent.com/tevfikkemal/TKCaption/main/tools/install-mac.sh | bash
+```
+
+Parola sormaz. Sonra Premiere'i tamamen kapatıp (Cmd+Q) açın → **Pencere → Uzantılar → TK Caption**. Apple Silicon (M1 ve sonrası) Mac'lerde ekran kartı kullanılır.
+
 **İlk çalıştırmada** konuşma tanıma modeli iner (~570 MB). Bir kez iner, sonra internet gerekmez. NVIDIA ekran kartınız varsa daha hızlı çalışan sürüm otomatik seçilir.
 
 ## Kullanım
@@ -62,7 +72,7 @@ Neden böyle: Premiere, altyazı timeline'ı bir kez yerleştikten sonra eklenti
 
 ## Güncelleme
 
-Panel yeni sürüm çıkınca kendisi haber verir. **Güncelle**'ye basın, Windows izin isterse **Evet** deyin, sonra sağ üstteki yenileme düğmesine basın. Premiere'i kapatmanız gerekmez.
+Panel yeni sürüm çıkınca kendisi haber verir. **Güncelle**'ye basın, Windows izin isterse **Evet** deyin (Mac'te parola isteyebilir), sonra sağ üstteki yenileme düğmesine basın. Premiere'i kapatmanız gerekmez.
 
 ## Sık sorulanlar
 
@@ -73,7 +83,7 @@ Hayır. Her şey bilgisayarınızda çalışır. İnternet yalnızca ilk kurulum
 Premiere Pro 2026 (26.x) üzerinde test edildi. 2025 (25.x) sürümüne kurulur ama orada denenmedi — sorun yaşarsanız bildirin.
 
 **Mac'te çalışır mı?**
-Şu an yalnızca Windows.
+Deneme aşamasında — kurulum yukarıda. Sorun yaşarsanız panelin altındaki **Sorun giderme** raporunu gönderin.
 
 **Altyazılar ekranda üç satıra sarıyor.**
 Premiere altyazıyı kendi yazı tipiyle çizer ve bu tip geniştir. Ayarlar'dan satır uzunluğunu 30–34'e düşürün.

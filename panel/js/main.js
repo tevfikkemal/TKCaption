@@ -88,6 +88,7 @@
   var npath = nodeReq ? nodeReq('path') : null;
   var nfs = nodeReq ? nodeReq('fs') : null;
   var nos = nodeReq ? nodeReq('os') : null;
+  var MAC = /Mac/i.test((typeof navigator !== 'undefined' && navigator.platform) || '');
 
   var coreDir = null;
 
@@ -479,7 +480,7 @@
          r.files.length + ' dosyayı yeniler; Premiere’i yeniden başlatmanız gerekir.');
       // ZXP ile sistem klasorune kurulduysa yazma yetkisi yok; kullanici
       // UAC istemiyle karsilasacagini onceden bilsin.
-      if (r.writable === false) not += ' Windows yönetici izni isteyecek.';
+      if (r.writable === false) not += MAC ? ' Mac yönetici parolası isteyecek.' : ' Windows yönetici izni isteyecek.';
       setText('updateNote', not);
     }).catch(function (e) {
       // Sessizce yutmak, "guncelleme cikmadi" dendiginde sebebi
@@ -502,7 +503,8 @@
       $('updateFill').style.width = Math.round(pct * 100) + '%';
       if (p.phase === 'yetki') {
         // UAC penceresi acilirken panel donmus gorunur; ne bekledigini yaz.
-        setText('updateNote', 'Windows yetki penceresi açılıyor — “Evet” deyin.');
+        setText('updateNote', MAC ? 'Mac parola penceresi açılıyor — parolanızı girin.'
+          : 'Windows yetki penceresi açılıyor — “Evet” deyin.');
       } else if (p.file) {
         setText('updateNote', 'İndiriliyor: ' + p.file);
       }
@@ -1287,7 +1289,9 @@
    */
   /** Yerel bir dosyayi img src'de gosterilebilir hale getirir */
   function dosyaUrl(p) {
-    return 'file:///' + String(p).replace(/\\/g, '/').split('/').map(encodeURIComponent).join('/');
+    // Mac yolu '/' ile basliyor; basina bir tane daha eklenirse file://// olur
+    return 'file:///' + String(p).replace(/\\/g, '/').replace(/^\/+/, '')
+      .split('/').map(encodeURIComponent).join('/');
   }
 
   function kartlariCiz() {
@@ -2307,7 +2311,9 @@
     var host = CEP.hostEnvironment();
     text = 'TK Caption teşhis raporu\n' +
            (host ? host.appName + ' ' + host.appVersion + '\n' : '') +
-           'Node: ' + (CEP.nodeVersion() || 'yok') + '\n\n' + text;
+           'Node: ' + (CEP.nodeVersion() || 'yok') +
+           (nos ? '  ·  ' + nos.platform() + ' ' + nos.release() + ' ' + nos.arch() : '') +
+           '\n\n' + text;
     try {
       var ta = document.createElement('textarea');
       ta.value = text;

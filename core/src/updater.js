@@ -208,13 +208,22 @@ function imzayiKaldir(extensionDir) {
  * HKCU altinda; yonetici gerektirmiyor.
  */
 function debugModuAc() {
-  if (os.platform() !== 'win32') return false;
+  const plat = os.platform();
+  if (plat !== 'win32' && plat !== 'darwin') return false;
   let hepsi = true;
   for (let v = 9; v <= 14; v++) {
     try {
-      execFileSync('reg', ['add', 'HKCU\\Software\\Adobe\\CSXS.' + v,
-        '/v', 'PlayerDebugMode', '/t', 'REG_SZ', '/d', '1', '/f'],
-        { stdio: 'ignore', timeout: 10000 });
+      if (plat === 'win32') {
+        execFileSync('reg', ['add', 'HKCU\\Software\\Adobe\\CSXS.' + v,
+          '/v', 'PlayerDebugMode', '/t', 'REG_SZ', '/d', '1', '/f'],
+          { stdio: 'ignore', timeout: 10000 });
+      } else {
+        // Mac karsiligi kullanici tercihleri; yonetici gerektirmiyor.
+        // Dogrudan plist yazmak cfprefsd onbellegi yuzunden etkisiz
+        // kalabilir — defaults onun uzerinden yazar.
+        execFileSync('defaults', ['write', 'com.adobe.CSXS.' + v, 'PlayerDebugMode', '1'],
+          { stdio: 'ignore', timeout: 10000 });
+      }
     } catch (e) { hepsi = false; }
   }
   return hepsi;
@@ -339,6 +348,84 @@ function tasimaBetigiYaz(staging, extensionDir, files) {
   return { betik: betikYolu, liste: listeYolu, sonuc: sonucYolu, yedek: yedekYolu };
 }
 
+/**
+ * tasimaBetigiYaz'in Mac karsiligi: ayni is, POSIX sh ile.
+ *
+ * Mac'te ZXP Installer /Library/Application Support/Adobe/CEP/extensions
+ * altina kuruyor; orasi da yonetici ister. Betik osascript ile parola
+ * sorularak calistiriliyor. Ayni sekilde yukseltmeden test edilebilsin
+ * diye uretim ayri.
+ */
+function macTasimaBetigiYaz(staging, extensionDir, files) {
+  const listeYolu = path.join(staging, '_liste.txt');
+  const betikYolu = path.join(staging, '_uygula.sh');
+  const sonucYolu = path.join(staging, '_sonuc.txt');
+  const yedekYolu = path.join(staging, '_yedek');
+
+  fs.writeFileSync(listeYolu, files.map(function (f) { return f.path; }).join('\n') + '\n', 'utf8');
+
+  const betik = [
+    '#!/bin/sh',
+    'STAGING=' + shStr(staging),
+    'HEDEF=' + shStr(extensionDir),
+    'YEDEK=' + shStr(yedekYolu),
+    'SONUC=' + shStr(sonucYolu),
+    'LISTE=' + shStr(listeYolu),
+    'YAZILAN="$YEDEK/.yazilan"',
+    'mkdir -p "$YEDEK" && : > "$YAZILAN" || { echo "HATA: yedek klasoru acilamadi" > "$SONUC"; exit 1; }',
+    'geri_al() {',
+    '  while IFS= read -r g; do',
+    '    [ -f "$YEDEK/$g" ] && cp -p "$YEDEK/$g" "$HEDEF/$g"',
+    '  done < "$YAZILAN"',
+    '  echo "HATA: $1" > "$SONUC"',
+    '  exit 1',
+    '}',
+    'while IFS= read -r p || [ -n "$p" ]; do',
+    '  [ -z "$p" ] && continue',
+    '  [ -f "$STAGING/$p" ] || geri_al "indirilen dosya yok: $p"',
+    '  mkdir -p "$(dirname "$HEDEF/$p")" || geri_al "klasor acilamadi: $p"',
+    '  if [ -f "$HEDEF/$p" ]; then',
+    '    mkdir -p "$(dirname "$YEDEK/$p")" && cp -p "$HEDEF/$p" "$YEDEK/$p" || geri_al "yedeklenemedi: $p"',
+    '  fi',
+    '  cp "$STAGING/$p" "$HEDEF/$p" || geri_al "kopyalanamadi: $p"',
+    '  echo "$p" >> "$YAZILAN"',
+    'done < "$LISTE"',
+    '# Imza artik gecersiz: dosyalar degisti (bkz. imzayiKaldir)',
+    'rm -rf "$HEDEF/META-INF"',
+    'echo OK > "$SONUC"',
+    ''
+  ].join('\n');
+  fs.writeFileSync(betikYolu, betik, 'utf8');
+
+  return { betik: betikYolu, liste: listeYolu, sonuc: sonucYolu, yedek: yedekYolu };
+}
+
+/** Mac: betigi yonetici parolasi sorarak calistirir. */
+function macYukseltilmisTasi(staging, extensionDir, files) {
+  const y = macTasimaBetigiYaz(staging, extensionDir, files);
+  try { fs.unlinkSync(y.sonuc); } catch (_) {}
+
+  // AppleScript dizgisi: ters egik cizgi ve cift tirnak kacirilir
+  const as = (s) => '"' + String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+  const komut = 'do shell script "/bin/sh " & quoted form of ' + as(y.betik) +
+    ' with prompt ' + as('TK Caption güncellemesi eklenti klasörüne yazmak istiyor.') +
+    ' with administrator privileges';
+  try {
+    execFileSync('osascript', ['-e', komut], { stdio: ['ignore', 'pipe', 'pipe'], timeout: 300000 });
+  } catch (e) {
+    if (!fs.existsSync(y.sonuc)) {
+      throw new Error('Yönetici izni verilmedi. Güncelleme yapılamadı.');
+    }
+  }
+  const sonuc = fs.existsSync(y.sonuc) ? fs.readFileSync(y.sonuc, 'utf8').trim() : '';
+  if (sonuc !== 'OK') throw new Error(sonuc || 'Yükseltilmiş kopyalama sonuç vermedi.');
+}
+
+/** POSIX sh tek tirnakli dizgi */
+function shStr(s) {
+  return "'" + String(s).replace(/'/g, "'\\''") + "'";
+}
+
 /** PowerShell tek tirnakli dizgi — icerideki tek tirnak ikilenir */
 function psStr(s) {
   return "'" + String(s).replace(/'/g, "''") + "'";
@@ -406,7 +493,8 @@ async function apply(extensionDir, manifest, onProgress) {
   if (!yazilabilir(extensionDir)) {
     if (onProgress) onProgress({ done: files.length, total: files.length, file: '', phase: 'yetki' });
     try {
-      yukseltilmisTasi(staging, extensionDir, inen);
+      if (os.platform() === 'darwin') macYukseltilmisTasi(staging, extensionDir, inen);
+      else yukseltilmisTasi(staging, extensionDir, inen);
     } finally {
       try { fs.rmSync(staging, { recursive: true, force: true }); } catch (_) {}
     }
@@ -471,6 +559,6 @@ async function apply(extensionDir, manifest, onProgress) {
 }
 
 module.exports = {
-  check, apply, fetchManifest, installedVersion, yazilabilir, tasimaBetigiYaz,
+  check, apply, fetchManifest, installedVersion, yazilabilir, tasimaBetigiYaz, macTasimaBetigiYaz,
   isNewer, parseVersion, sha256, RAW_BASE, MANIFEST_URL, API_BASE, fetchRepoFile, apiDurumu, imzayiKaldir, debugModuAc
 };

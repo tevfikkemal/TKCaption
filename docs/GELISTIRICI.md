@@ -254,3 +254,34 @@ MIT. Kullanın, değiştirin, dağıtın. Satmayın demiyorum — satın da, ama
 ---
 
 *Türkiye'ye armağandır.*
+
+## Mac
+
+**Motor:** whisper.cpp Mac için çalıştırılabilir yayınlamıyor (yalnızca
+xcframework). `.github/workflows/whisper-mac.yml` aynı sürümü
+(`WHISPER_RELEASE`, şu an b4938) GitHub'ın Mac sunucularında derler:
+arm64 Metal + Accelerate, x64 yalnızca CPU + Accelerate (Intel Mac GPU'larında
+Metal güvenilir değil). Tek dosya, yalnızca sistem kütüphanelerine bağlı,
+ad-hoc imzalı. İş akışı her yapıyı `samples/jfk.wav` ile eklentinin
+kullandığı bayraklarla (VAD dahil) çalıştırıp dener, sonra
+`whisper-mac-<sürüm>` etiketli sürüme koyar. Panel oradan indirir.
+
+whisper.cpp sürümü değişirse: `core/src/models.js` ve iş akışındaki
+`WHISPER_RELEASE` birlikte değişmeli, iş akışı elle çalıştırılmalı.
+
+**Kurulum:** `tools/install-mac.sh`. Kullanıcı Terminal'e tek satır
+yapıştırır; betik `update.json`'daki sürümün `v<sürüm>` etiketini indirir
+(yoksa main), `tools/build.js` ile aynı yerleşimi kurar ve
+`~/Library/Application Support/Adobe/CEP/extensions` altına koyar.
+Kullanıcı klasörü olduğu için ne kurulum ne güncelleme parola ister.
+**Bu yüzden her yayından sonra `git tag v<sürüm> && git push --tags`.**
+
+**Güncelleme:** `PlayerDebugMode` Mac'te `defaults write com.adobe.CSXS.N`
+ile açılır. Eklenti ZXP ile `/Library/...` altına kurulmuşsa taşıma betiği
+(`macTasimaBetigiYaz`, POSIX sh) `osascript ... with administrator
+privileges` ile parola sorularak çalışır; Windows betiği gibi yükseltmeden
+test edilir (`updater-elevated.test.js`, Git Bash'in `sh`'ı ile).
+
+**Ses preset'i:** Mac'te `Folder.startup` `.app/Contents/MacOS` gösterir;
+`Settings/EncoderPresets` bir üst klasördedir. `presetFolders()` yukarı
+doğru üç seviye bakar. Bulamazsa hata ayrıntısında bakılan yolları yazar.

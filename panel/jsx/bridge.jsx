@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.9.27';
+var TR_ALTYAZI_VERSION = '0.9.28';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -272,10 +272,27 @@ function isExportPreset(file) {
 
 function presetFolders() {
     var list = [];
-    try { list.push(Folder.startup.fsName + '/Settings/EncoderPresets'); } catch (e) {}
+    // Windows'ta Settings, exe'nin yanindadir. Mac'te Folder.startup
+    // ".app/Contents/MacOS" gosterir, Settings ise bir ust klasordedir
+    // (".app/Contents/Settings"). Yukari dogru birkac seviye bakmak ikisini
+    // de karsilar.
+    try {
+        var d = Folder.startup;
+        for (var i = 0; i < 3 && d; i++) {
+            list.push(d.fsName + '/Settings/EncoderPresets');
+            d = d.parent;
+        }
+    } catch (e) {}
     // Folder.startup guvenilmezse bilinen konumlar
-    list.push('C:/Program Files/Adobe/Adobe Premiere Pro 2026/Settings/EncoderPresets');
-    list.push('C:/Program Files/Adobe/Adobe Premiere Pro 2025/Settings/EncoderPresets');
+    var yillar = ['2026', '2025', '2027'];
+    for (var y = 0; y < yillar.length; y++) {
+        var ad = 'Adobe Premiere Pro ' + yillar[y];
+        if ($.os.indexOf('Windows') >= 0) {
+            list.push('C:/Program Files/Adobe/' + ad + '/Settings/EncoderPresets');
+        } else {
+            list.push('/Applications/' + ad + '/' + ad + '.app/Contents/Settings/EncoderPresets');
+        }
+    }
     return list;
 }
 
@@ -303,7 +320,7 @@ function collectPresets() {
 function trFindAudioPreset() {
     try {
         var list = collectPresets();
-        if (!list.length) return err('Kullanilabilir ses disa aktarma preset bulunamadi.');
+        if (!list.length) return err('Kullanilabilir ses disa aktarma preset bulunamadi.', 'Bakilan: ' + presetFolders().join(' ; '));
         var names = [];
         for (var i = 0; i < list.length; i++) names.push(list[i].name);
         return ok([
@@ -388,7 +405,7 @@ function trExportAudioAuto(outPath, rangeType, sesPistleri) {
         outPath = toNativePath(outPath);
 
         var list = collectPresets();
-        if (!list.length) return err('Kullanilabilir ses disa aktarma preset bulunamadi.');
+        if (!list.length) return err('Kullanilabilir ses disa aktarma preset bulunamadi.', 'Bakilan: ' + presetFolders().join(' ; '));
 
         /* ARALIK TURU — sabit sayi YAZMA.
          *
