@@ -1,0 +1,122 @@
+# whisper.cpp'yi Mac icin derler ve bu deponun surumune koyar.
+#
+# NEDEN: whisper.cpp Mac icin calistirilabilir yayinlamiyor (yalnizca
+# uygulamalara gomulecek xcframework). Eklenti ise whisper-cli'yi alt surec
+# olarak calistiriyor. Windows'ta resmi yapilari kullaniyoruz; Mac'te ayni
+# surumu burada derliyoruz ki iki platform ayni ciktiyi versin.
+#
+# Surum core/src/models.js'teki WHISPER_RELEASE ile AYNI olmali; panel
+# "whisper-mac-<surum>" etiketli surumden indiriyor.
+#
+# Iki yapi:
+#   arm64 (Apple Silicon): Metal (GPU) + Accelerate. Asil hedef.
+#   x64   (Intel Mac)    : CPU + Accelerate. Metal KAPALI — Intel Mac'lerin
+#                          GPU'larinda whisper.cpp Metal'i guvenilir degil.
+
+name: whisper-mac
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/whisper-mac.yml']
+
+env:
+  WHISPER_RELEASE: b4938
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-15
+            cmake_extra: -DGGML_METAL=ON -DGGML_METAL_EMBED_LIBRARY=ON
+          - arch: x64
+            runner: macos-15-intel
+            # macOS 12+ calistiran her Intel Mac (2015 ve sonrasi) AVX2/FMA destekler
+            cmake_extra: -DGGML_METAL=OFF -DGGML_AVX=ON -DGGML_AVX2=ON -DGGML_FMA=ON -DGGML_F16C=ON
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ggml-org/whisper.cpp
+          ref: ${{ env.WHISPER_RELEASE }}
+
+      - name: Derle
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DGGML_NATIVE=OFF \
+            -DGGML_BLAS=ON \
+            -DWHISPER_BUILD_TESTS=OFF \
+            -DWHISPER_BUILD_SERVER=OFF \
+            -DWHISPER_SDL2=OFF \
+            -DWHISPER_CURL=OFF \
+            ${{ matrix.cmake_extra }}
+          cmake --build build --config Release -j 4 --target whisper-cli
+          file build/bin/whisper-cli
+
+      - name: Bagimliliklar yalnizca sistem kutuphaneleri mi
+        # Eklenti tek dosya indiriyor; yanina .dylib gelmez. Sistem disi
+        # bir bagimlilik varsa kullanicida calismaz — burada durdur.
+        run: |
+          otool -L build/bin/whisper-cli
+          if otool -L build/bin/whisper-cli | tail -n +2 | grep -v -E '^\s+(/usr/lib/|/System/Library/)'; then
+            echo "Sistem disi bagimlilik var"; exit 1
+          fi
+
+      - name: Imzala (ad-hoc)
+        # Apple Silicon imzasiz calistirilabiliri hic calistirmaz. Ad-hoc
+        # imza yeterli: indirmeyi tarayici degil Node yaptigi icin dosyada
+        # karantina isareti olmuyor, Gatekeeper devreye girmiyor.
+        run: codesign --force --sign - build/bin/whisper-cli
+
+      - name: Gercek ses ile dene
+        run: |
+          curl -fsSL -o tiny.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin
+          curl -fsSL -o vad.bin https://huggingface.co/ggml-org/whisper-vad/resolve/main/ggml-silero-v5.1.2.bin
+          # Eklentinin kullandigi bayraklarin aynisi: token JSON, ilerleme, VAD, DTW yok (tiny)
+          ./build/bin/whisper-cli -m tiny.bin -f samples/jfk.wav -l en -t 4 \
+            -of out -ojf -pp -mc 0 --suppress-nst --vad --vad-model vad.bin
+          grep -i "ask not" out.json
+
+      - name: Paketle
+        run: |
+          mkdir paket
+          cp build/bin/whisper-cli paket/
+          cp LICENSE paket/LICENSE-whisper.cpp.txt
+          cd paket && zip -X ../whisper-cli-macos-${{ matrix.arch }}.zip whisper-cli LICENSE-whisper.cpp.txt
+          ls -l ../whisper-cli-macos-${{ matrix.arch }}.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: whisper-cli-macos-${{ matrix.arch }}
+          path: whisper-cli-macos-${{ matrix.arch }}.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+      - name: Surume koy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="whisper-mac-${WHISPER_RELEASE}"
+          ls -l *.zip
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" *.zip --clobber -R "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" *.zip -R "$GITHUB_REPOSITORY" \
+              --title "whisper.cpp ${WHISPER_RELEASE} — macOS" \
+              --notes "TK Caption'in Mac'te kullandigi whisper-cli. ggml-org/whisper.cpp ${WHISPER_RELEASE} surumunden derlendi (MIT). Panel bunu kendisi indirir; elle indirmeniz gerekmez."
+          fi
