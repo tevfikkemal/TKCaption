@@ -68,6 +68,22 @@ const o2 = pp.processWords(w2, cfg);
 eq(o2.length, 3, 'birlesme durumunda kelime sayisi korundu (zaman damgasi guvende)');
 eq(o2[2].start + '/' + o2[2].end, '0.9/1.6', 'son kelimenin zamani korundu');
 
+// KULLANICI BULDU: guvenli yolda her kelime ayri cumle sayilip ilk harfi
+// buyutuluyordu ("Takip Et, Kaydet"). Yalnizca gercek cumle basi buyumeli.
+const w3 = [
+  { text: 'takip', start: 0, end: 0.3 },
+  { text: 'et', start: 0.3, end: 0.5 },
+  { text: ',', start: 0.5, end: 0.5 },      // tek basina virgul: sayiyi degistirir
+  { text: 'kaydet.', start: 0.5, end: 0.9 },
+  { text: 'bu', start: 1.0, end: 1.1 },
+  { text: 'yeni', start: 1.1, end: 1.3 },
+  { text: 'istanbul', start: 1.3, end: 1.8 }
+];
+const o3 = pp.processWords(w3, cfg);
+eq(o3.length, 7, 'guvenli yol: kelime sayisi korundu');
+eq(o3.map((w) => w.text).join(' '), 'Takip et , kaydet. Bu yeni istanbul',
+  'guvenli yol: yalnizca cumle baslari buyuk');
+
 console.log('\n================================');
 console.log(fail === 0 ? 'TUM TESTLER GECTI' : fail + ' TEST BASARISIZ');
 process.exit(fail === 0 ? 0 : 1);

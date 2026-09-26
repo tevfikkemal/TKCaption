@@ -134,8 +134,9 @@ function applyDictionary(text, dictionary) {
 }
 
 /** Tek bir metin parcasini isle */
-function processText(text, cfg) {
+function processText(text, cfg, opts) {
   const T = (cfg && cfg.turkish) || {};
+  const cumleBasi = !(opts && opts.cumleBasi === false);
   if (!T.enabled) return text;
   let out = text;
 
@@ -150,7 +151,7 @@ function processText(text, cfg) {
     const proper = BUILTIN_PROPER.concat(dict.proper.filter(Boolean));
     out = applyApostrophes(out, proper);
   }
-  out = fixSentenceCase(out);
+  if (cumleBasi) out = fixSentenceCase(out);
   return out;
 }
 
@@ -171,9 +172,21 @@ function processWords(words, cfg) {
     return words.map((w, i) => Object.assign({}, w, { text: parts[i] }));
   }
 
-  // Kelime sayisi kaydi (ör. "2000 de" -> "2000'de" birlesti).
+  // Kelime sayisi kaydi (ör. "2000 de" -> "2000'de" birlesti, ya da tek
+  // basina gelen bir virgul onceki kelimeye yapisti).
   // Zaman damgasini bozmamak icin kelime bazinda tek tek isleriz.
-  return words.map((w) => Object.assign({}, w, { text: processText(w.text, cfg) }));
+  //
+  // KULLANICI BULDU: burada her kelime processText'e AYRI BIR CUMLE gibi
+  // gidiyordu ve fixSentenceCase her birinin ilk harfini buyutuyordu —
+  // altyazi "Her Kelimesi Buyuk" cikiyordu. Cumle basi kelimeye bakarak
+  // karar verilemez; bir onceki kelimeye bakmak gerekir.
+  let oncekiBitti = true;   // metnin ilk kelimesi cumle basidir
+  return words.map((w) => {
+    let t = processText(w.text, cfg, { cumleBasi: false });
+    if (oncekiBitti && /\p{Ll}/u.test(t.charAt(0))) t = upperFirstTr(t);
+    if (t) oncekiBitti = /[.!?]["”’']?$/.test(t);
+    return Object.assign({}, w, { text: t });
+  });
 }
 
 module.exports = {

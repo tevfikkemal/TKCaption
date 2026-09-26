@@ -1,7 +1,7 @@
 {
-  "version": "0.9.28",
-  "updated": "2026-09-24T13:31:26.660Z",
-  "notes": "Mac destegi (deneme): motor, kurulum betigi, guncelleme",
+  "version": "0.9.29",
+  "updated": "2026-09-26T13:14:20.974Z",
+  "notes": "altyazida her kelimenin buyuk harfle baslamasi duzeltildi",
   "files": [
     {
       "path": "core/package.json",
@@ -46,7 +46,7 @@
     {
       "path": "core/src/postprocess.js",
       "source": "core/src/postprocess.js",
-      "sha": "2267ec830899963e465f033dfc91741ec6d26998c3dfeff3574b7adc101b7b1f"
+      "sha": "8ced38744325f6b657eb54818a6c260f0ccf30553bac132762970f2d51127631"
     },
     {
       "path": "core/src/safezone.js",
@@ -101,7 +101,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "eb45f5160541f1f4ffba7d46f83388045e415e9d625794c30dfb3d0c7f068d0b"
+      "sha": "d3337f5a487920e4603d23cfe1ae00234d4b98cb49feb28e6b7173c62e4281da"
     },
     {
       "path": "index.html",
@@ -121,7 +121,7 @@
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "a5cf24d98370c933b0739a87c346e103cff094d28eaedf09252a92c2f27e2d2b"
+      "sha": "4957f7153862ebb04b91ba910bc5275567dc983c5eacc4202f5042ea6d762f8e"
     },
     {
       "path": "LICENSE",
