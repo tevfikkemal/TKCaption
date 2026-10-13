@@ -340,6 +340,23 @@ function writeUpdateManifest(version, notes) {
     if (/CRLF/.test(e.message)) throw e;
   }
 
+  // GIT'E EKLENMEMIS DOSYA.
+  // OLCULEN (0.10.3): panel/ altina kopyalanmis ama commit'lenmemis 62
+  // yazi tipi bildirime girdi. Diskte vardi, .gitignore'da yoktu — ama
+  // depoda da yoktu; guncelleme her birinde 404 alirdi.
+  try {
+    const izli = new Set(execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' })
+      .split('\n').map((s) => s.trim()).filter(Boolean));
+    const eksik = files.map((f) => f.source).filter((p) => !izli.has(p));
+    if (eksik.length) {
+      throw new Error('Git\'e eklenmemis ' + eksik.length + ' dosya bildirime girecekti:\n  ' +
+                      eksik.slice(0, 10).join('\n  ') + (eksik.length > 10 ? '\n  ...' : '') +
+                      '\nCommit\'leyin ya da panel/ disina tasiyin.');
+    }
+  } catch (e) {
+    if (/eklenmemis/.test(e.message)) throw e;
+  }
+
   // Depoda gercekten var mi? Yoksa guncelleme 404 alir.
   //
   // DISKTE OLMASI YETMIYOR — git'e girmesi de gerekiyor. Guncelleme

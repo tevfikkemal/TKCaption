@@ -1,7 +1,7 @@
 {
-  "version": "0.10.2",
-  "updated": "2026-10-13T08:17:16.609Z",
-  "notes": "Yazi Studyosu: 24 giris + 6 cikis animasyonu",
+  "version": "0.10.3",
+  "updated": "2026-10-13T08:44:40.861Z",
+  "notes": "ffmpeg (yalnizca ses okuma, ~1 MB) Ayarlar > Bilesenler",
   "files": [
     {
       "path": "core/package.json",
@@ -36,7 +36,7 @@
     {
       "path": "core/src/models.js",
       "source": "core/src/models.js",
-      "sha": "9c639881b9ee0a5c38f733892e536ca8f4ddbdb43d120f1d3c05520893e847e3"
+      "sha": "3e571388fb6e37237a1b7cadda5b3ec9be34e480621e3cb1f3d33e1cac7f2167"
     },
     {
       "path": "core/src/mogrt.js",
@@ -111,7 +111,7 @@
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "52497c0a0abeaad76d0877c20d6f5c2e4b04e7e681832cf4d0eb6212b37af877"
+      "sha": "48c23ff99a714c54421cb05105a8bd7d33d124436b06d3cc711b40c59f3da8de"
     },
     {
       "path": "fonts/Anton.ttf",
@@ -146,7 +146,7 @@
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "1329b3e4bb0322670d286cc5a9d3d0b003be5f993120f14c4658474f4e6efc40"
+      "sha": "a898d2372e7d09cc76cbc701ae96e702fb323104b3835bb221eaa9d666b91124"
     },
     {
       "path": "js/cep.js",
@@ -156,7 +156,7 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "fdcfb9384b362c7e3c6e7835d8cd1f10bfc3c5c052ae82c6c75df14a8c16445e"
+      "sha": "c78eae658a62694243228402a27fb5ad50039e10ee3576448c88d6d44a32b6c5"
     },
     {
       "path": "js/yazi.js",
@@ -166,7 +166,7 @@
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "18d20c875ff367a4754f9873880291bab88f486cc46240f2761bafdeb5dcf8ff"
+      "sha": "4e4f8f3fc5ca8e27ede90bfe363a5b51cf123d04ae2a2a800115371e275c46fe"
     },
     {
       "path": "LICENSE",

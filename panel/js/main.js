@@ -2595,8 +2595,43 @@
     } catch (e) { subsNot('Kaydedilemedi: ' + e.message); }
   }
 
+  /* ---------------------------------------------------------------- */
+  /*  ffmpeg                                                           */
+  /* ---------------------------------------------------------------- */
+
+  function ffmpegModul() {
+    try { return nodeReq(npath.join(resolveCore(), 'src', 'models.js')); } catch (e) { return null; }
+  }
+
+  function ffmpegDurum() {
+    var m = ffmpegModul();
+    var btn = $('btnFfmpeg');
+    if (!m || !m.findFfmpeg) { field('ffDurum', 'çekirdek okunamadı', 'dim'); if (btn) btn.hidden = true; return; }
+    var yol = m.findFfmpeg();
+    field('ffDurum', yol ? 'hazır' : 'yok', yol ? 'ok' : 'dim');
+    if (btn) { btn.hidden = !!yol; btn.disabled = false; btn.textContent = 'İndir'; }
+  }
+
+  function ffmpegIndir() {
+    var m = ffmpegModul();
+    var btn = $('btnFfmpeg');
+    if (!m) return;
+    btn.disabled = true;
+    m.ensureFfmpeg(function (p) {
+      if (p.phase === 'download' && p.total) btn.textContent = Math.round(p.pct * 100) + '%';
+    }).then(function () {
+      ffmpegDurum();
+    }).catch(function (e) {
+      field('ffDurum', 'indirilemedi: ' + e.message, 'err');
+      btn.disabled = false;
+      btn.textContent = 'Tekrar dene';
+    });
+  }
+
   /** 0.10 araclarinin baglantilari */
   function yeniAraclariBagla() {
+    if ($('btnFfmpeg')) $('btnFfmpeg').addEventListener('click', ffmpegIndir);
+    ffmpegDurum();
     aralikBoyaHepsi();
 
     // Cipler: onay kutusu degisince gorunum (CSS :has'e guvenmiyoruz)

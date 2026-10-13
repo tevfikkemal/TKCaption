@@ -330,7 +330,59 @@ async function ensureBinary(variant, onProgress) {
   return { exe, variant: v, cached: false };
 }
 
+/* ------------------------------------------------------------------ */
+/*  ffmpeg (yalnizca ses okuma)                                        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Kucuk, yalnizca SES okuyan ffmpeg. .github/workflows/ffmpeg-min.yml
+ * FFmpeg'in kendi kod cozuculeriyle derler (LGPL, birkac MB); hazir
+ * derlemeler 170 MB ve bize gerekmeyen video kodlayicilarini tasiyor.
+ * Her yapi bulutta gercek MP4/MP3/WAV/MOV dosyalariyla deneniyor.
+ */
+const FFMPEG_TAG = 'n7.1.1';
+const FFMPEG_BASE = 'https://github.com/tevfikkemal/TKCaption/releases/download/ffmpeg-min-' + FFMPEG_TAG;
+
+function ffmpegSpec() {
+  if (process.platform === 'win32') return { asset: 'ffmpeg-min-win64.zip', exe: 'ffmpeg.exe', mb: 3 };
+  if (process.platform === 'darwin') {
+    return { asset: 'ffmpeg-min-macos-' + (process.arch === 'arm64' ? 'arm64' : 'x64') + '.zip', exe: 'ffmpeg', mb: 3 };
+  }
+  return null;
+}
+
+function ffmpegDir() { return path.join(binDir(), 'ffmpeg-' + FFMPEG_TAG); }
+
+/** Inmis ffmpeg'in yolu; yoksa null */
+function findFfmpeg() {
+  const spec = ffmpegSpec();
+  if (!spec) return null;
+  const p = path.join(ffmpegDir(), spec.exe);
+  return fs.existsSync(p) ? p : null;
+}
+
+/** ffmpeg'i gerekiyorsa indirir; yolunu dondurur */
+async function ensureFfmpeg(onProgress) {
+  const mevcut = findFfmpeg();
+  if (mevcut) return { exe: mevcut, cached: true };
+  const spec = ffmpegSpec();
+  if (!spec) throw new Error('Bu isletim sistemi icin ffmpeg yapisi yok.');
+  const zip = path.join(binDir(), spec.asset);
+  if (onProgress) onProgress({ phase: 'start', name: 'ffmpeg', mb: spec.mb });
+  await download(FFMPEG_BASE + '/' + spec.asset, zip, (p) => {
+    if (onProgress) onProgress({ phase: 'download', name: 'ffmpeg', ...p });
+  });
+  extractZip(zip, ffmpegDir());
+  try { fs.unlinkSync(zip); } catch (_) {}
+  const exe = findFfmpeg();
+  if (!exe) throw new Error('ffmpeg arsivi acildi ama calistirilabilir bulunamadi: ' + ffmpegDir());
+  if (process.platform !== 'win32') { try { fs.chmodSync(exe, 0o755); } catch (_) {} }
+  if (onProgress) onProgress({ phase: 'done', name: 'ffmpeg' });
+  return { exe, cached: false };
+}
+
 module.exports = {
+  ensureFfmpeg, findFfmpeg, FFMPEG_TAG,
   MODELS, BINARIES, VAD_MODEL,
   ensureModel, ensureVadModel, ensureBinary,
   modelPath, modelExists, modelsDir, binDir,
