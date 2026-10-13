@@ -321,6 +321,25 @@ function writeUpdateManifest(version, notes) {
   };
   gez(OUT);
 
+  // SATIR SONU TUTARLILIGI.
+  // OLCULEN (0.10.0): bir lisans dosyasi diskte CRLF'ydi, git onu LF
+  // olarak sakliyor. SHA diskteki bayttan hesaplandigi icin guncelleme
+  // depodan inen LF dosyayi "eslesmedi" diye reddedecekti — ve hata
+  // mesaji "yayiliyor, bekleyin" dedigi icin kimse sebebini bulamazdi.
+  try {
+    const eol = execFileSync('git', ['ls-files', '--eol'], { cwd: ROOT, encoding: 'utf8' });
+    const kaynaklar = new Set(files.map((f) => f.source));
+    const bozuk = eol.split('\n').filter((l) => /\bi\/lf\s+w\/crlf\b/.test(l))
+      .map((l) => l.split('\t').pop())
+      .filter((p) => kaynaklar.has(p));
+    if (bozuk.length) {
+      throw new Error('Diskte CRLF, depoda LF olan dosyalar (guncelleme SHA hatasi verir):\n  ' +
+                      bozuk.join('\n  ') + '\nSatir sonlarini LF yapip tekrar derleyin.');
+    }
+  } catch (e) {
+    if (/CRLF/.test(e.message)) throw e;
+  }
+
   // Depoda gercekten var mi? Yoksa guncelleme 404 alir.
   //
   // DISKTE OLMASI YETMIYOR — git'e girmesi de gerekiyor. Guncelleme

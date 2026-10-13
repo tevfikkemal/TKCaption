@@ -1,6 +1,6 @@
 {
   "version": "0.10.0",
-  "updated": "2026-10-13T07:42:06.128Z",
+  "updated": "2026-10-13T07:43:03.941Z",
   "notes": "Yeni arayuz; Dolgu Kesici, Yazi Studyosu, otomatik zoom, kelime kelime altyazi, marker, duz metin",
   "files": [
     {
@@ -126,7 +126,7 @@
     {
       "path": "fonts/OFL-Anton.txt",
       "source": "panel/fonts/OFL-Anton.txt",
-      "sha": "ee67e6ee22790b7929f1a3769ca2801d565c64b5a9096942c1adf5596de9c9e4"
+      "sha": "eee1d24ff8f553eb732237c7dd9b945a78313ed49ad6de02872a47277741b44a"
     },
     {
       "path": "fonts/OFL-Montserrat.txt",
