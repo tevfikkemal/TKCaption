@@ -4,3 +4,5 @@
 *.bin binary
 *.zxp binary
 *.ttf binary
+*.woff2 binary
+*.prproj binary

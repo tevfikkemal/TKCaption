@@ -1,7 +1,7 @@
 {
-  "version": "0.10.3",
-  "updated": "2026-10-13T08:44:40.861Z",
-  "notes": "ffmpeg (yalnizca ses okuma, ~1 MB) Ayarlar > Bilesenler",
+  "version": "0.11.0",
+  "updated": "2026-10-13T09:59:59.662Z",
+  "notes": "KURGU FX araclari: Yazi Studyosu, 74 hazir sablon, 34 gecis, Lumetri, Muzik -> Marker",
   "files": [
     {
       "path": "core/package.json",
@@ -106,47 +106,17 @@
     {
       "path": "css/style.css",
       "source": "panel/css/style.css",
-      "sha": "a967ea409a5d7f3da669fad62ec9cf1cb69630b89caf1d6ec9be570c935eb234"
+      "sha": "1d96a918f8ad13cfca2ddb308910d7a5d37bc1684bb6e57a889a01d846348fbc"
     },
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "48c23ff99a714c54421cb05105a8bd7d33d124436b06d3cc711b40c59f3da8de"
-    },
-    {
-      "path": "fonts/Anton.ttf",
-      "source": "panel/fonts/Anton.ttf",
-      "sha": "a4ba3a92350ebb031da0cb47630ac49eb265082ca1bc0450442f4a83ab947cab"
-    },
-    {
-      "path": "fonts/Montserrat.ttf",
-      "source": "panel/fonts/Montserrat.ttf",
-      "sha": "0f7b311b2f3279e4eef9b2f968bcdbab6e28f4daeb1f049f4f278a902bcd82f7"
-    },
-    {
-      "path": "fonts/OFL-Anton.txt",
-      "source": "panel/fonts/OFL-Anton.txt",
-      "sha": "eee1d24ff8f553eb732237c7dd9b945a78313ed49ad6de02872a47277741b44a"
-    },
-    {
-      "path": "fonts/OFL-Montserrat.txt",
-      "source": "panel/fonts/OFL-Montserrat.txt",
-      "sha": "8b7141c03fa4f8d44e6345d5d4931709290f0f67875e452e95ac1fd3a027802e"
-    },
-    {
-      "path": "fonts/OFL-PlayfairDisplay.txt",
-      "source": "panel/fonts/OFL-PlayfairDisplay.txt",
-      "sha": "566be814f8e96e93dfa16101331557eb6b5467e9e03f627c0910fe93ca12300e"
-    },
-    {
-      "path": "fonts/PlayfairDisplay-Italic.ttf",
-      "source": "panel/fonts/PlayfairDisplay-Italic.ttf",
-      "sha": "a5e26dc5e2e77fb2803a0bf02fd4f81ee136ec8dea863ccdb0c59a263b21378b"
+      "sha": "138813bfafbebada0d12edb86303dbf25f0f3c9d19a1d891096e4d8ff7397205"
     },
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "a898d2372e7d09cc76cbc701ae96e702fb323104b3835bb221eaa9d666b91124"
+      "sha": "32a552cb2567585dda3bed670a174d2830e158f29cee7ec7f30e5249f36a67ef"
     },
     {
       "path": "js/cep.js",
@@ -154,19 +124,364 @@
       "sha": "7ff54f1eac9ffa4c39b9a083597be06bc2dff39a17a8d1f5e514aa38bbd02921"
     },
     {
-      "path": "js/main.js",
-      "source": "panel/js/main.js",
-      "sha": "c78eae658a62694243228402a27fb5ad50039e10ee3576448c88d6d44a32b6c5"
+      "path": "js/kfx.js",
+      "source": "panel/js/kfx.js",
+      "sha": "fc9538002001a088df01f2d39c03db0f4aa97660a1983965a308f2f0c2abe80b"
     },
     {
-      "path": "js/yazi.js",
-      "source": "panel/js/yazi.js",
-      "sha": "3048606a66215b59b93a3a892ea68e64f4a358dcc80a0683c528634bc5547b8d"
+      "path": "js/main.js",
+      "source": "panel/js/main.js",
+      "sha": "65edd25d395445667cf37a23f8174b0bc8e300aef91836ee5eb4da4b9e4ca080"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "4e4f8f3fc5ca8e27ede90bfe363a5b51cf123d04ae2a2a800115371e275c46fe"
+      "sha": "c9abf2a0925392c3eca782c73818766a031297e06d26b9437acbf6ae26943cd1"
+    },
+    {
+      "path": "kurgu/audio.js",
+      "source": "panel/kurgu/audio.js",
+      "sha": "513eb064b44dbf7a75a95bd3b31c9f38b1904321f66aa710a29b18559bc35668"
+    },
+    {
+      "path": "kurgu/fonts/anton-latin-400-normal.woff2",
+      "source": "panel/kurgu/fonts/anton-latin-400-normal.woff2",
+      "sha": "d0fa07ff63dd60cbc0e2f58e29c802dca2a5ae0276c999f59c6111ab7bbaec3b"
+    },
+    {
+      "path": "kurgu/fonts/anton-latin-ext-400-normal.woff2",
+      "source": "panel/kurgu/fonts/anton-latin-ext-400-normal.woff2",
+      "sha": "0d17b7880f389deeb6663a52fa4eadc6d9116bdda725f0aa1f3d404fbb7d3d59"
+    },
+    {
+      "path": "kurgu/fonts/archivo-black-latin-400-normal.woff2",
+      "source": "panel/kurgu/fonts/archivo-black-latin-400-normal.woff2",
+      "sha": "25f33e61cf995abd6be62931cf03bf427286259177b43618cc410ee0157cfd30"
+    },
+    {
+      "path": "kurgu/fonts/archivo-black-latin-ext-400-normal.woff2",
+      "source": "panel/kurgu/fonts/archivo-black-latin-ext-400-normal.woff2",
+      "sha": "a69dfe4ff8ea7fd225bc3c1fe703866e9ec308024bbac1b27cd76cc63f5e3e54"
+    },
+    {
+      "path": "kurgu/fonts/bebas-neue-latin-400-normal.woff2",
+      "source": "panel/kurgu/fonts/bebas-neue-latin-400-normal.woff2",
+      "sha": "a7c90c89240c134f7fdd33d40c000ec90b79d675ea53e8cc5a6d423c073de412"
+    },
+    {
+      "path": "kurgu/fonts/bebas-neue-latin-ext-400-normal.woff2",
+      "source": "panel/kurgu/fonts/bebas-neue-latin-ext-400-normal.woff2",
+      "sha": "16c95ce45a2922f52551d38d565d14c92cf257b8f219c89613407d81fdd21a39"
+    },
+    {
+      "path": "kurgu/fonts/bricolage-grotesque-latin-600-normal.woff2",
+      "source": "panel/kurgu/fonts/bricolage-grotesque-latin-600-normal.woff2",
+      "sha": "b34fc8c1ef0ac8798455ac2979eae4b4f90f0d327e3584d1032fa77a8a9a66ca"
+    },
+    {
+      "path": "kurgu/fonts/bricolage-grotesque-latin-800-normal.woff2",
+      "source": "panel/kurgu/fonts/bricolage-grotesque-latin-800-normal.woff2",
+      "sha": "3e1b5f0a56ee995b7c1445bc54e6ec98c5dffb585ef5c4baf86731cf68e27c61"
+    },
+    {
+      "path": "kurgu/fonts/bricolage-grotesque-latin-ext-600-normal.woff2",
+      "source": "panel/kurgu/fonts/bricolage-grotesque-latin-ext-600-normal.woff2",
+      "sha": "9903537bd117c519eedf2d80824d1cb4591238edde5ecd00b9d69fef5c9e9375"
+    },
+    {
+      "path": "kurgu/fonts/bricolage-grotesque-latin-ext-800-normal.woff2",
+      "source": "panel/kurgu/fonts/bricolage-grotesque-latin-ext-800-normal.woff2",
+      "sha": "e101adfee20e88db3b345948b0bdc43da40253cc8c7139d7752d01704718d825"
+    },
+    {
+      "path": "kurgu/fonts/dm-serif-display-latin-400-italic.woff2",
+      "source": "panel/kurgu/fonts/dm-serif-display-latin-400-italic.woff2",
+      "sha": "ed8b291611e32fa2d2900488dd48fc95faf0957b2ef7ddf1527e8d21dd9cf2df"
+    },
+    {
+      "path": "kurgu/fonts/dm-serif-display-latin-400-normal.woff2",
+      "source": "panel/kurgu/fonts/dm-serif-display-latin-400-normal.woff2",
+      "sha": "fdf61e20fd2c0108e0ea28da4daca0035205b4b7fc031a3974b865b704de160a"
+    },
+    {
+      "path": "kurgu/fonts/dm-serif-display-latin-ext-400-italic.woff2",
+      "source": "panel/kurgu/fonts/dm-serif-display-latin-ext-400-italic.woff2",
+      "sha": "e026521e59b7b3e5d3257cc76069916111683b97c24e75f0c7a9f07621aa9460"
+    },
+    {
+      "path": "kurgu/fonts/dm-serif-display-latin-ext-400-normal.woff2",
+      "source": "panel/kurgu/fonts/dm-serif-display-latin-ext-400-normal.woff2",
+      "sha": "3af47815d6183efcee27a5717970acfe31153365e9b842e62d30c04e86c0613a"
+    },
+    {
+      "path": "kurgu/fonts/instrument-serif-latin-400-italic.woff2",
+      "source": "panel/kurgu/fonts/instrument-serif-latin-400-italic.woff2",
+      "sha": "5a51946dfffa82972bc98745359c46761515641fda557c25116459a9f83da4a7"
+    },
+    {
+      "path": "kurgu/fonts/instrument-serif-latin-400-normal.woff2",
+      "source": "panel/kurgu/fonts/instrument-serif-latin-400-normal.woff2",
+      "sha": "5eb09b5ac0e28b67c2f041c8ba6d244604ca0c0980d65912ab2d47fed84ddc31"
+    },
+    {
+      "path": "kurgu/fonts/instrument-serif-latin-ext-400-italic.woff2",
+      "source": "panel/kurgu/fonts/instrument-serif-latin-ext-400-italic.woff2",
+      "sha": "d0014821252a8a770bf7551641572f239a8ede83d75652d84fef0c3627751baf"
+    },
+    {
+      "path": "kurgu/fonts/instrument-serif-latin-ext-400-normal.woff2",
+      "source": "panel/kurgu/fonts/instrument-serif-latin-ext-400-normal.woff2",
+      "sha": "290e6267dd833bf5f899eba4c29ad0a9b09dbe53f6075b18af38057159e1ff20"
+    },
+    {
+      "path": "kurgu/fonts/inter-tight-latin-500-normal.woff2",
+      "source": "panel/kurgu/fonts/inter-tight-latin-500-normal.woff2",
+      "sha": "6c0019f88d5bc179f2c972998ed8c14e779254566da9081c5e29f364a0a0aeb6"
+    },
+    {
+      "path": "kurgu/fonts/inter-tight-latin-600-normal.woff2",
+      "source": "panel/kurgu/fonts/inter-tight-latin-600-normal.woff2",
+      "sha": "db1a039d03ed646ef6a899f9ff92bf2f6fe382a49f1b0992066e85caf88b5be9"
+    },
+    {
+      "path": "kurgu/fonts/inter-tight-latin-700-normal.woff2",
+      "source": "panel/kurgu/fonts/inter-tight-latin-700-normal.woff2",
+      "sha": "9c4f02f38678f2628292d66c4f7a1a6a06af7ffac4d279359b09074e7d0f1fe0"
+    },
+    {
+      "path": "kurgu/fonts/inter-tight-latin-800-normal.woff2",
+      "source": "panel/kurgu/fonts/inter-tight-latin-800-normal.woff2",
+      "sha": "b4b4a0877ce8d65c2c194dec15236e4861d3b3c111b3aa3d54fc4efbe6171027"
+    },
+    {
+      "path": "kurgu/fonts/inter-tight-latin-ext-500-normal.woff2",
+      "source": "panel/kurgu/fonts/inter-tight-latin-ext-500-normal.woff2",
+      "sha": "ea6e0ae0639c8d6d2292ca385e0aa0514ee76c8258f6ae46af779214f2ab0142"
+    },
+    {
+      "path": "kurgu/fonts/inter-tight-latin-ext-600-normal.woff2",
+      "source": "panel/kurgu/fonts/inter-tight-latin-ext-600-normal.woff2",
+      "sha": "0bc08fdb02baa81e9379b64afba2b34bbe8bf34e2112f9bdd2ab9c30aa778060"
+    },
+    {
+      "path": "kurgu/fonts/inter-tight-latin-ext-700-normal.woff2",
+      "source": "panel/kurgu/fonts/inter-tight-latin-ext-700-normal.woff2",
+      "sha": "cf4f153e89808686667d5eef31ae4926e2e8e3dc261fa664096432dcf72d5d79"
+    },
+    {
+      "path": "kurgu/fonts/inter-tight-latin-ext-800-normal.woff2",
+      "source": "panel/kurgu/fonts/inter-tight-latin-ext-800-normal.woff2",
+      "sha": "27877a44778f7b27708859516c9d9868325a2b185ae3e5bd0f3401861eb5e270"
+    },
+    {
+      "path": "kurgu/fonts/montserrat-latin-700-normal.woff2",
+      "source": "panel/kurgu/fonts/montserrat-latin-700-normal.woff2",
+      "sha": "f9d9e65b15372cebcafc3acd1e664a564c5c4b23278de4d5760de9a13c530371"
+    },
+    {
+      "path": "kurgu/fonts/montserrat-latin-800-normal.woff2",
+      "source": "panel/kurgu/fonts/montserrat-latin-800-normal.woff2",
+      "sha": "ba826fb84c2e961578adf3a08b5778b87905d4443445d1d56d84f9f157d5ea4b"
+    },
+    {
+      "path": "kurgu/fonts/montserrat-latin-900-normal.woff2",
+      "source": "panel/kurgu/fonts/montserrat-latin-900-normal.woff2",
+      "sha": "5b6958520638bb8609f9eacb17c4d189563efeae96d5da49f7c2043988697205"
+    },
+    {
+      "path": "kurgu/fonts/montserrat-latin-ext-700-normal.woff2",
+      "source": "panel/kurgu/fonts/montserrat-latin-ext-700-normal.woff2",
+      "sha": "a59fcc944a712e213a2f3bd994367129217c75f24a9155a5a3c1a0f5fd2cc9a7"
+    },
+    {
+      "path": "kurgu/fonts/montserrat-latin-ext-800-normal.woff2",
+      "source": "panel/kurgu/fonts/montserrat-latin-ext-800-normal.woff2",
+      "sha": "59f6ebeb71a14c64edc538eba78a010c1c9ef680a66a559ec3cf4b0d12db1a8b"
+    },
+    {
+      "path": "kurgu/fonts/montserrat-latin-ext-900-normal.woff2",
+      "source": "panel/kurgu/fonts/montserrat-latin-ext-900-normal.woff2",
+      "sha": "f4fcedc59ae41e24d67bcbd406c7a5f0b6e21ab57d2f4c198e1b1486f3832330"
+    },
+    {
+      "path": "kurgu/fonts/playfair-display-latin-700-italic.woff2",
+      "source": "panel/kurgu/fonts/playfair-display-latin-700-italic.woff2",
+      "sha": "de2f4041e7ef84f418bd0144484e521e8df849aff47762230c981704b9661877"
+    },
+    {
+      "path": "kurgu/fonts/playfair-display-latin-700-normal.woff2",
+      "source": "panel/kurgu/fonts/playfair-display-latin-700-normal.woff2",
+      "sha": "28453852ea165c47b5a941be00e418402e1407002ed87507f062a1e316328fe6"
+    },
+    {
+      "path": "kurgu/fonts/playfair-display-latin-900-italic.woff2",
+      "source": "panel/kurgu/fonts/playfair-display-latin-900-italic.woff2",
+      "sha": "35e6e930a56da13dfeea438ee1f0434c7338ad003cb3b5cdb5f0dee6e15cdaa2"
+    },
+    {
+      "path": "kurgu/fonts/playfair-display-latin-900-normal.woff2",
+      "source": "panel/kurgu/fonts/playfair-display-latin-900-normal.woff2",
+      "sha": "2772c56b28bec10f310634732b0554dd6cced8ad0f723bbdf73f6abc53829ad0"
+    },
+    {
+      "path": "kurgu/fonts/playfair-display-latin-ext-700-italic.woff2",
+      "source": "panel/kurgu/fonts/playfair-display-latin-ext-700-italic.woff2",
+      "sha": "8af70f52c55bb5cd12b43f2096f926280b099def7334690934282435b16ff18d"
+    },
+    {
+      "path": "kurgu/fonts/playfair-display-latin-ext-700-normal.woff2",
+      "source": "panel/kurgu/fonts/playfair-display-latin-ext-700-normal.woff2",
+      "sha": "edb9f5d879b30c617698bcc288692c339d5a0a2464a5476f00025195e5cad166"
+    },
+    {
+      "path": "kurgu/fonts/playfair-display-latin-ext-900-italic.woff2",
+      "source": "panel/kurgu/fonts/playfair-display-latin-ext-900-italic.woff2",
+      "sha": "5b3447fd65b52fcffcd2a0657535d9fdb6868eb1f8c99a9849e4f526e562bd95"
+    },
+    {
+      "path": "kurgu/fonts/playfair-display-latin-ext-900-normal.woff2",
+      "source": "panel/kurgu/fonts/playfair-display-latin-ext-900-normal.woff2",
+      "sha": "4b3442f6701c04652f43a23de7137a70de904491ae12549c12d0a294369876d4"
+    },
+    {
+      "path": "kurgu/fonts/poppins-latin-500-normal.woff2",
+      "source": "panel/kurgu/fonts/poppins-latin-500-normal.woff2",
+      "sha": "cd36de204aca2d5fa263a731f7c20009b5e3d754ba1f1e03c33e93a48f3e7446"
+    },
+    {
+      "path": "kurgu/fonts/poppins-latin-600-normal.woff2",
+      "source": "panel/kurgu/fonts/poppins-latin-600-normal.woff2",
+      "sha": "f4e80d9dfd374d02989b87a27b5ed4cb78fbb177c27f1478e9a8b0afb7513149"
+    },
+    {
+      "path": "kurgu/fonts/poppins-latin-700-normal.woff2",
+      "source": "panel/kurgu/fonts/poppins-latin-700-normal.woff2",
+      "sha": "9338e65fc077355c7a87ae0d64cc101e23b9bf8ad78ae65f0f319c857311b526"
+    },
+    {
+      "path": "kurgu/fonts/poppins-latin-800-normal.woff2",
+      "source": "panel/kurgu/fonts/poppins-latin-800-normal.woff2",
+      "sha": "60bf0aba6526436f3930c58c12047687fbb6bff4dd180cce4613458ed3439ea2"
+    },
+    {
+      "path": "kurgu/fonts/poppins-latin-900-normal.woff2",
+      "source": "panel/kurgu/fonts/poppins-latin-900-normal.woff2",
+      "sha": "17ea10196a490a8d3b8da162c7d4af9c301c5229f70af90dad6fa33eb951d83f"
+    },
+    {
+      "path": "kurgu/fonts/poppins-latin-ext-500-normal.woff2",
+      "source": "panel/kurgu/fonts/poppins-latin-ext-500-normal.woff2",
+      "sha": "af5fda16a19169e029a132374616728e1bf326d90bef5a552395c5053e21cd0f"
+    },
+    {
+      "path": "kurgu/fonts/poppins-latin-ext-600-normal.woff2",
+      "source": "panel/kurgu/fonts/poppins-latin-ext-600-normal.woff2",
+      "sha": "bb1f2d582e7fba586ab70c91ef062d3becaf78b887654953863521b73665d171"
+    },
+    {
+      "path": "kurgu/fonts/poppins-latin-ext-700-normal.woff2",
+      "source": "panel/kurgu/fonts/poppins-latin-ext-700-normal.woff2",
+      "sha": "ccfd87f69ef00d811da3d06488cec4e79ec99d289cfbcbe4be42031cecae775a"
+    },
+    {
+      "path": "kurgu/fonts/poppins-latin-ext-800-normal.woff2",
+      "source": "panel/kurgu/fonts/poppins-latin-ext-800-normal.woff2",
+      "sha": "a72eccfa6cfa9c26b4004e98dbf8592ea0fb3704b2fc749e8bd60a996e2e5a7c"
+    },
+    {
+      "path": "kurgu/fonts/poppins-latin-ext-900-normal.woff2",
+      "source": "panel/kurgu/fonts/poppins-latin-ext-900-normal.woff2",
+      "sha": "0270140e6150b816366ba81ba043edb066089bea037a34516105d281722e772f"
+    },
+    {
+      "path": "kurgu/fonts/space-grotesk-latin-500-normal.woff2",
+      "source": "panel/kurgu/fonts/space-grotesk-latin-500-normal.woff2",
+      "sha": "1b1a8131d9edf975d9decee81e2f2bf504812f7a4f498e5500f28a613e22e64c"
+    },
+    {
+      "path": "kurgu/fonts/space-grotesk-latin-700-normal.woff2",
+      "source": "panel/kurgu/fonts/space-grotesk-latin-700-normal.woff2",
+      "sha": "35f8aec56cfd5cbfdb03cc68733a54a0b05bb3617ffcd5fd332badc0b045ca55"
+    },
+    {
+      "path": "kurgu/fonts/space-grotesk-latin-ext-500-normal.woff2",
+      "source": "panel/kurgu/fonts/space-grotesk-latin-ext-500-normal.woff2",
+      "sha": "ed7e064eda944f88ce2f40101ec20e214004decdf5c0b9ad9219ae21be2dbf13"
+    },
+    {
+      "path": "kurgu/fonts/space-grotesk-latin-ext-700-normal.woff2",
+      "source": "panel/kurgu/fonts/space-grotesk-latin-ext-700-normal.woff2",
+      "sha": "7ce350b706d79c955ebf91314295f39fa82999f980b7e9beee743c2f3580a15e"
+    },
+    {
+      "path": "kurgu/fonts/syne-latin-700-normal.woff2",
+      "source": "panel/kurgu/fonts/syne-latin-700-normal.woff2",
+      "sha": "0aad69416fc0ccf6f340647c46e759d5c6e4628d92576b279ec5ada0afbd9d35"
+    },
+    {
+      "path": "kurgu/fonts/syne-latin-800-normal.woff2",
+      "source": "panel/kurgu/fonts/syne-latin-800-normal.woff2",
+      "sha": "1a340e84b78c7e1e7ed24306d682fdcd6dc8cc6cb52b158fbaf22c03f7f001c3"
+    },
+    {
+      "path": "kurgu/fonts/syne-latin-ext-700-normal.woff2",
+      "source": "panel/kurgu/fonts/syne-latin-ext-700-normal.woff2",
+      "sha": "f1c45224922ef9247ef025b780abff888af301b4b1bd251d11997bd0a3ab3178"
+    },
+    {
+      "path": "kurgu/fonts/syne-latin-ext-800-normal.woff2",
+      "source": "panel/kurgu/fonts/syne-latin-ext-800-normal.woff2",
+      "sha": "891968b2978b2f5b054c8e79589429835f6ec3a3b884146e5e317651df37a3d3"
+    },
+    {
+      "path": "kurgu/fonts/unbounded-latin-600-normal.woff2",
+      "source": "panel/kurgu/fonts/unbounded-latin-600-normal.woff2",
+      "sha": "616878858361f1a4c44fc62b69e2391793a4dc063283cf225f5fc872dfdecdc8"
+    },
+    {
+      "path": "kurgu/fonts/unbounded-latin-800-normal.woff2",
+      "source": "panel/kurgu/fonts/unbounded-latin-800-normal.woff2",
+      "sha": "fe6d4ea7ed9647abf1e100a703786338d7898d56d0bedcdfdbc325e8fb02c834"
+    },
+    {
+      "path": "kurgu/fonts/unbounded-latin-ext-600-normal.woff2",
+      "source": "panel/kurgu/fonts/unbounded-latin-ext-600-normal.woff2",
+      "sha": "42cebe48e87b78b6f6980f062922a285f032259cc40193a6bed95e58a9fab565"
+    },
+    {
+      "path": "kurgu/fonts/unbounded-latin-ext-800-normal.woff2",
+      "source": "panel/kurgu/fonts/unbounded-latin-ext-800-normal.woff2",
+      "sha": "c623718098663cd545bfd3329f30d79bff46c0764fa70b29dc6cf78c3f68d9cb"
+    },
+    {
+      "path": "kurgu/fonts.css",
+      "source": "panel/kurgu/fonts.css",
+      "sha": "835730579b8e4b17cb2a4f73dded377f543bdaf559ceb1ad54e711562ef247df"
+    },
+    {
+      "path": "kurgu/host.jsx",
+      "source": "panel/kurgu/host.jsx",
+      "sha": "17407fda267b1ad83b250ec4b3ddb2f054a055e4032ee51c146179b3698cf502"
+    },
+    {
+      "path": "kurgu/KFX_Adjust.prproj",
+      "source": "panel/kurgu/KFX_Adjust.prproj",
+      "sha": "dbf9993627427fb5890de3f01c679970020979a9de272a3e85c0c9e78b79cc40"
+    },
+    {
+      "path": "kurgu/templates.js",
+      "source": "panel/kurgu/templates.js",
+      "sha": "d46ab3ff5e6a1a63d1eb09da115366f88c1250fb7d0aa80117665ef3edc625ff"
+    },
+    {
+      "path": "kurgu/text.js",
+      "source": "panel/kurgu/text.js",
+      "sha": "bb55f5d5696c328fb7deece17cafe76f0c877da77ea967e40bb1868bf64e84f0"
+    },
+    {
+      "path": "kurgu/trans.js",
+      "source": "panel/kurgu/trans.js",
+      "sha": "14e5815ebd6879223870e080cd94a825f1cc284829c82affb5570fc274abc75c"
     },
     {
       "path": "LICENSE",

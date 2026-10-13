@@ -31,7 +31,15 @@ Altyazıları düz bölmez, Türkçe'ye göre böler: `geldi | de`, `açıklamay
 
 **Kelime kelime altyazı** — Reels/TikTok tarzı: her altyazıda 1–3 kelime ya da tek kelime.
 
-**Yazı Stüdyosu** — Hazır görünüm (sade/renkli) ve animasyon (pop, yukarı, kelime kelime, daktilo) seçip yazıyı oynatma kafasına şeffaf katman olarak ekler. `*yıldız*` ile vurgulu kelime.
+**Yazı Stüdyosu** — 21 görünüm, 25 giriş ve 6 çıkış animasyonu; yazıyı oynatma kafasına şeffaf katman olarak ekler. `*yıldız*` ile vurgulu kelime.
+
+**Hazır Şablonlar** — 74 animasyonlu şablon: alt bant, büyük sayı, karşılaştırma, süreç kartı…
+
+**Geçişler** — 34 geçiş (zoom, whip, kaydırma, ışık, efekt); kesimin üstüne ayar katmanı olarak.
+
+**Lumetri Renk** — 16 hazır renk ayarı ve ince ayar; seçili kliplere ya da ayar katmanına.
+
+**Müzik → Marker** — Müziğin vuruşlarını bulup marker koyar (vuruş, bas, BPM ızgarası).
 
 **Otomatik zoom** — Konuşmanın her yeni cümlesinde yakın/uzak geçiş yapar; tek kamerada ikinci kamera hissi.
 
@@ -107,7 +115,7 @@ Birkaç dakika bekleyin; yeni sürümün yayılması zaman alabilir. Panelin alt
 
 ## Teşekkür
 
-Yazı tipleri: Montserrat, Anton, Playfair Display (SIL Open Font License).
+Yazı Stüdyosu, Hazır Şablonlar, Geçişler, Lumetri Renk ve Müzik → Marker: **KURGU FX** — Vedat'ın eklentisinden, onun izniyle. Yazı tipleri Google Fonts'tan (SIL Open Font License).
 
 Konuşma tanıma: [whisper.cpp](https://github.com/ggml-org/whisper.cpp) — Georgi Gerganov ve katkıda bulunanlar. TK Caption onun üzerine kurulu.
 

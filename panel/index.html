@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TK Caption</title>
+  <link rel="stylesheet" href="kurgu/fonts.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -46,6 +47,15 @@
       <button class="tab" data-tab="yazi" type="button">
         <svg viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>
         <span>Yazı</span></button>
+      <button class="tab" data-tab="hazir" type="button">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M7 9h6M7 13h10M7 16h4"/></svg>
+        <span>Şablonlar</span></button>
+      <button class="tab" data-tab="gecis" type="button">
+        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="11" height="14" rx="2"/><path d="M14 8h5a2 2 0 012 2v7a2 2 0 01-2 2h-5"/><path d="M8 12h9M14 9l3 3-3 3"/></svg>
+        <span>Geçişler</span></button>
+      <button class="tab" data-tab="renk" type="button">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17"/><path d="M12 3.5a8.5 8.5 0 010 17" fill="currentColor" opacity=".35"/></svg>
+        <span>Renk</span></button>
       <i class="railsep"></i>
       <button class="tab" data-tab="kes" type="button">
         <svg viewBox="0 0 24 24"><path d="M3 12h3l2-5 3 10 2-6 2 3h6"/></svg>
@@ -56,13 +66,16 @@
       <button class="tab" data-tab="zoom" type="button">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg>
         <span>Zoom</span></button>
+      <button class="tab" data-tab="muzik" type="button">
+        <svg viewBox="0 0 24 24"><path d="M2 12h3l2-6 3 12 3-9 2 5 2-2h5"/></svg>
+        <span>Müzik</span></button>
       <i class="railsep"></i>
       <button class="tab" data-tab="safe" type="button">
         <svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><rect x="9" y="6" width="6" height="10" rx="1" stroke-dasharray="2 1.6"/></svg>
         <span>Safe Zone</span></button>
       <button class="tab" data-tab="stil" type="button">
         <svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>
-        <span>Şablonlar</span></button>
+        <span>MOGRT</span></button>
       <i class="railgrow"></i>
       <button class="tab" data-tab="ayar" type="button">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
@@ -157,60 +170,49 @@
         </div>
       </section>
 
-      <!-- ============ YAZI STUDYOSU ============ -->
       <section class="page" id="tab-yazi" hidden>
         <div class="phead">
           <span class="picon"><svg viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg></span>
           <h2>Yazı Stüdyosu</h2>
         </div>
-        <p class="pdesc">Görünüm ve animasyon seç, metni yaz, oynatma kafasına ekle. Şeffaf katman olarak gelir.</p>
+        <p class="pdesc">Hazır görünüm ve animasyon seçin, metni yazın, timeline'a ekleyin (şeffaf katman).</p>
+        <div class="kfxkap" id="kfxYazi"></div>
+      </section>
 
-        <div class="preview" id="yaziOnizKap">
-          <canvas id="yaziOniz" width="270" height="480"></canvas>
-          <div class="pbar"><i id="yaziOnizIlerleme"></i></div>
+      <section class="page" id="tab-hazir" hidden>
+        <div class="phead">
+          <span class="picon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M7 9h6M7 13h10M7 16h4"/></svg></span>
+          <h2>Hazır Şablonlar</h2>
         </div>
+        <p class="pdesc">Alt bant, sayı, karşılaştırma, süreç kartı… Seçin, metni yazın, oynatma kafasına ekleyin.</p>
+        <div class="kfxkap" id="kfxHazir"></div>
+      </section>
 
-        <div class="card">
-          <div class="clbl">Metin</div>
-          <textarea id="optYaziMetin" class="ta" rows="2" spellcheck="false">Bu yöntemle *iz kalmaz*</textarea>
-          <p class="hint">Vurgu için kelimeyi *yıldız* içine alın. Enter ile satır kırın.</p>
+      <section class="page" id="tab-gecis" hidden>
+        <div class="phead">
+          <span class="picon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="11" height="14" rx="2"/><path d="M14 8h5a2 2 0 012 2v7a2 2 0 01-2 2h-5"/><path d="M8 12h9M14 9l3 3-3 3"/></svg></span>
+          <h2>Geçişler</h2>
         </div>
+        <p class="pdesc">Oynatma kafasını iki klibin birleştiği kesime getirip geçişe tıklayın. Ayar katmanı olarak timeline'da kalır.</p>
+        <div class="kfxkap" id="kfxGecis"></div>
+      </section>
 
-        <div class="card">
-          <div class="clbl">Görünüm</div>
-          <div id="yaziStiller"></div>
+      <section class="page" id="tab-renk" hidden>
+        <div class="phead">
+          <span class="picon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17"/><path d="M12 3.5a8.5 8.5 0 010 17" fill="currentColor" opacity=".35"/></svg></span>
+          <h2>Lumetri Renk</h2>
         </div>
+        <p class="pdesc">Hazır renk ayarı seçin, isterseniz ince ayar yapın. Seçili kliplere ya da ayar katmanına uygulanır.</p>
+        <div class="kfxkap" id="kfxRenk"></div>
+      </section>
 
-        <div class="card">
-          <div class="clbl">Animasyon</div>
-          <div id="yaziAnimGrp"></div>
-          <div class="frow">
-            <span class="flbl">Çıkış</span>
-            <div class="seg wrap" id="yaziCikisGrp"></div>
-          </div>
-          <div class="frow">
-            <span class="flbl">Süre</span>
-            <input id="optYaziSure" type="range" min="10" max="80" value="30">
-            <b class="val" id="yaziSureVal">3.0 sn</b>
-          </div>
-          <div class="frow">
-            <span class="flbl">Boyut</span>
-            <input id="optYaziBoyut" type="range" min="50" max="170" value="100">
-            <b class="val" id="yaziBoyutVal">%100</b>
-          </div>
-          <div class="frow">
-            <span class="flbl">Konum</span>
-            <input id="optYaziKonum" type="range" min="8" max="92" value="50">
-            <b class="val" id="yaziKonumVal">orta</b>
-          </div>
+      <section class="page" id="tab-muzik" hidden>
+        <div class="phead">
+          <span class="picon"><svg viewBox="0 0 24 24"><path d="M2 12h3l2-6 3 12 3-9 2 5 2-2h5"/></svg></span>
+          <h2>Müzik → Marker</h2>
         </div>
-
-        <button id="btnYaziEkle" class="cta sticky" type="button">
-          <svg viewBox="0 0 24 24"><path d="M5 12l4 4 10-10"/></svg>
-          <span>Timeline'a Ekle</span>
-        </button>
-        <div id="yaziBar" class="bar" hidden><div id="yaziFill" class="fill"></div></div>
-        <div id="yaziOut" class="out" hidden></div>
+        <p class="pdesc">Müziğin vuruşlarını ve tepe noktalarını bulup timeline'a marker koyar.</p>
+        <div class="kfxkap" id="kfxMuzik"></div>
       </section>
 
       <!-- ============ AUTO CUT ============ -->
@@ -384,7 +386,7 @@
       <section class="page" id="tab-stil" hidden>
         <div class="phead">
           <span class="picon"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span>
-          <h2>Şablonlar</h2>
+          <h2>MOGRT Şablonları</h2>
           <span class="ver" id="mogrtCount"></span>
         </div>
         <p class="pdesc">Kendi .mogrt şablonlarınızla altyazı. Şablonu seçin, sonra Altyazı'da <b>Nereye: Grafik</b> ile oluşturun.</p>
@@ -501,7 +503,11 @@
 </div>
 
   <script src="js/cep.js"></script>
-  <script src="js/yazi.js"></script>
+  <script src="kurgu/text.js"></script>
+  <script src="kurgu/templates.js"></script>
+  <script src="kurgu/trans.js"></script>
+  <script src="kurgu/audio.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/kfx.js"></script>
 </body>
 </html>

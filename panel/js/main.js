@@ -91,6 +91,7 @@
   var MAC = /Mac/i.test((typeof navigator !== 'undefined' && navigator.platform) || '');
 
   var coreDir = null;
+  window.TK_COREDIR = function () { return resolveCore(); };
 
   /**
    * core/ klasorunu bulur.
@@ -2300,261 +2301,8 @@
     }).then(function () { btn.disabled = false; });
   }
 
-  /* ---------------------------------------------------------------- */
-  /*  YAZI STUDYOSU                                                    */
-  /* ---------------------------------------------------------------- */
-
-  var yaziStil = 'temiz';
-  var yaziAnim = 'k-pop';
-  var yaziCikis = 'solma';
-  var yaziG = gunluk('yaziOut', 'yaziBar', 'yaziFill');
-  var yaziOnizBas = 0;
-  var yaziCalisiyor = false;
-
-  function yaziSecenek() {
-    return {
-      metin: $('optYaziMetin').value,
-      stil: yaziStil,
-      anim: yaziAnim,
-      cikis: yaziCikis,
-      sure: Number($('optYaziSure').value) / 10,
-      boyut: Number($('optYaziBoyut').value) / 100,
-      konum: Number($('optYaziKonum').value) / 100
-    };
-  }
-
-  function yaziEtiketleri() {
-    var o = yaziSecenek();
-    setText('yaziSureVal', o.sure.toFixed(1) + ' sn');
-    setText('yaziBoyutVal', '%' + Math.round(o.boyut * 100));
-    var k = o.konum;
-    setText('yaziKonumVal', k < 0.3 ? 'üst' : k > 0.7 ? 'alt' : 'orta');
-  }
-
-  /** Onizleme tuvalini sekansin en/boy oranina getirir */
-  function yaziOnizBoyut() {
-    var cv = $('yaziOniz');
-    if (!cv) return;
-    var w = Number(sonSeqBilgi && sonSeqBilgi.width) || 1080;
-    var h = Number(sonSeqBilgi && sonSeqBilgi.height) || 1920;
-    var en = 270;
-    var boy = Math.round(en * h / w);
-    if (cv.width !== en || cv.height !== boy) { cv.width = en; cv.height = boy; }
-    var kap = $('yaziOnizKap');
-    if (kap) kap.style.width = (w >= h ? 230 : 150) + 'px';
-  }
-
-  /** Onizleme dongusu: animasyon + bir sure bekleme, sonra basa */
-  var yaziOnizHata = null;
-
-  /**
-   * Onizleme dongusu: buyuk telefon + her animasyon kutusu.
-   *
-   * Bir sonraki kare HATADAN ONCE isteniyor: ilk surumde cizim bir kez
-   * hata verince requestAnimationFrame hic cagrilmiyor ve onizleme
-   * kalici olarak bos kaliyordu — sebebi de hicbir yerde gorunmuyordu.
-   */
-  function yaziOnizCiz(zaman) {
-    window.requestAnimationFrame(yaziOnizCiz);
-    var sayfa = $('tab-yazi');
-    if (!sayfa || sayfa.hidden || !window.TKYazi) return;
-    try {
-      var cv = $('yaziOniz');
-      var o = yaziSecenek();
-      var dongu = o.sure + 0.7;
-      if (!yaziOnizBas) yaziOnizBas = zaman;
-      var t = ((zaman - yaziOnizBas) / 1000) % dongu;
-      o.t = Math.min(t, o.sure);   // sondaki bekleme: cikis bitti, ekran bos
-      if (cv) window.TKYazi.ciz(cv.getContext('2d'), cv.width, cv.height, o);
-      var ib = $('yaziOnizIlerleme');
-      if (ib) ib.style.width = Math.min(100, t / o.sure * 100).toFixed(1) + '%';
-
-      // Animasyon kutulari: secili stille, kisa bir donguyle
-      var kutular = document.querySelectorAll('#yaziAnimGrp canvas');
-      var tk = ((zaman / 1000) % 2.4);
-      for (var i = 0; i < kutular.length; i++) {
-        var a = kutular[i].getAttribute('data-anim');
-        window.TKYazi.ciz(kutular[i].getContext('2d'), kutular[i].width, kutular[i].height,
-          { metin: 'Bu *iz*', stil: yaziStil, anim: a, cikis: yaziCikis, t: Math.min(tk, 1.9),
-            sure: 1.9, boyut: 2.3, konum: 0.5 });
-      }
-      yaziOnizHata = null;
-    } catch (e) {
-      // Ayni hatayi her karede yazmayalim
-      if (yaziOnizHata !== e.message) {
-        yaziOnizHata = e.message;
-        yaziG.temizle();
-        yaziG.yaz('<span class="err">Önizleme çizilemedi: ' + esc(e.message) + '</span>');
-      }
-    }
-  }
-
-  function yaziKutulariCiz() {
-    var kap = $('yaziStiller');
-    if (!kap || !window.TKYazi) return;
-    var gruplar = {};
-    var sira = [];
-    window.TKYazi.STILLER.forEach(function (s) {
-      if (!gruplar[s.grup]) { gruplar[s.grup] = []; sira.push(s.grup); }
-      gruplar[s.grup].push(s);
-    });
-    var html = '';
-    sira.forEach(function (gr) {
-      html += '<div class="sgrup">' + esc(gr) + '</div><div class="sgrid">';
-      gruplar[gr].forEach(function (s) {
-        html += '<button type="button" class="stile' + (s.id === yaziStil ? ' on' : '') +
-                '" data-stil="' + s.id + '"><canvas width="108" height="52"></canvas>' +
-                '<span>' + esc(s.ad) + '</span></button>';
-      });
-      html += '</div>';
-    });
-    kap.innerHTML = html;
-
-    var kutular = kap.querySelectorAll('.stile');
-    for (var i = 0; i < kutular.length; i++) {
-      var c = kutular[i].querySelector('canvas');
-      window.TKYazi.ciz(c.getContext('2d'), c.width, c.height,
-        { metin: 'A*a*', stil: kutular[i].getAttribute('data-stil'), anim: 'yok', boyut: 4.6, konum: 0.52 });
-      kutular[i].addEventListener('click', function () {
-        yaziStil = this.getAttribute('data-stil');
-        yerelYaz('tkcaption.yaziStil', yaziStil);
-        var hepsi = kap.querySelectorAll('.stile');
-        for (var j = 0; j < hepsi.length; j++) {
-          hepsi[j].className = hepsi[j].getAttribute('data-stil') === yaziStil ? 'stile on' : 'stile';
-        }
-        yaziOnizBas = 0;
-      });
-    }
-  }
-
-  function yaziAnimCiz() {
-    var kap = $('yaziAnimGrp');
-    if (!kap || !window.TKYazi) return;
-    // Her secenek kendi animasyonunu oynatan bir kutu: "Pop" yazisi
-    // ne yaptigini anlatmiyor, gormek anlatiyor
-    // Gruplar: Harf / Kelime / Satir — birim neyse animasyon onu tasir
-    var gruplar = {}, sira = [];
-    window.TKYazi.ANIMLER.forEach(function (a) {
-      if (!gruplar[a.grup]) { gruplar[a.grup] = []; sira.push(a.grup); }
-      gruplar[a.grup].push(a);
-    });
-    var html = '';
-    sira.forEach(function (gr) {
-      html += '<div class="sgrup">' + esc(gr) + '</div><div class="sgrid">';
-      gruplar[gr].forEach(function (a) {
-        html += '<button type="button" class="stile' + (a.id === yaziAnim ? ' on' : '') +
-                '" data-anim="' + a.id + '"><canvas data-anim="' + a.id +
-                '" width="120" height="56"></canvas><span>' + esc(a.ad) + '</span></button>';
-      });
-      html += '</div>';
-    });
-    kap.innerHTML = html;
-    var kutular = kap.querySelectorAll('.stile');
-    for (var i = 0; i < kutular.length; i++) {
-      kutular[i].addEventListener('click', function () {
-        yaziAnim = this.getAttribute('data-anim');
-        yerelYaz('tkcaption.yaziAnim', yaziAnim);
-        yaziOnizBas = 0;
-        var hepsi = kap.querySelectorAll('.stile');
-        for (var j = 0; j < hepsi.length; j++) {
-          hepsi[j].className = hepsi[j].getAttribute('data-anim') === yaziAnim ? 'stile on' : 'stile';
-        }
-      });
-    }
-  }
-
-  function yaziCikisCiz() {
-    var kap = $('yaziCikisGrp');
-    if (!kap || !window.TKYazi) return;
-    kap.innerHTML = window.TKYazi.CIKISLAR.map(function (c) {
-      return '<button type="button" class="mini' + (c.id === yaziCikis ? ' on' : '') +
-             '" data-cikis="' + c.id + '">' + esc(c.ad) + '</button>';
-    }).join('');
-    grupSecimi(kap, 'data-cikis', function (v) {
-      yaziCikis = v;
-      yerelYaz('tkcaption.yaziCikis', v);
-      yaziOnizBas = 0;
-    });
-  }
-
-  function yaziInit() {
-    if (!window.TKYazi) return;
-    var ks = yerelOku('tkcaption.yaziStil');
-    if (ks && window.TKYazi.stil(ks).id === ks) yaziStil = ks;
-    var ka = yerelOku('tkcaption.yaziAnim');
-    if (ka) yaziAnim = window.TKYazi.anim(ka).id;   // eski kimlikler eslenir
-    var kc = yerelOku('tkcaption.yaziCikis');
-    if (kc) yaziCikis = kc;
-    yaziCikisCiz();
-    window.TKYazi.fontlariYukle('fonts/').then(function () {
-      yaziKutulariCiz();
-    });
-    yaziKutulariCiz();
-    yaziAnimCiz();
-    ['optYaziSure', 'optYaziBoyut', 'optYaziKonum'].forEach(function (id) {
-      $(id).addEventListener('input', yaziEtiketleri);
-    });
-    $('optYaziMetin').addEventListener('input', function () { yaziOnizBas = 0; });
-    yaziEtiketleri();
-    yaziOnizBoyut();
-    window.requestAnimationFrame(yaziOnizCiz);
-  }
-
-  /**
-   * Yaziyi kare kare uretip timeline'a koyar.
-   * Dosyalar proje klasorunun yanina yazilir (gecici klasor temizlenirse
-   * Premiere'deki klip cevrimdisi kalirdi).
-   */
-  function yaziEkle() {
-    if (yaziCalisiyor || !nodeReq || !window.TKYazi) return;
-    var o = yaziSecenek();
-    if (!o.metin.replace(/[\s*]/g, '')) { yaziG.temizle(); yaziG.yaz('<span class="warn">Önce metni yazın.</span>'); return; }
-    yaziCalisiyor = true;
-    var btn = $('btnYaziEkle');
-    btn.disabled = true;
-    yaziG.temizle();
-    var seq = null, dir = null, ilk = null, dizi = o.anim !== 'yok' || o.cikis !== 'yok';
-
-    window.TKYazi.fontlariYukle('fonts/').then(function () {
-      return CEP.call('trGetSequenceInfo()');
-    }).then(function (d) {
-      seq = d;
-      return CEP.call('trSuggestSrtPath("' + esPath(d.name) + '", ".png")')
-        .then(function (s) { return npath.dirname(s.path); })
-        .catch(function () { return nos.tmpdir(); });
-    }).then(function (kok) {
-      var damga = Date.now().toString(36);
-      dir = npath.join(kok, 'TK Yazi', damga);
-      nfs.mkdirSync(dir, { recursive: true });
-      var W = parseInt(seq.width, 10) || 1080;
-      var H = parseInt(seq.height, 10) || 1920;
-      var fps = Number(seq.fps) || 30;
-      var on = 'TKYazi_' + damga + '_';
-      yaziG.yaz('<span class="dim">' + W + '×' + H + ', ' + (dizi ? Math.round(o.sure * fps) + ' kare' : 'tek kare') + ' çiziliyor…</span>');
-      var ayar = { metin: o.metin, stil: o.stil, anim: o.anim, cikis: o.cikis,
-                   sure: dizi ? o.sure : 1, fps: dizi ? fps : 1, boyut: o.boyut, konum: o.konum };
-      return window.TKYazi.kareleriUret(W, H, ayar, function (no, veri) {
-        var ad = on + ('0000' + no).slice(-4) + '.png';
-        if (no === 0) ilk = npath.join(dir, ad);
-        nfs.writeFileSync(npath.join(dir, ad), Buffer.from(veri, 'base64'));
-      }, function (oran) { yaziG.bar(oran * 0.85); }).then(function (r) {
-        yaziG.yaz('<span class="dim">' + r.kare + ' kare yazıldı (' + r.kodlanan + ' farklı)</span>');
-        return CEP.call('trPlaceTextClip("' + esPath(ilk) + '", "' + (dizi ? '1' : '0') + '", ' +
-                        fps + ', ' + o.sure + ')');
-      });
-    }).then(function (r) {
-      yaziG.bar(1);
-      yaziG.yaz('<span class="ok">Eklendi — V' + r.track + ', ' + Number(r.at).toFixed(2) + ' sn</span>');
-      var ad = asArray(r.steps);
-      for (var i = 0; i < ad.length; i++) yaziG.yaz('<span class="dim">' + esc(ad[i]) + '</span>');
-    }).catch(function (e) {
-      yaziG.yaz('<span class="err">' + hataMetni(e) + '</span>');
-    }).then(function () {
-      yaziCalisiyor = false;
-      btn.disabled = false;
-      setTimeout(function () { yaziG.bar(null); }, 800);
-    });
-  }
+  /* Yazi Studyosu artik panel/js/kfx.js icinde (KURGU FX cizicisiyle). */
+  function yaziOnizBoyut() {}
 
   /* ---------------------------------------------------------------- */
   /*  Duz metin                                                        */
@@ -2590,6 +2338,7 @@
     if (!m || !subsYol) { subsNot('Önce altyazı üretin.'); return; }
     var yol = String(subsYol).replace(/(-d\d+)?\.[^.\\\/]+$/, '') + '.txt';
     try {
+      // Basta BOM: Not Defteri Turkce karakterleri ancak boyle dogru gosteriyor
       nfs.writeFileSync(yol, '﻿' + m.replace(/\n/g, '\r\n'), 'utf8');
       subsNot('Kaydedildi: ' + yol);
     } catch (e) { subsNot('Kaydedilemedi: ' + e.message); }
@@ -2665,9 +2414,6 @@
     $('btnZoomKaldir').addEventListener('click', zoomKaldir);
     zoomEtiketleri();
 
-    // Yazi
-    yaziInit();
-    $('btnYaziEkle').addEventListener('click', yaziEkle);
 
     // Duz metin
     $('btnTxtCopy').addEventListener('click', metniKopyala);

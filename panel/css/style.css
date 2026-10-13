@@ -617,3 +617,49 @@ input[type=range]::-webkit-slider-thumb {
   .tab span { display: none; }
   .flbl { width: 64px; }
 }
+
+/* ---------------------------------------------------------------- */
+/*  KURGU FX araclari (panel/js/kfx.js)                              */
+/* ---------------------------------------------------------------- */
+
+.kfxkap { display: flex; flex-direction: column; gap: 11px; }
+.kfxkap .preview { width: 160px; }
+
+.stile.anim canvas { width: 64px; height: 28px; }
+.stile.anim { height: 66px; }
+.sgrid.dikey { grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
+.stile.dikey { height: auto; padding: 5px 4px 6px; }
+.stile.dikey canvas {
+  width: 52px; height: 92px; border-radius: 6px;
+  background: linear-gradient(160deg, #4a5465, #1d2129);
+}
+.stile.ikon { height: 70px; }
+.stile.ikon svg { width: 20px; height: 20px; color: var(--text); }
+.stile.ikon:hover svg, .stile.ikon.on svg { color: var(--accent-text); }
+
+.lumgrid { grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
+.stile.lum { height: auto; padding: 5px 4px 6px; }
+.stile.lum canvas { width: 54px; height: 72px; border-radius: 6px; }
+.preview.lumkap canvas { background: none; }
+
+.viz { width: 100%; height: 84px; border-radius: 8px; background: var(--bg); display: block; }
+.stats { display: flex; gap: 6px; }
+.stats:empty { display: none; }
+.stat { flex: 1; padding: 8px 10px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line-soft); }
+.stat b { display: block; font-size: 15px; color: var(--accent-text); }
+.stat small { color: var(--text-3); font-size: 10px; }
+
+.renkler { flex: 1; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+input[type=color] {
+  width: 30px; height: 24px; padding: 0; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--bg); cursor: pointer;
+}
+.tin {
+  flex: 1; min-width: 0; padding: 6px 9px;
+  background: var(--bg); color: var(--text);
+  border: 1px solid var(--line); border-radius: var(--r-sm);
+  font: 600 12px "Segoe UI", system-ui, sans-serif; outline: none;
+  -webkit-user-select: text; user-select: text;
+}
+.tin:focus { border-color: var(--accent); }
+.formlar { display: flex; flex-direction: column; gap: 8px; }
