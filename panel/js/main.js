@@ -2343,22 +2343,48 @@
   }
 
   /** Onizleme dongusu: animasyon + bir sure bekleme, sonra basa */
+  var yaziOnizHata = null;
+
+  /**
+   * Onizleme dongusu: buyuk telefon + her animasyon kutusu.
+   *
+   * Bir sonraki kare HATADAN ONCE isteniyor: ilk surumde cizim bir kez
+   * hata verince requestAnimationFrame hic cagrilmiyor ve onizleme
+   * kalici olarak bos kaliyordu — sebebi de hicbir yerde gorunmuyordu.
+   */
   function yaziOnizCiz(zaman) {
-    var cv = $('yaziOniz');
+    window.requestAnimationFrame(yaziOnizCiz);
     var sayfa = $('tab-yazi');
-    if (cv && sayfa && !sayfa.hidden && window.TKYazi) {
+    if (!sayfa || sayfa.hidden || !window.TKYazi) return;
+    try {
+      var cv = $('yaziOniz');
       var o = yaziSecenek();
       var dongu = o.sure + 0.7;
       if (!yaziOnizBas) yaziOnizBas = zaman;
       var t = ((zaman - yaziOnizBas) / 1000) % dongu;
-      o.t = Math.min(t, o.sure);
-      if (t > o.sure) o.t = o.sure;   // bekleme: cikis bitti, ekran bos
-      var g = cv.getContext('2d');
-      window.TKYazi.ciz(g, cv.width, cv.height, o);
+      o.t = Math.min(t, o.sure);   // sondaki bekleme: cikis bitti, ekran bos
+      if (cv) window.TKYazi.ciz(cv.getContext('2d'), cv.width, cv.height, o);
       var ib = $('yaziOnizIlerleme');
       if (ib) ib.style.width = Math.min(100, t / o.sure * 100).toFixed(1) + '%';
+
+      // Animasyon kutulari: secili stille, kisa bir donguyle
+      var kutular = document.querySelectorAll('#yaziAnimGrp canvas');
+      var tk = ((zaman / 1000) % 2.4);
+      for (var i = 0; i < kutular.length; i++) {
+        var a = kutular[i].getAttribute('data-anim');
+        window.TKYazi.ciz(kutular[i].getContext('2d'), kutular[i].width, kutular[i].height,
+          { metin: 'Bu *iz*', stil: yaziStil, anim: a, t: Math.min(tk, 1.9), sure: 1.9,
+            boyut: 2.3, konum: 0.5 });
+      }
+      yaziOnizHata = null;
+    } catch (e) {
+      // Ayni hatayi her karede yazmayalim
+      if (yaziOnizHata !== e.message) {
+        yaziOnizHata = e.message;
+        yaziG.temizle();
+        yaziG.yaz('<span class="err">Önizleme çizilemedi: ' + esc(e.message) + '</span>');
+      }
     }
-    window.requestAnimationFrame(yaziOnizCiz);
   }
 
   function yaziKutulariCiz() {
@@ -2402,15 +2428,25 @@
   function yaziAnimCiz() {
     var kap = $('yaziAnimGrp');
     if (!kap || !window.TKYazi) return;
+    // Her secenek kendi animasyonunu oynatan bir kutu: "Pop" yazisi
+    // ne yaptigini anlatmiyor, gormek anlatiyor
     kap.innerHTML = window.TKYazi.ANIMLER.map(function (a) {
-      return '<button type="button" class="mini' + (a.id === yaziAnim ? ' on' : '') +
-             '" data-anim="' + a.id + '">' + esc(a.ad) + '</button>';
+      return '<button type="button" class="stile' + (a.id === yaziAnim ? ' on' : '') +
+             '" data-anim="' + a.id + '"><canvas data-anim="' + a.id +
+             '" width="120" height="56"></canvas><span>' + esc(a.ad) + '</span></button>';
     }).join('');
-    grupSecimi(kap, 'data-anim', function (v) {
-      yaziAnim = v;
-      yerelYaz('tkcaption.yaziAnim', v);
-      yaziOnizBas = 0;
-    });
+    var kutular = kap.querySelectorAll('.stile');
+    for (var i = 0; i < kutular.length; i++) {
+      kutular[i].addEventListener('click', function () {
+        yaziAnim = this.getAttribute('data-anim');
+        yerelYaz('tkcaption.yaziAnim', yaziAnim);
+        yaziOnizBas = 0;
+        var hepsi = kap.querySelectorAll('.stile');
+        for (var j = 0; j < hepsi.length; j++) {
+          hepsi[j].className = hepsi[j].getAttribute('data-anim') === yaziAnim ? 'stile on' : 'stile';
+        }
+      });
+    }
   }
 
   function yaziInit() {

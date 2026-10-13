@@ -1,7 +1,7 @@
 {
-  "version": "0.10.0",
-  "updated": "2026-10-13T07:43:03.941Z",
-  "notes": "Yeni arayuz; Dolgu Kesici, Yazi Studyosu, otomatik zoom, kelime kelime altyazi, marker, duz metin",
+  "version": "0.10.1",
+  "updated": "2026-10-13T08:03:18.953Z",
+  "notes": "Yazi Studyosu: animasyon onizlemeleri; onizleme hataya dayanikli",
   "files": [
     {
       "path": "core/package.json",
@@ -106,12 +106,12 @@
     {
       "path": "css/style.css",
       "source": "panel/css/style.css",
-      "sha": "15596a5e859842ea4d4033d83142cbecbcf394e051c4cd9033e1af5f73a2ac84"
+      "sha": "a967ea409a5d7f3da669fad62ec9cf1cb69630b89caf1d6ec9be570c935eb234"
     },
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "2c9786a9b493c6005fdf24ff0163be8d9d4945b0339cbd860611ce306e0fbe11"
+      "sha": "4e5ed19d0554cc2c5efbed57784e93198201dbd0e2994af4dd4b028acab89271"
     },
     {
       "path": "fonts/Anton.ttf",
@@ -146,7 +146,7 @@
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "20daa040304d11c57af65c4e2bd8014eb0e303bf2db10ade8778880ee2b65548"
+      "sha": "00bcf90baf938f25665aa541393be3772159b0c1efe12918bb60fadd99b60ddc"
     },
     {
       "path": "js/cep.js",
@@ -156,7 +156,7 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "e81703cda745d53d1f72b1a95f0466ee55b42153115f218d6701aad03daffdcf"
+      "sha": "512643ef02f26e4a637a452f48768ba7bc54c437e176f2e26affdbe0f8bf4031"
     },
     {
       "path": "js/yazi.js",
@@ -166,7 +166,7 @@
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "86e610f9c7be5a7e1dc2a6fd887524001d5125be1a836aea46a67027d3b668cf"
+      "sha": "aba0eca58ee7823ab209048ca27eff6128308b5d57113331d852dc2dfefd2c31"
     },
     {
       "path": "LICENSE",
