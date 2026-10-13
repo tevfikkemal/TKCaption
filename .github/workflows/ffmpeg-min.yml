@@ -1,0 +1,156 @@
+# Yalnizca SES OKUYAN, kucuk bir ffmpeg derler (Windows + Mac).
+#
+# NEDEN KENDI DERLEMEMIZ: hazir Windows derlemeleri ~170 MB ve icinde bize
+# gerekmeyen video kodlayicilari var. Bizim isimiz video/ses dosyasindan
+# sesi okuyup ham PCM'e cevirmek (muzik vurus tespiti, ses analizi). Bunun
+# icin FFmpeg'in kendi kod cozuculeri yetiyor: harici kutuphane yok, LGPL,
+# birkac MB.
+#
+# Her yapi gercek dosyalarla denenir: H.264+AAC MP4, MP3, WAV, MOV(PCM).
+# Kullanimimizin aynisi: -ss/-t ile parca, -vn, mono, 22050 Hz, f32le stdout.
+
+name: ffmpeg-min
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/ffmpeg-min.yml']
+
+env:
+  FFMPEG_TAG: n7.1.1
+  CONFIG: >-
+    --disable-everything --disable-autodetect --disable-doc --disable-debug
+    --disable-network --disable-ffplay --disable-ffprobe --disable-x86asm
+    --enable-small --enable-swresample
+    --enable-protocol=file,pipe
+    --enable-demuxer=mov,matroska,mp3,wav,aac,flac,ogg,avi,mpegts,aiff,w64,caf,m4v
+    --enable-decoder=aac,aac_latm,mp3,mp3float,mp2,mp2float,flac,opus,vorbis,alac,ac3,eac3,pcm_s16le,pcm_s16be,pcm_s24le,pcm_s24be,pcm_s32le,pcm_f32le,pcm_f32be,pcm_u8,pcm_alaw,pcm_mulaw
+    --enable-parser=aac,aac_latm,mpegaudio,flac,opus,vorbis,ac3
+    --enable-muxer=wav,f32le,s16le
+    --enable-encoder=pcm_f32le,pcm_s16le
+    --enable-filter=abuffer,abuffersink,buffer,buffersink,aformat,aresample,anull,null,format,atrim,trim
+
+permissions:
+  contents: write
+
+jobs:
+  # Test dosyalari: tam bir ffmpeg ile uretilir, her platform ayni dosyalari dener
+  fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Test dosyalari
+        run: |
+          mkdir fx && cd fx
+          ffmpeg -v error -f lavfi -i testsrc=duration=4:size=320x240:rate=25 -f lavfi -i sine=frequency=440:duration=4 -c:v libx264 -c:a aac -shortest t.mp4
+          ffmpeg -v error -f lavfi -i sine=frequency=330:duration=4 -c:a libmp3lame t.mp3
+          ffmpeg -v error -f lavfi -i sine=frequency=550:duration=4 -c:a pcm_s16le t.wav
+          ffmpeg -v error -f lavfi -i testsrc=duration=4:size=320x240:rate=25 -f lavfi -i sine=duration=4 -c:v mjpeg -c:a pcm_s24le -shortest t.mov
+          ls -l
+      - uses: actions/upload-artifact@v4
+        with: { name: fixtures, path: fx }
+
+  windows:
+    needs: fixtures
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq mingw-w64
+      - uses: actions/checkout@v4
+        with: { repository: FFmpeg/FFmpeg, ref: '${{ env.FFMPEG_TAG }}' }
+      - name: Derle (mingw, statik)
+        run: |
+          ./configure $CONFIG --target-os=mingw32 --arch=x86_64 \
+            --cross-prefix=x86_64-w64-mingw32- --pkg-config=false \
+            --extra-ldflags='-static -static-libgcc'
+          make -j4 ffmpeg.exe
+          x86_64-w64-mingw32-strip ffmpeg.exe
+          ls -l ffmpeg.exe
+      - name: Paketle
+        run: |
+          mkdir paket && cp ffmpeg.exe paket/ && cp COPYING.LGPLv2.1 paket/LICENSE-ffmpeg.txt
+          echo "FFmpeg $FFMPEG_TAG — yalnizca ses okuma icin derlendi. Kaynak: https://github.com/FFmpeg/FFmpeg/tree/$FFMPEG_TAG" > paket/README-ffmpeg.txt
+          echo "Yapilandirma: $CONFIG" >> paket/README-ffmpeg.txt
+          cd paket && zip -X ../ffmpeg-min-win64.zip *
+      - uses: actions/upload-artifact@v4
+        with: { name: ffmpeg-min-win64, path: ffmpeg-min-win64.zip }
+
+  windows-test:
+    needs: windows
+    runs-on: windows-latest
+    defaults: { run: { shell: bash } }
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: fixtures, path: fx }
+      - uses: actions/download-artifact@v4
+        with: { name: ffmpeg-min-win64 }
+      - run: unzip -o ffmpeg-min-win64.zip -d bin
+      - name: Gercek dosyalardan ses oku
+        run: |
+          for f in t.mp4 t.mp3 t.wav t.mov; do
+            ./bin/ffmpeg.exe -v error -ss 0.5 -t 2 -i fx/$f -vn -ac 1 -ar 22050 -f f32le pipe:1 > out.raw
+            n=$(stat -c %s out.raw)
+            echo "$f -> $n bayt"
+            # 2 sn * 22050 * 4 bayt = 176400; kodlayici gecikmesi icin pay
+            [ "$n" -gt 160000 ] || { echo "$f okunamadi"; exit 1; }
+          done
+
+  mac:
+    needs: fixtures
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: arm64, runner: macos-15 }
+          - { arch: x64, runner: macos-15-intel }
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { repository: FFmpeg/FFmpeg, ref: '${{ env.FFMPEG_TAG }}' }
+      - name: Derle
+        run: |
+          ./configure $CONFIG --extra-cflags=-mmacosx-version-min=12.0 --extra-ldflags=-mmacosx-version-min=12.0
+          make -j4 ffmpeg
+          strip ffmpeg
+          otool -L ffmpeg
+          if otool -L ffmpeg | tail -n +2 | grep -v -E '^\s+(/usr/lib/|/System/Library/)'; then echo "Sistem disi bagimlilik"; exit 1; fi
+          codesign --force --sign - ffmpeg
+          ls -l ffmpeg
+      - uses: actions/download-artifact@v4
+        with: { name: fixtures, path: fx }
+      - name: Gercek dosyalardan ses oku
+        run: |
+          for f in t.mp4 t.mp3 t.wav t.mov; do
+            ./ffmpeg -v error -ss 0.5 -t 2 -i fx/$f -vn -ac 1 -ar 22050 -f f32le pipe:1 > out.raw
+            n=$(stat -f %z out.raw)
+            echo "$f -> $n bayt"
+            [ "$n" -gt 160000 ] || { echo "$f okunamadi"; exit 1; }
+          done
+      - name: Paketle
+        run: |
+          mkdir paket && cp ffmpeg paket/ && cp COPYING.LGPLv2.1 paket/LICENSE-ffmpeg.txt
+          echo "FFmpeg $FFMPEG_TAG — yalnizca ses okuma icin derlendi." > paket/README-ffmpeg.txt
+          cd paket && zip -X ../ffmpeg-min-macos-${{ matrix.arch }}.zip *
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-min-macos-${{ matrix.arch }}
+          path: ffmpeg-min-macos-${{ matrix.arch }}.zip
+
+  release:
+    needs: [windows-test, mac]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { pattern: 'ffmpeg-min-*', merge-multiple: true }
+      - name: Surume koy
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          TAG="ffmpeg-min-${FFMPEG_TAG}"
+          ls -l *.zip
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" *.zip --clobber -R "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" *.zip -R "$GITHUB_REPOSITORY" \
+              --title "ffmpeg ${FFMPEG_TAG} — yalnizca ses okuma" \
+              --notes "TK Caption'in ses analizi icin kullandigi kucuk ffmpeg. Yalnizca FFmpeg'in kendi ses kod cozuculeri (LGPL). Panel bunu kendisi indirir."
+          fi
