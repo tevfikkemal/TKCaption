@@ -87,13 +87,20 @@ jobs:
       - run: unzip -o ffmpeg-min-win64.zip -d bin
       - name: Gercek dosyalardan ses oku
         run: |
+          # Hata mesaji annotation olarak yaziliyor: gunlukler giris yapmadan
+          # okunamiyor, annotation'lar API'den herkese acik
+          kotu=0
           for f in t.mp4 t.mp3 t.wav t.mov; do
-            ./bin/ffmpeg.exe -v error -ss 0.5 -t 2 -i fx/$f -vn -ac 1 -ar 22050 -f f32le pipe:1 > out.raw
+            ./bin/ffmpeg.exe -v error -ss 0.5 -t 2 -i fx/$f -vn -ac 1 -ar 22050 -f f32le pipe:1 > out.raw 2> err.txt || true
             n=$(stat -c %s out.raw)
             echo "$f -> $n bayt"
             # 2 sn * 22050 * 4 bayt = 176400; kodlayici gecikmesi icin pay
-            [ "$n" -gt 160000 ] || { echo "$f okunamadi"; exit 1; }
+            if [ "$n" -lt 160000 ]; then
+              echo "::error title=win $f::$n bayt. $(head -c 600 err.txt | tr '\r\n' '  ')"
+              kotu=1
+            fi
           done
+          exit $kotu
 
   mac:
     needs: fixtures
@@ -120,12 +127,17 @@ jobs:
         with: { name: fixtures, path: fx }
       - name: Gercek dosyalardan ses oku
         run: |
+          kotu=0
           for f in t.mp4 t.mp3 t.wav t.mov; do
-            ./ffmpeg -v error -ss 0.5 -t 2 -i fx/$f -vn -ac 1 -ar 22050 -f f32le pipe:1 > out.raw
+            ./ffmpeg -v error -ss 0.5 -t 2 -i fx/$f -vn -ac 1 -ar 22050 -f f32le pipe:1 > out.raw 2> err.txt || true
             n=$(stat -f %z out.raw)
             echo "$f -> $n bayt"
-            [ "$n" -gt 160000 ] || { echo "$f okunamadi"; exit 1; }
+            if [ "$n" -lt 160000 ]; then
+              echo "::error title=mac ${{ matrix.arch }} $f::$n bayt. $(head -c 600 err.txt | tr '\r\n' '  ')"
+              kotu=1
+            fi
           done
+          exit $kotu
       - name: Paketle
         run: |
           mkdir paket && cp ffmpeg paket/ && cp COPYING.LGPLv2.1 paket/LICENSE-ffmpeg.txt
