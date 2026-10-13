@@ -184,7 +184,10 @@ async function run(opts) {
       cpsViolations: blocks.filter((b) => b.cps > cfg.layout.maxCps + 0.5).length,
       lineLengthViolations: blocks.filter(
         (b) => b.lines.some((l) => l.length > cfg.layout.maxCharsPerLine)).length,
-      engine: bin.variant
+      engine: bin.variant,
+      // Dolgu kesici kelime zamanlarina ihtiyac duyuyor. Saniye, girdi
+      // sesinin basina gore (zaman kodu kaymasi UYGULANMAMIS).
+      wordList: words.map((w) => ({ text: w.text, start: w.start, end: w.end }))
     };
   } finally {
     if (ownWorkDir && !opts.keepTemp) whisper.cleanup(workDir);

@@ -1,848 +1,617 @@
 /* ==================================================================
-   TK Caption — panel arayuzu
+   TK Caption — panel arayuzu (0.10)
 
-   TK Labs gorsel dili (FlowTide ve Davetly'den okundu):
-   - Neredeyse siyah zemin, uzerinde bir tik acik yuzeyler
-   - Turkuaz-mint vurgu; secili durum koyu teal dolgu + parlak teal metin
-   - Tam yuvarlak (pill) dugmeler
-   - Kalin baslik, gri ikincil metin
-   - Ince cizgi ikonlar
+   Duzen: solda simgeli menu, sagda o aracin sayfasi. Her sayfa ayni
+   iskelette: baslik + bir satirlik aciklama, BUYUK HARF etiketli kartlar,
+   en altta tek bir ana eylem. Kullanici hangi aractaysa yalnizca onu
+   goruyor; onceki surumde her sey tek sayfada ust uste duruyordu.
 
-   Panel Premiere'in ICINDE yasiyor ama artik ev sahibine benzemeye
-   calismiyor: kullanici markanin one cikmasini istedi. Yine de yogunluk
-   Premiere'e saygili tutuldu — turkuaz yalnizca eylem ve secimde,
-   dekoratif renk yok.
-
-   Renk ANLAM tasir: turkuaz eylem/secim, yesil basari, kirmizi hata,
-   kehribar uyari.
+   TK Labs gorsel dili: neredeyse siyah zemin, bir tik acik yuzeyler,
+   turkuaz yalnizca eylem ve secimde. Renk ANLAM tasir: turkuaz
+   eylem/secim, yesil basari, kirmizi hata, kehribar uyari.
    ================================================================== */
 
 :root {
-  /* Yuzeyler — siyahtan yukari uc kademe */
   --bg: #0a0c0c;
-  --surface: #111514;
-  --surface-2: #171c1b;
-  --raised: #1e2422;
-  --line: #232b29;
-  --line-soft: #192020;
+  --rail: #0d1010;
+  --surface: #121615;
+  --surface-2: #181d1c;
+  --raised: #1f2624;
+  --line: #242c2a;
+  --line-soft: #1a2120;
 
-  /* Metin — uc kademe yeterli; fazlasi hiyerarsiyi bulandirir */
-  --text: #e8edec;
-  --text-2: #8b9794;
-  --text-3: #5a6663;
+  --text: #e9eeed;
+  --text-2: #94a19e;
+  --text-3: #5d6a67;
 
-  /* Anlam renkleri */
-  --accent: #2dd4bf;        /* eylem ve secim */
-  --accent-soft: #14312e;   /* secili dolgu — turkuazin koyu tonu */
-  --accent-text: #5eead4;   /* secili metin, zemin uzerinde okunur */
+  --accent: #2dd4bf;
+  --accent-2: #14b8a6;
+  --accent-soft: #123330;
+  --accent-text: #5eead4;
+  --on-accent: #04110f;
   --ok: #4ade80;
   --warn: #fbbf24;
   --err: #f87171;
 
   --mono: "Consolas", "SF Mono", "Menlo", monospace;
-  --r: 8px;
-  --r-sm: 6px;
+  --r: 12px;
+  --r-sm: 8px;
   --pill: 999px;
+  --rail-w: 62px;
 }
 
 * { box-sizing: border-box; }
-
-/* .env{display:grid} gibi kurallar tarayicinin [hidden]{display:none}
-   kuralini eziyor (ayni ozgulluk, sonra geliyor). Bu yuzden hidden
-   ozniteligi calismiyordu — acikca geri aliyoruz. */
 [hidden] { display: none !important; }
 
+html, body { height: 100%; }
 body {
   margin: 0;
-  padding: 11px;
   background: var(--bg);
   color: var(--text);
-  font: 12px/1.55 "Segoe UI", system-ui, -apple-system, sans-serif;
+  font: 12px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -webkit-user-select: none;
   user-select: none;
-}
-
-/* ---------------------------------------------------------------- */
-/*  Baslik                                                           */
-/* ---------------------------------------------------------------- */
-
-
-/* TK isareti — logodaki kare icinde kalin harfler. Gorsel dosya yerine
-   CSS: panel her cozunurlukte net kaliyor ve pakete dosya eklemiyoruz. */
-.mark {
-  flex: none;
-  width: 26px;
-  height: 26px;
-  border-radius: var(--r-sm);
-  background: #f2f5f4;
-  color: #0a0c0c;
-  font: 800 12.5px/26px "Segoe UI", system-ui, sans-serif;
-  letter-spacing: -0.4px;
-  text-align: center;
-}
-
-.topbar .titles { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.topbar h1 {
-  margin: 0;
-  font-size: 14.5px;
-  font-weight: 700;
-  letter-spacing: -0.2px;
-  color: #f2f5f4;
-  line-height: 1.1;
-}
-.by {
-  font-size: 9.5px;
-  color: var(--text-3);
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-}
-.ver {
-  margin-left: auto;
-  align-self: center;
-  font: 400 9.5px/1 var(--mono);
-  color: var(--text-3);
-}
-
-/* Sekans ozeti — ayri kart degil, basligin altinda tek satir */
-.seqline {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin: -4px 2px 12px;
-  font-size: 10.5px;
-  color: var(--text-2);
-  min-height: 16px;
-}
-.seqline .dot { color: var(--text-3); }
-.seqline .refresh {
-  margin-left: auto;
-  background: none; border: none; padding: 2px 4px;
-  color: var(--text-3);
-  font-size: 10.5px;
-  cursor: pointer;
-}
-.seqline .refresh:hover { color: var(--accent-text); }
-
-/* ---------------------------------------------------------------- */
-/*  Kartlar                                                          */
-/* ---------------------------------------------------------------- */
-
-.card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  padding: 11px;
-  margin-bottom: 9px;
-  /* Ust kenardaki cok ince acik cizgi yuzeyi "kalkik" gosterir.
-     Golge yok — Premiere'in duz dilinde golge yabanci durur. */
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
-}
-
-/* Asil eylem karti hafifce one ciksin — ayri renk degil, ayri ton */
-
-/* Bolum basliklari: kucuk, harf arali, sessiz.
-   Boylece iceriik on planda kalir. */
-.card h2 {
-  margin: 0 0 9px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-
-.desc {
-  margin: 0 0 10px;
-  color: var(--text-2);
-  font-size: 11px;
-  line-height: 1.5;
-}
-.desc strong { color: var(--text); font-weight: 600; }
-.desc code {
-  font: 10px var(--mono);
-  background: rgba(0, 0, 0, 0.28);
-  padding: 1px 4px;
-  border-radius: 2px;
-  color: var(--text-2);
-}
-
-.row { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; }
-.row.spread { justify-content: space-between; align-items: center; }
-.row.spread h2 { margin: 0; }
-
-/* ---------------------------------------------------------------- */
-/*  Dugmeler                                                         */
-/* ---------------------------------------------------------------- */
-
-/* Pill dugmeler — TK Labs dilinin en belirgin ogesi */
-.btn {
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--line);
-  border-radius: var(--pill);
-  padding: 6px 14px;
-  font: 500 11px "Segoe UI", system-ui, sans-serif;
-  cursor: pointer;
-  transition: background .14s ease, border-color .14s ease, color .14s ease;
-}
-.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--text-3); }
-.btn:active:not(:disabled) { background: var(--surface); }
-.btn:disabled { opacity: .38; cursor: default; }
-
-/* Ana eylem: dolu turkuaz, koyu metin — referanslardaki gibi */
-.btn.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #06201d;
-  font-weight: 600;
-}
-.btn.primary:hover:not(:disabled) { background: #3ee0cb; border-color: #3ee0cb; }
-.btn.primary:active:not(:disabled) { background: #22b9a6; border-color: #22b9a6; }
-.btn.primary:disabled { background: var(--accent-soft); border-color: transparent; color: var(--text-3); opacity: 1; }
-
-.btn.big { padding: 10px 22px; font-size: 12.5px; font-weight: 600; }
-.btn.small { padding: 4px 11px; font-size: 10px; }
-
-.link {
-  background: none; border: none; padding: 0;
-  color: var(--text-3);
-  font: 10px "Segoe UI", system-ui, sans-serif;
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-.link:hover { color: var(--text-2); }
-
-/* ---------------------------------------------------------------- */
-/*  Etiket-deger listesi                                             */
-/* ---------------------------------------------------------------- */
-
-.env {
-  display: grid;
-  grid-template-columns: 84px 1fr;
-  gap: 4px 10px;
-  margin: 9px 0 0;
-  font-size: 11px;
-}
-.env dt { color: var(--text-3); }
-.env dd {
-  margin: 0;
-  font: 10.5px var(--mono);
-  color: var(--text-2);
-  word-break: break-word;
-}
-.env dd.ok { color: var(--ok); }
-.env dd.warn { color: var(--warn); }
-.env dd.err { color: var(--err); }
-.env dd.pending { color: var(--text-3); font-style: italic; }
-
-/* ---------------------------------------------------------------- */
-/*  Cikti / gunluk                                                   */
-/* ---------------------------------------------------------------- */
-
-.out {
-  margin-top: 10px;
-  padding: 9px 10px;
-  background: var(--surface-2);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-sm);
-  font: 10.5px/1.6 var(--mono);
-  white-space: pre-wrap;
-  word-break: break-word;
-  max-height: 280px;
-  overflow-y: auto;
-  color: var(--text-2);
-  -webkit-user-select: text;
-  user-select: text;
-}
-.out .ok { color: var(--ok); }
-.out .warn { color: var(--warn); }
-.out .err { color: var(--err); }
-.out .dim { color: var(--text-3); }
-.out h3 {
-  margin: 9px 0 4px;
-  font: 600 10px "Segoe UI", system-ui, sans-serif;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-.out h3:first-child { margin-top: 0; }
-
-/* ---------------------------------------------------------------- */
-/*  Bilgi kutulari                                                   */
-/* ---------------------------------------------------------------- */
-
-.first-run,
-.warn-box {
-  margin: 0 0 10px;
-  padding: 8px 10px;
-  border-radius: var(--r-sm);
-  font-size: 10.5px;
-  line-height: 1.55;
-  border-left: 2px solid;
-}
-.first-run {
-  background: rgba(45, 212, 191, 0.07);
-  border-left-color: var(--accent);
-  color: var(--text-2);
-}
-.first-run strong { color: var(--text); font-weight: 600; }
-.warn-box {
-  background: rgba(224, 163, 62, 0.08);
-  border-left-color: var(--warn);
-  color: var(--warn);
-}
-.warn-box strong { color: var(--warn); font-weight: 600; }
-
-.note {
-  margin: 9px 0 0;
-  font-size: 10px;
-  line-height: 1.5;
-  color: var(--text-3);
-}
-.hint {
-  margin: 9px 0 0;
-  font-size: 10.5px;
-  line-height: 1.5;
-  color: var(--warn);
-}
-
-/* ---------------------------------------------------------------- */
-/*  Form ogeleri                                                     */
-/* ---------------------------------------------------------------- */
-
-/* ---------------------------------------------------------------- */
-/*  Platform secimi                                                  */
-/* ---------------------------------------------------------------- */
-
-/* ---------------------------------------------------------------- */
-/*  Ilerleme                                                         */
-/* ---------------------------------------------------------------- */
-
-.bar {
-  height: 3px;
-  background: var(--surface-2);
-  border-radius: 2px;
-  margin-top: 10px;
   overflow: hidden;
 }
-.fill {
-  height: 100%;
-  width: 0;
-  background: var(--accent);
-  transition: width .25s ease;
-}
 
-/* ---------------------------------------------------------------- */
-/*  Katlanabilir bolumler                                            */
-/* ---------------------------------------------------------------- */
-
-details > summary {
-  cursor: pointer;
-  font-size: 10.5px;
-  color: var(--text-3);
-  padding: 5px 2px;
-  list-style: none;
-  user-select: none;
-  transition: color .12s ease;
-}
-details > summary::-webkit-details-marker { display: none; }
-/* Ucgen isaret: metin oku yerine, Premiere'in kendi agac gostergesine yakin */
-details > summary::before {
-  content: '';
-  display: inline-block;
-  width: 0; height: 0;
-  margin-right: 6px;
-  border-left: 4px solid currentColor;
-  border-top: 3.5px solid transparent;
-  border-bottom: 3.5px solid transparent;
-  transition: transform .15s ease;
-  vertical-align: middle;
-}
-details[open] > summary::before { transform: rotate(90deg); }
-details > summary:hover { color: var(--text-2); }
-
-.advanced { margin-bottom: 9px; }
-.advanced > summary { padding: 7px 2px; }
-.advanced .card { margin-top: 9px; }
-
-/* ---------------------------------------------------------------- */
-/*  Alt bilgi                                                        */
-/* ---------------------------------------------------------------- */
-
-.foot {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 9px;
-  border-top: 1px solid var(--line-soft);
-  font-size: 10px;
-  color: var(--text-3);
-}
-#status { font: 10px var(--mono); }
-
-/* ---------------------------------------------------------------- */
-
-::-webkit-scrollbar { width: 10px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: var(--line);
-  border-radius: 5px;
-  border: 3px solid var(--bg);
-}
-::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
-
-/* Etiket + deger ayni satirda */
-
-/* Coklu secim notu ile karartma birbirine yapismasin */
-#safeMulti { margin-bottom: 10px; }
-
-/* Guncelleme bildirimi — dikkat cekmeli ama isi bolmemeli */
-.update-box {
-  margin: 0 0 10px;
-  padding: 9px 11px;
-  background: rgba(45, 212, 191, 0.07);
-  border: 1px solid rgba(45, 212, 191, 0.22);
-  border-radius: var(--r);
-}
-.update-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text);
-}
-.update-note {
-  margin: 6px 0 0;
-  font-size: 10px;
-  line-height: 1.5;
-  color: var(--text-2);
-}
-.update-box .bar { margin-top: 8px; }
-
-/* ------------------------------------------------------------------ */
-/*  Stilize altyazi — sablon kartlari                                  */
-/* ------------------------------------------------------------------ */
-
-/* Onizlemeler sablonun kendi thumb.png'si; kart boyu ona gore.
-   Panel dar oldugunda tek sutuna dusuyor, sikismiyor. */
-.mogrt-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  gap: 6px;
-  margin: 10px 0 4px;
-  max-height: 260px;
-  overflow-y: auto;
-  padding-right: 2px;
-}
-
-.mogrt-card {
-  border: 1px solid var(--line);
-  border-radius: 3px;
-  background: var(--surface);
-  cursor: pointer;
-  overflow: hidden;
-  text-align: center;
-  padding: 0 0 4px;
-}
-
-.mogrt-card:hover { border-color: var(--accent); }
-
-/* Secili kart: renk YALNIZCA anlam tasidigi yerde — burada secim */
-.mogrt-card.on {
-  border-color: var(--accent);
-  box-shadow: inset 0 0 0 1px var(--accent);
-}
-
-.mogrt-card img {
-  display: block;
-  width: 100%;
-  height: 54px;
-  object-fit: cover;
-  background: #000;
-}
-
-.mogrt-card .ad {
-  display: block;
-  font-size: 10px;
-  line-height: 1.25;
-  padding: 3px 3px 0;
-  color: var(--text-2);
-  word-break: break-word;
-}
-
-.mogrt-card.on .ad { color: var(--text); }
-
-/* Onizlemesi olmayan sablon: bos kutu yerine adin yeterli oldugu bir yer */
-.mogrt-card .yok {
-  display: block;
-  height: 54px;
-  line-height: 54px;
-  font-size: 10px;
-  color: var(--text-3);
-  background: var(--surface-2);
-}
-
-/* ---------------------------------------------------------------- */
-/*  Sekmeler                                                         */
-/* ---------------------------------------------------------------- */
-
-/* Uc bolum dikey olarak alt alta durunca panel uzuyor ve asil eylem
-   asagida kayboluyordu. Sekmeye alinca ayni anda yalnizca biri gorunuyor;
-   "Altyazi Olustur" her zaman en ustte ve tek basina kaliyor. */
-.tabs {
-  display: flex;
-  gap: 4px;
-  margin: 14px 0 10px;
-  padding: 3px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--pill);
-}
-.tab {
-  flex: 1;
-  background: none;
-  border: none;
-  border-radius: var(--pill);
-  padding: 6px 4px;
-  font: 500 11px "Segoe UI", system-ui, sans-serif;
-  color: var(--text-2);
-  cursor: pointer;
-  transition: background .14s ease, color .14s ease;
-}
-.tab:hover { color: var(--text); }
-/* Secili sekme: koyu teal dolgu + parlak teal metin — referans dil */
-.tab.on {
-  background: var(--accent-soft);
-  color: var(--accent-text);
-  font-weight: 600;
-}
-
-.panelbody[hidden] { display: none !important; }
-
-/* ---------------------------------------------------------------- */
-/*  Platform cipleri                                                 */
-/* ---------------------------------------------------------------- */
-
-/* Yedi satir dikey onay kutusu panelin ucte birini yiyordu. Cipler
-   yatay sariyor, ayni bilgi uc satira iniyor. */
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin: 9px 0 4px;
-  padding: 0;
-  list-style: none;
-}
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 11px 5px 9px;
-  border: 1px solid var(--line);
-  border-radius: var(--pill);
-  font-size: 10.5px;
-  color: var(--text-2);
-  cursor: pointer;
-  transition: background .14s ease, border-color .14s ease, color .14s ease;
-}
-.chip:hover { border-color: var(--text-3); color: var(--text); }
-.chip input { display: none; }
-.chip .ico { width: 13px; height: 13px; flex: none; opacity: .75; }
-.chip.on {
-  background: var(--accent-soft);
-  border-color: transparent;
-  color: var(--accent-text);
-  font-weight: 600;
-}
-.chip.on .ico { opacity: 1; }
-
-/* ---------------------------------------------------------------- */
-/*  Ayar satirlari — kompakt                                         */
-/* ---------------------------------------------------------------- */
-
-.set {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 0;
-  border-bottom: 1px solid var(--line-soft);
-  font-size: 11px;
-}
-.set:last-child { border-bottom: none; }
-.set > span:first-child { color: var(--text-2); flex: none; min-width: 92px; }
-.set > input, .set > select { margin-left: auto; }
-.set .val { margin-left: auto; color: var(--text); font-variant-numeric: tabular-nums; }
-
-/* ---------------------------------------------------------------- */
-/*  Ana eylem alani                                                  */
-/* ---------------------------------------------------------------- */
-
-/* Kart icinde degil, tek basina: goz once buraya dussun. */
-.hero {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin: 4px 0 2px;
-}
-.hero .btn.primary { flex: 1; }
-
-/* Sekme govdeleri kart gorunumunu devralir ama ust ustelik yaratmaz */
-.panelbody {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  padding: 11px;
-  margin-bottom: 9px;
-}
-
-.note.nomargin { margin: 0; flex: 1; min-width: 0; }
-
-.ellipsis {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-  flex: 1;
-  font-size: 10.5px;
-}
-
-.dim { color: var(--text-3); }
-
-/* Sorun giderme: en altta, sessiz, varsayilan kapali */
-.advanced {
-  margin-top: 14px;
-  border-top: 1px solid var(--line-soft);
-  padding-top: 10px;
-}
-.advanced > summary {
-  cursor: pointer;
-  font-size: 10.5px;
-  color: var(--text-3);
-  list-style: none;
-  padding: 2px 0;
-}
-.advanced > summary::-webkit-details-marker { display: none; }
-.advanced > summary::before { content: "▸ "; }
-.advanced[open] > summary::before { content: "▾ "; }
-.advanced > summary:hover { color: var(--text-2); }
-.advanced .card { margin-top: 9px; }
-
-/* Sekme icindeki denetimler dar panelde tasmasin */
-.set select, .set input[type="number"] { max-width: 58%; }
-.set input[type="range"] { flex: 1; min-width: 0; margin-left: auto; }
-.set input[type="range"] + .val { margin-left: 8px; flex: none; min-width: 52px; text-align: right; }
-
-/* ---------------------------------------------------------------- */
-/*  Form denetimleri                                                 */
-/* ---------------------------------------------------------------- */
-
-/* Tarayici varsayilanlari acik renk geliyor ve koyu zeminde yabanci
-   duruyor; hepsini kendimiz ciziyoruz. */
-.set select,
-.set input[type="number"] {
-  -webkit-appearance: none;
-  appearance: none;
-  background: var(--surface-2);
-  color: var(--text);
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  padding: 5px 9px;
-  font: 400 11px "Segoe UI", system-ui, sans-serif;
-  outline: none;
-}
-.set select {
-  /* Kendi oku — appearance:none varsayilan oku da siliyor */
-  background-image:
-    linear-gradient(45deg, transparent 50%, var(--text-3) 50%),
-    linear-gradient(135deg, var(--text-3) 50%, transparent 50%);
-  background-position: right 11px center, right 6px center;
-  background-size: 5px 5px, 5px 5px;
-  background-repeat: no-repeat;
-  padding-right: 24px;
-}
-.set select:focus,
-.set input[type="number"]:focus {
-  border-color: var(--accent);
-}
-.set select option { background: var(--surface-2); color: var(--text); }
-
-.set input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 3px;
-  background: var(--line);
-  border-radius: var(--pill);
-  outline: none;
-}
-.set input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background: var(--accent);
-  cursor: pointer;
-  border: none;
-}
-.set input[type="range"]:disabled::-webkit-slider-thumb { background: var(--text-3); }
+.app { display: flex; flex-direction: column; height: 100vh; }
 
 /* ---------------------------------------------------------------- */
 /*  Ust bar                                                          */
 /* ---------------------------------------------------------------- */
 
 .topbar {
+  flex: none;
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 2px 2px 11px;
-  margin-bottom: 10px;
+  gap: 8px;
+  padding: 9px 10px 9px 12px;
   border-bottom: 1px solid var(--line-soft);
+  background: var(--rail);
 }
 
-/* Ana eylemin altindaki tek satirlik ipucu — hedefe gore degisiyor */
-.runhint {
-  margin: 6px 2px 0;
-  font-size: 10px;
-  color: var(--text-3);
+/* TK isareti — gorsel dosya yerine CSS, her cozunurlukte net */
+.mark {
+  flex: none;
+  width: 26px; height: 26px;
+  border-radius: 7px;
+  background: linear-gradient(145deg, #5eead4, #14b8a6);
+  color: var(--on-accent);
+  font: 900 11.5px/26px "Segoe UI", system-ui, sans-serif;
+  text-align: center;
+  letter-spacing: -0.5px;
+  box-shadow: 0 4px 14px rgba(45, 212, 191, .25);
 }
+.brand { font-weight: 800; font-size: 14px; letter-spacing: .2px; }
+.ver { font: 10px var(--mono); color: var(--text-3); }
 
-/* ---- Alt bar ---- */
-
-.botbar {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid var(--line-soft);
-}
-.botlink {
-  background: none;
-  border: none;
-  padding: 2px 0;
-  color: var(--text-3);
-  font: 10px "Segoe UI", system-ui, sans-serif;
-  cursor: pointer;
-}
-.botlink:hover { color: var(--accent-text); }
-.botlink.on { color: var(--accent-text); }
-#advBody { margin-top: 8px; }
-
-/* ---------------------------------------------------------------- */
-/*  Kapsam satiri — aralik ve ses pisti secimi                       */
-/* ---------------------------------------------------------------- */
-
-/* Ana eylemin hemen altinda, kucuk ve sessiz durur; ama her
-   calistirmada degisebilecegi icin bir tik uzakta olmamali. */
-.scope {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  align-items: center;
-  margin: 7px 2px 0;
-}
-.scope-grp {
+.seqpill {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-.mini-lbl {
-  font-size: 9.5px;
-  color: var(--text-3);
-  margin-right: 1px;
-}
-.mini {
-  background: none;
+  gap: 6px;
+  margin-left: 4px;
+  padding: 5px 10px;
   border: 1px solid var(--line);
   border-radius: var(--pill);
-  padding: 3px 9px;
-  font: 500 9.5px "Segoe UI", system-ui, sans-serif;
+  background: var(--surface);
   color: var(--text-2);
+  font: inherit;
+  font-size: 11px;
   cursor: pointer;
-  transition: background .14s ease, border-color .14s ease, color .14s ease;
+  text-align: left;
 }
-.mini:hover:not(:disabled) { border-color: var(--text-3); color: var(--text); }
-.mini.on {
-  background: var(--accent-soft);
-  border-color: transparent;
-  color: var(--accent-text);
-  font-weight: 600;
+.seqpill:hover { border-color: #33403d; color: var(--text); }
+.seqpill .dot {
+  flex: none;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--text-3);
 }
-.mini:disabled { opacity: .35; cursor: default; }
+.seqpill .dot.on { background: var(--ok); box-shadow: 0 0 8px rgba(74, 222, 128, .6); }
+.seqpill #seqName { flex: 1; min-width: 0; color: var(--text); }
+.seqmeta { flex: none; color: var(--text-3); font-size: 10px; }
 
-/* Ust bardaki ikon dugme — yeniden yukleme */
 .iconbtn {
   flex: none;
-  margin-left: 8px;
-  width: 24px;
-  height: 24px;
+  width: 28px; height: 28px;
+  display: grid; place-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--text-2);
+  cursor: pointer;
+  padding: 0;
+}
+.iconbtn:hover { color: var(--text); border-color: #33403d; }
+.iconbtn svg { width: 14px; height: 14px; }
+.iconbtn.spin svg { animation: don .8s linear infinite; }
+@keyframes don { to { transform: rotate(360deg); } }
+
+.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------------------------------------------------------------- */
+/*  Govde: sol menu + sayfa                                          */
+/* ---------------------------------------------------------------- */
+
+.main { flex: 1; min-height: 0; display: flex; }
+
+.rail {
+  flex: none;
+  width: var(--rail-w);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  padding: 8px 6px;
+  background: var(--rail);
+  border-right: 1px solid var(--line-soft);
+  overflow-y: auto;
+}
+.rail::-webkit-scrollbar { width: 0; }
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 7px 2px 6px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  color: var(--text-3);
+  font: 600 9.5px/1.15 "Segoe UI", system-ui, sans-serif;
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+}
+.tab svg {
+  width: 19px; height: 19px;
+  fill: none; stroke: currentColor; stroke-width: 1.7;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.tab:hover { color: var(--text-2); background: var(--surface); }
+.tab.on { color: var(--accent-text); background: var(--accent-soft); }
+.tab.on::before {
+  content: '';
+  position: absolute;
+  left: -6px; top: 9px; bottom: 9px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+.railsep { display: block; height: 1px; margin: 5px 8px; background: var(--line-soft); }
+.railgrow { display: block; flex: 1; min-height: 6px; }
+
+.pages {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 14px 13px 22px;
+}
+.pages::-webkit-scrollbar { width: 6px; }
+.pages::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+
+.page { display: flex; flex-direction: column; gap: 11px; }
+
+.phead { display: flex; align-items: center; gap: 10px; }
+.phead h2 { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: .1px; flex: 1; }
+.picon {
+  flex: none;
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--accent);
+}
+.picon svg {
+  width: 18px; height: 18px;
+  fill: none; stroke: currentColor; stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.pdesc { margin: -3px 0 2px; color: var(--text-2); font-size: 11.5px; line-height: 1.5; }
+
+/* ---------------------------------------------------------------- */
+/*  Kart                                                             */
+/* ---------------------------------------------------------------- */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r);
+  padding: 11px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.clbl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 700 9.5px/1 "Segoe UI", system-ui, sans-serif;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.clbl.sub { margin-top: 2px; }
+.clbl-r { margin-left: auto; letter-spacing: 0; text-transform: none; font-weight: 500; font-size: 10.5px; }
+
+/* Etiket + kontrol satiri */
+.frow { display: flex; align-items: center; gap: 10px; min-height: 26px; }
+.flbl { flex: none; width: 82px; color: var(--text-2); font-size: 11.5px; }
+.frow > select, .frow > input[type=number] { margin-left: auto; }
+.frow > input[type=range] { flex: 1; }
+.frow > .seg { flex: 1; }
+
+/* ---------------------------------------------------------------- */
+/*  Tek parca secim (segmented)                                      */
+/* ---------------------------------------------------------------- */
+
+.seg {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  min-width: 0;
+}
+.seg.wrap { flex-wrap: wrap; }
+.mini {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: none;
+  color: var(--text-2);
+  font: 600 11px/1.2 "Segoe UI", system-ui, sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mini:hover { color: var(--text); background: var(--surface-2); }
+.mini.on {
+  color: var(--accent-text);
+  background: var(--accent-soft);
+  border-color: rgba(45, 212, 191, .45);
+}
+.mini:disabled { opacity: .4; cursor: default; }
+
+/* ---------------------------------------------------------------- */
+/*  Dugmeler                                                         */
+/* ---------------------------------------------------------------- */
+
+.cta {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: none;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #3ee0cb, #14b8a6);
+  color: var(--on-accent);
+  font: 800 13px/1.2 "Segoe UI", system-ui, sans-serif;
+  letter-spacing: .2px;
+  cursor: pointer;
+  box-shadow: 0 6px 22px rgba(20, 184, 166, .28), inset 0 1px 0 rgba(255, 255, 255, .35);
+}
+.cta:hover { filter: brightness(1.06); }
+.cta:active { transform: translateY(1px); }
+.cta:disabled { opacity: .45; cursor: default; filter: none; box-shadow: none; }
+.cta svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+/* Acik durumdaki ac/kapa eylemi (Safe Zone): ikincil gorunsun */
+.cta.on {
+  background: var(--surface-2);
+  color: var(--accent-text);
+  border: 1px solid rgba(45, 212, 191, .5);
+  box-shadow: none;
+}
+.cta.sticky { position: sticky; bottom: 0; z-index: 2; }
+
+.btn {
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: 600 11.5px/1.2 "Segoe UI", system-ui, sans-serif;
+  cursor: pointer;
+}
+.btn:hover { border-color: #34413e; background: var(--raised); }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 700; }
+.btn.primary:hover { filter: brightness(1.07); }
+.btn.ghost { background: none; border-color: rgba(45, 212, 191, .45); color: var(--accent-text); }
+.btn.ghost:hover { background: var(--accent-soft); }
+.btn.small { padding: 5px 11px; font-size: 10.5px; border-radius: 8px; }
+
+/* Iki esit genislikte dugme: tara + uygula */
+.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.duo .btn { padding: 11px 10px; font-size: 12px; }
+
+.link {
+  border: none; background: none; padding: 0;
+  color: var(--accent-text); font: inherit; cursor: pointer;
+}
+.link:hover { text-decoration: underline; }
+
+.row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.row.spread { justify-content: space-between; }
+.mt { margin-top: 4px; }
+
+/* ---------------------------------------------------------------- */
+/*  Form denetimleri                                                 */
+/* ---------------------------------------------------------------- */
+
+select, input[type=number], .ta {
+  background: var(--bg);
+  color: var(--text);
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
-  color: var(--text-3);
+  font: 12px "Segoe UI", system-ui, sans-serif;
+  outline: none;
+}
+select { padding: 6px 26px 6px 9px; min-width: 0; max-width: 62%;
+  -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2394a19e' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 9px center; background-size: 9px; }
+select:focus, input[type=number]:focus, .ta:focus { border-color: var(--accent); }
+input[type=number] { width: 64px; padding: 6px 8px; }
+.ta {
+  width: 100%;
+  padding: 9px 10px;
+  resize: vertical;
+  min-height: 52px;
+  line-height: 1.45;
+  font-size: 12.5px;
+  font-weight: 600;
+  -webkit-user-select: text; user-select: text;
+}
+
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  height: 18px;
+  background: none;
+  min-width: 60px;
   cursor: pointer;
-  transition: color .14s ease, border-color .14s ease;
 }
-.iconbtn svg { width: 13px; height: 13px; }
-.iconbtn:hover { color: var(--accent-text); border-color: var(--text-3); }
-.iconbtn:disabled { opacity: .4; cursor: default; }
-/* Yeniden yuklerken donsun ki bir sey oldugu anlasilsin */
-.iconbtn.spin svg { animation: tk-spin .8s linear infinite; }
-@keyframes tk-spin { to { transform: rotate(360deg); } }
-
-/* ---------------------------------------------------------------- */
-/*  Altyazi listesi — gor ve duzenle                                 */
-/* ---------------------------------------------------------------- */
-
-/* Uzun listede panel sonsuz uzamasin; kendi icinde kaysin. */
-.subs {
-  max-height: 260px;
-  overflow-y: auto;
-  margin: 8px 0 0;
-  padding-right: 2px;
+input[type=range]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(var(--accent), var(--accent)) 0/var(--p, 50%) 100% no-repeat, var(--line);
 }
-
-.sub {
-  display: flex;
-  gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--line-soft);
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid #0d2a27;
+  box-shadow: 0 0 0 1px var(--accent);
 }
-.sub:last-child { border-bottom: none; }
-
-/* Zaman sutunu sabit genislikte: metinler ayni hizada baslasin */
-.sub .tm {
+.val {
   flex: none;
-  width: 58px;
-  font: 9.5px/1.5 var(--mono);
-  color: var(--text-3);
-  padding-top: 3px;
+  min-width: 46px;
+  text-align: right;
+  color: var(--accent-text);
+  font: 700 11px var(--mono);
 }
 
-/* Duzenlenebilir metin: gorunuste duz yazi, odaklaninca kutu */
+/* Cipler (coklu secim) */
+.chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 5px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--pill);
+  color: var(--text-2);
+  font-size: 11px;
+  cursor: pointer;
+}
+.chip input { display: none; }
+.chip:hover { color: var(--text); }
+.chip.on { color: var(--accent-text); background: var(--accent-soft); border-color: rgba(45, 212, 191, .45); }
+.chip .ico { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.chip.subtle { border-style: dashed; }
+
+/* ---------------------------------------------------------------- */
+/*  Metin                                                            */
+/* ---------------------------------------------------------------- */
+
+.hint { margin: 0; color: var(--text-3); font-size: 10.5px; line-height: 1.45; }
+.hint.center { text-align: center; }
+.dim { color: var(--text-3); }
+.ok { color: var(--ok); }
+.warn { color: var(--warn); }
+.err { color: var(--err); }
+
+.first-run {
+  margin: 0;
+  padding: 8px 11px;
+  border-radius: var(--r-sm);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-size: 11px;
+}
+
+/* Islem gunlugu: sonuc karti gibi */
+.out {
+  margin: 0;
+  padding: 10px 11px;
+  max-height: 220px;
+  overflow: auto;
+  border-radius: var(--r);
+  border: 1px solid var(--line-soft);
+  background: var(--surface);
+  font: 10.5px/1.6 var(--mono);
+  color: var(--text-2);
+  white-space: pre-wrap;
+  word-break: break-word;
+  -webkit-user-select: text; user-select: text;
+}
+
+.bar { height: 4px; border-radius: 2px; background: var(--line-soft); overflow: hidden; }
+.fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-2), var(--accent)); transition: width .25s; }
+
+/* ---------------------------------------------------------------- */
+/*  Guncelleme                                                       */
+/* ---------------------------------------------------------------- */
+
+.update-box {
+  flex: none;
+  margin: 8px 10px 0;
+  padding: 9px 11px;
+  border-radius: var(--r);
+  border: 1px solid rgba(45, 212, 191, .4);
+  background: var(--accent-soft);
+}
+.update-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-weight: 700; }
+.update-note { margin: 4px 0 0; color: var(--text-2); font-size: 10.5px; }
+.update-note:empty { display: none; }
+
+/* ---------------------------------------------------------------- */
+/*  Altyazi listesi                                                  */
+/* ---------------------------------------------------------------- */
+
+.subs { max-height: 280px; overflow-y: auto; margin: 0 -4px; padding: 0 4px; }
+.sub { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
+.sub:last-child { border-bottom: none; }
+.sub .tm { flex: none; width: 54px; font: 9.5px/1.5 var(--mono); color: var(--text-3); padding-top: 3px; }
 .sub .tx {
-  flex: 1;
-  min-width: 0;
+  flex: 1; min-width: 0;
   background: none;
   border: 1px solid transparent;
-  border-radius: var(--r-sm);
+  border-radius: 6px;
   color: var(--text);
-  font: 11px/1.45 "Segoe UI", system-ui, sans-serif;
+  font: 11.5px/1.45 "Segoe UI", system-ui, sans-serif;
   padding: 2px 5px;
   resize: vertical;
   min-height: 34px;
-  -webkit-user-select: text;
-  user-select: text;
+  -webkit-user-select: text; user-select: text;
 }
 .sub .tx:hover { border-color: var(--line); }
 .sub .tx:focus { border-color: var(--accent); outline: none; background: var(--surface-2); }
-
-/* Degismis blok: kaydedilmemis oldugu gorunsun */
 .sub.degisti .tm { color: var(--accent-text); }
+
+/* Dolgu adaylari */
+.flist { max-height: 300px; overflow-y: auto; margin: 0 -4px; padding: 0 4px; }
+.fitem {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line-soft);
+  cursor: pointer;
+}
+.fitem:last-child { border-bottom: none; }
+.fitem input { margin: 2px 0 0; accent-color: var(--accent); }
+.fitem .tm { flex: none; width: 46px; font: 9.5px/1.6 var(--mono); color: var(--text-3); }
+.fitem .ctx { flex: 1; min-width: 0; color: var(--text-3); font-size: 11px; line-height: 1.45; }
+.fitem .ctx b {
+  color: var(--warn);
+  background: rgba(251, 191, 36, .12);
+  border-radius: 4px;
+  padding: 0 4px;
+  font-weight: 700;
+}
+.fitem.off .ctx b { color: var(--text-3); background: none; text-decoration: line-through; }
+.fitem .sn { flex: none; color: var(--text-3); font: 9.5px/1.6 var(--mono); }
+
+/* ---------------------------------------------------------------- */
+/*  Yazi Studyosu                                                    */
+/* ---------------------------------------------------------------- */
+
+.preview {
+  align-self: center;
+  width: 150px;
+  padding: 7px 7px 9px;
+  border-radius: 18px;
+  background: #050606;
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+}
+.preview canvas {
+  display: block;
+  width: 100%;
+  border-radius: 12px;
+  background:
+    radial-gradient(120% 70% at 50% 15%, #2a3533 0%, transparent 60%),
+    linear-gradient(180deg, #1b2322 0%, #0f1413 55%, #241a12 100%);
+}
+.pbar { height: 3px; margin: 7px 10px 0; border-radius: 2px; background: var(--line); overflow: hidden; }
+.pbar i { display: block; height: 100%; width: 0; background: var(--accent); }
+
+.sgrup { font: 700 9px/1 "Segoe UI", system-ui, sans-serif; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-3); margin: 2px 0 7px; }
+.sgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 6px; margin-bottom: 8px; }
+.stile {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  height: 64px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text-2);
+  font: 600 9.5px/1.15 "Segoe UI", system-ui, sans-serif;
+  cursor: pointer;
+  padding: 4px;
+}
+.stile canvas { width: 54px; height: 26px; display: block; }
+.stile:hover { border-color: #34413e; color: var(--text); }
+.stile.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 18px rgba(45, 212, 191, .18); color: var(--text); }
+
+/* ---------------------------------------------------------------- */
+/*  Sablonlar (kullanicinin MOGRT'leri)                              */
+/* ---------------------------------------------------------------- */
+
+.mogrt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 6px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.mogrt-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  cursor: pointer;
+  overflow: hidden;
+  text-align: center;
+  padding: 0 0 5px;
+}
+.mogrt-card:hover { border-color: #34413e; }
+.mogrt-card.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.mogrt-card img { display: block; width: 100%; height: 54px; object-fit: cover; background: #000; }
+.mogrt-card .ad { display: block; font-size: 10px; line-height: 1.25; padding: 4px 4px 0; color: var(--text-2); word-break: break-word; }
+.mogrt-card.on .ad { color: var(--text); }
+.mogrt-card .yok { display: block; height: 54px; line-height: 54px; font-size: 10px; color: var(--text-3); background: var(--surface-2); }
+
+/* ---------------------------------------------------------------- */
+/*  Teshis                                                           */
+/* ---------------------------------------------------------------- */
+
+.env {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 4px 10px;
+  margin: 0;
+  font-size: 11px;
+}
+.env dt { color: var(--text-3); }
+.env dd { margin: 0; color: var(--text-2); word-break: break-all; }
+.env dd.ok { color: var(--ok); }
+.env dd.err { color: var(--err); }
+.env dd.warn { color: var(--warn); }
+.env dd.pending, .env dd.dim { color: var(--text-3); }
+
+/* Dar panel: menu yazilari sigmiyorsa yalnizca simge */
+@media (max-width: 300px) {
+  :root { --rail-w: 46px; }
+  .tab span { display: none; }
+  .flbl { width: 64px; }
+}

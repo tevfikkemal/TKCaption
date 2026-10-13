@@ -1,7 +1,7 @@
 {
-  "version": "0.9.29",
-  "updated": "2026-09-26T13:14:20.974Z",
-  "notes": "altyazida her kelimenin buyuk harfle baslamasi duzeltildi",
+  "version": "0.10.0",
+  "updated": "2026-10-13T07:42:06.128Z",
+  "notes": "Yeni arayuz; Dolgu Kesici, Yazi Studyosu, otomatik zoom, kelime kelime altyazi, marker, duz metin",
   "files": [
     {
       "path": "core/package.json",
@@ -17,6 +17,11 @@
       "path": "core/src/config.js",
       "source": "core/src/config.js",
       "sha": "90c3fe3f05d5aa5c313dd2e8740f7837bb327fed9d7274482a9ea115962137a3"
+    },
+    {
+      "path": "core/src/filler.js",
+      "source": "core/src/filler.js",
+      "sha": "7e3810f9c1a008cab0961d53eff722e986d61168625f4c94e9519af3094c5b7b"
     },
     {
       "path": "core/src/hallucination.js",
@@ -41,7 +46,7 @@
     {
       "path": "core/src/pipeline.js",
       "source": "core/src/pipeline.js",
-      "sha": "5a6b2e54eec1c6b9f10819cdf29ee884034d9cd981f249861c8c56c182db2817"
+      "sha": "453f9737aca18faa25ee3940c0e114dad404e4e2191ce55a512ccc53b82cbc21"
     },
     {
       "path": "core/src/postprocess.js",
@@ -56,12 +61,12 @@
     {
       "path": "core/src/segmenter.js",
       "source": "core/src/segmenter.js",
-      "sha": "cf90675a3a297fe0fb0b8d07d614ef924298c7d6158e0a4ef6f3f17e79879d70"
+      "sha": "3e4e78b65b3cfcccf81978a81cd365971ffe244375486f3ab2abaadabf8b38f6"
     },
     {
       "path": "core/src/srt.js",
       "source": "core/src/srt.js",
-      "sha": "e974faa912846205c54a4370ab448ef99b12716b928c267059655dd7c9e09836"
+      "sha": "c97f45084f9ebf68695415a16c45b8c8bdaec0545fd6332643147be79bee2e43"
     },
     {
       "path": "core/src/tokens.js",
@@ -94,19 +99,54 @@
       "sha": "745e750c5c7959904499b53cec4911d42efbed4ae11d1c67e91ca4f6b5bf0449"
     },
     {
+      "path": "core/src/zoom.js",
+      "source": "core/src/zoom.js",
+      "sha": "29853837bf7ef479ce163a15d7b42bf55407ffc464570137ef014a063f53e701"
+    },
+    {
       "path": "css/style.css",
       "source": "panel/css/style.css",
-      "sha": "f9200e6d88574648e4c4e52415157650974e8be1ab92fc471eee23fb62bcd7f7"
+      "sha": "15596a5e859842ea4d4033d83142cbecbcf394e051c4cd9033e1af5f73a2ac84"
     },
     {
       "path": "CSXS/manifest.xml",
       "source": "panel/CSXS/manifest.xml",
-      "sha": "d3337f5a487920e4603d23cfe1ae00234d4b98cb49feb28e6b7173c62e4281da"
+      "sha": "2c9786a9b493c6005fdf24ff0163be8d9d4945b0339cbd860611ce306e0fbe11"
+    },
+    {
+      "path": "fonts/Anton.ttf",
+      "source": "panel/fonts/Anton.ttf",
+      "sha": "a4ba3a92350ebb031da0cb47630ac49eb265082ca1bc0450442f4a83ab947cab"
+    },
+    {
+      "path": "fonts/Montserrat.ttf",
+      "source": "panel/fonts/Montserrat.ttf",
+      "sha": "0f7b311b2f3279e4eef9b2f968bcdbab6e28f4daeb1f049f4f278a902bcd82f7"
+    },
+    {
+      "path": "fonts/OFL-Anton.txt",
+      "source": "panel/fonts/OFL-Anton.txt",
+      "sha": "ee67e6ee22790b7929f1a3769ca2801d565c64b5a9096942c1adf5596de9c9e4"
+    },
+    {
+      "path": "fonts/OFL-Montserrat.txt",
+      "source": "panel/fonts/OFL-Montserrat.txt",
+      "sha": "8b7141c03fa4f8d44e6345d5d4931709290f0f67875e452e95ac1fd3a027802e"
+    },
+    {
+      "path": "fonts/OFL-PlayfairDisplay.txt",
+      "source": "panel/fonts/OFL-PlayfairDisplay.txt",
+      "sha": "566be814f8e96e93dfa16101331557eb6b5467e9e03f627c0910fe93ca12300e"
+    },
+    {
+      "path": "fonts/PlayfairDisplay-Italic.ttf",
+      "source": "panel/fonts/PlayfairDisplay-Italic.ttf",
+      "sha": "a5e26dc5e2e77fb2803a0bf02fd4f81ee136ec8dea863ccdb0c59a263b21378b"
     },
     {
       "path": "index.html",
       "source": "panel/index.html",
-      "sha": "f22df2f07d3571cf3719c33aa4aef7dece9b45b4f40254679fdfb9e45f0588ea"
+      "sha": "20daa040304d11c57af65c4e2bd8014eb0e303bf2db10ade8778880ee2b65548"
     },
     {
       "path": "js/cep.js",
@@ -116,12 +156,17 @@
     {
       "path": "js/main.js",
       "source": "panel/js/main.js",
-      "sha": "0ea7f0a3c7527c515990f07092c09ed29c9b8815d253e2ca2e90ca115916ab1f"
+      "sha": "e81703cda745d53d1f72b1a95f0466ee55b42153115f218d6701aad03daffdcf"
+    },
+    {
+      "path": "js/yazi.js",
+      "source": "panel/js/yazi.js",
+      "sha": "aefbbed7682d8c7d83211772607d3f2492d2c082c0f50e47cf3494203a9df293"
     },
     {
       "path": "jsx/bridge.jsx",
       "source": "panel/jsx/bridge.jsx",
-      "sha": "4957f7153862ebb04b91ba910bc5275567dc983c5eacc4202f5042ea6d762f8e"
+      "sha": "86e610f9c7be5a7e1dc2a6fd887524001d5125be1a836aea46a67027d3b668cf"
     },
     {
       "path": "LICENSE",

@@ -25,7 +25,17 @@ Altyazıları düz bölmez, Türkçe'ye göre böler: `geldi | de`, `açıklamay
 
 **Düzenleme** — Üretilen altyazıyı panelde görüp düzeltebilirsiniz. Özel isimler, marka adları, teknik terimler için.
 
-**Auto Cut** — Sessiz bölümleri bulup keser, kalan klipleri birleştirir. Ne kadar sürenin kesileceğini önce gösterir, onaylarsanız uygular.
+**Auto Cut** — Sessiz bölümleri bulup keser, kalan klipleri birleştirir. Ne kadar sürenin kesileceğini önce gösterir, onaylarsanız uygular. İsterseniz kesmeden yalnızca marker koyar.
+
+**Dolgu Kesici** — "Iıı", "eee" gibi sesleri ve isterseniz "şey", "yani" gibi dolgu kelimelerini bulur. Önce liste hâlinde gösterir; işaretlediklerinizi keser ya da marker koyar.
+
+**Kelime kelime altyazı** — Reels/TikTok tarzı: her altyazıda 1–3 kelime ya da tek kelime.
+
+**Yazı Stüdyosu** — Hazır görünüm (sade/renkli) ve animasyon (pop, yukarı, kelime kelime, daktilo) seçip yazıyı oynatma kafasına şeffaf katman olarak ekler. `*yıldız*` ile vurgulu kelime.
+
+**Otomatik zoom** — Konuşmanın her yeni cümlesinde yakın/uzak geçiş yapar; tek kamerada ikinci kamera hissi.
+
+**Düz metin** — Altyazıyı paragraflara ayrılmış düz metin olarak kopyalar ya da TXT kaydeder.
 
 **Güvenli alan** — Instagram, TikTok, YouTube için ekranın hangi kısmının arayüz altında kalacağını gösterir. Altyazıyı doğru yere koymak için.
 
@@ -61,6 +71,7 @@ Ana düğmenin altındaki seçenekler:
 |---|---|
 | **Nereye** | Altyazı timeline'ı (kapatılabilir) ya da grafik timeline (videoya gömülü, şablonlu) |
 | **Kapsam** | Tüm sekans ya da sadece In/Out arası |
+| **Biçim** | Klasik (iki satır), kısa (1–3 kelime) ya da tek kelime |
 | **Yerleştir** | Hemen ya da önce düzelttikten sonra |
 | **Ses** | Hangi ses kanalının dinleneceği |
 
@@ -95,6 +106,8 @@ Premiere'i tamamen kapatıp açın. Olmazsa panelin altındaki **Sorun giderme**
 Birkaç dakika bekleyin; yeni sürümün yayılması zaman alabilir. Panelin altındaki **Sorun giderme** bölümünde durumu görebilirsiniz.
 
 ## Teşekkür
+
+Yazı tipleri: Montserrat, Anton, Playfair Display (SIL Open Font License).
 
 Konuşma tanıma: [whisper.cpp](https://github.com/ggml-org/whisper.cpp) — Georgi Gerganov ve katkıda bulunanlar. TK Caption onun üzerine kurulu.
 

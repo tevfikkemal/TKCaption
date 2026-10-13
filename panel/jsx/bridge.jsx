@@ -10,7 +10,7 @@
 
 //@target premierepro
 
-var TR_ALTYAZI_VERSION = '0.9.29';
+var TR_ALTYAZI_VERSION = '0.10.0';
 var TICKS_PER_SECOND = 254016000000;
 
 /* ------------------------------------------------------------------ */
@@ -136,6 +136,20 @@ function trGetSequenceInfo() {
             }
         } catch (e) {}
 
+        // Video pistleri: zoom'un hangi piste uygulanacagi secilebilsin
+        var videolar = [];
+        try {
+            for (var vv = 0; vv < videoTracks; vv++) {
+                var vt = seq.videoTracks[vv];
+                var vad = '';
+                try { vad = String(vt.name || ''); } catch (e) {}
+                if (!vad) vad = 'V' + (vv + 1);
+                var vk = 0;
+                try { vk = vt.clips.numItems; } catch (e) {}
+                videolar.push(vad + '|' + vk);
+            }
+        } catch (e) {}
+
         var projPath = '';
         try { projPath = app.project.path; } catch (e) {}
 
@@ -159,6 +173,7 @@ function trGetSequenceInfo() {
             kv('outSec', outSec.toFixed(6), true),
             kv('hasInOut', hasInOut ? 'true' : 'false', true),
             kv('audioList', arrToJson(sesler), true),
+            kv('videoList', arrToJson(videolar), true),
             kv('projectPath', projPath),
             kv('appVersion', app.version),
             kv('bridgeVersion', TR_ALTYAZI_VERSION)
@@ -2273,5 +2288,317 @@ function trListPresets(folderPath) {
         return ok([kv('folder', folderPath), kv('presets', arrToJson(names), true)]);
     } catch (e) {
         return err('Preset listesi alinamadi', e);
+    }
+}
+
+/* ================================================================== */
+/*  0.10: zoom, marker, yazi studyosu                                  */
+/* ================================================================== */
+
+/** Saniyeden Time nesnesi */
+function zamanNesnesi(sn) {
+    var t = new Time();
+    t.seconds = Number(sn) || 0;
+    return t;
+}
+
+/** Bir klibin bilesen parametresini bulur (yerellestirilmis adlar dahil). */
+function paramBul(clip, bilesenRe, paramRe) {
+    try {
+        var bs = clip.components;
+        for (var i = 0; i < bs.numItems; i++) {
+            var ad = '';
+            try { ad = String(bs[i].displayName || '') + ' ' + String(bs[i].matchName || ''); } catch (e) {}
+            if (!bilesenRe.test(ad)) continue;
+            var ps = bs[i].properties;
+            for (var p = 0; p < ps.numItems; p++) {
+                var pad2 = '';
+                try { pad2 = String(ps[p].displayName || ''); } catch (e) {}
+                if (paramRe.test(pad2)) return ps[p];
+            }
+        }
+    } catch (e) {}
+    return null;
+}
+
+var RE_MOTION = /motion|hareket/i;
+var RE_SCALE = /^(scale|ölçek|olcek)$/i;
+
+/**
+ * Bir anahtar kare ekler ve deger yazar.
+ *
+ * OLCULMEDI: addKey'in Time nesnesi mi saniye mi bekledigi belgelerde net
+ * degil. Ikisini sirayla deniyoruz; hangisinin ise yaradigini anahtar kare
+ * SAYISININ artmasina bakarak anliyoruz ve rapora yaziyoruz.
+ */
+function anahtarYaz(param, sn, deger) {
+    var once = 0;
+    try { once = param.getKeys() ? param.getKeys().length : 0; } catch (e) {}
+    for (var b = 0; b < 2; b++) {
+        try {
+            var z = b === 0 ? zamanNesnesi(sn) : Number(sn);
+            param.addKey(z);
+            param.setValueAtKey(z, deger, true);
+            var sonra = 0;
+            try { sonra = param.getKeys() ? param.getKeys().length : 0; } catch (e2) {}
+            if (sonra > once) return b === 0 ? 'time' : 'sn';
+        } catch (e) {}
+    }
+    return '';
+}
+
+/**
+ * Bir video pistindeki klipleri saniye olarak listeler.
+ * Zoom planini kliplere dagitmak panelde yapiliyor (core/src/zoom.js).
+ */
+function trVideoClips(trackIndex) {
+    try {
+        var seq = app.project.activeSequence;
+        if (!seq) return err('Aktif sekans yok.');
+        var ti = parseInt(trackIndex, 10);
+        var tr = seq.videoTracks[ti];
+        if (!tr) return err('Video pisti yok: V' + (ti + 1));
+        var liste = [];
+        for (var i = 0; i < tr.clips.numItems; i++) {
+            var c = tr.clips[i];
+            var s = 0, e = 0, ip = 0;
+            try { s = Number(c.start.seconds); } catch (er) {}
+            try { e = Number(c.end.seconds); } catch (er) {}
+            try { ip = Number(c.inPoint.seconds); } catch (er) {}
+            liste.push('{"i":' + i + ',"start":' + s.toFixed(5) + ',"end":' + e.toFixed(5) +
+                       ',"inPoint":' + ip.toFixed(5) + '}');
+        }
+        return ok([kv('clips', '[' + liste.join(',') + ']', true), kv('count', String(liste.length), true)]);
+    } catch (e) {
+        return err('Klipler okunamadi', e);
+    }
+}
+
+/**
+ * Zoom anahtar karelerini yazar.
+ *
+ * Olcekler GORELI gelir; klibin mevcut olcegiyle carpilir (4K kaynak %50'ye
+ * sigdirilmis olabilir). Zaten Scale anahtar karesi olan kliplere
+ * DOKUNMUYORUZ: kullanicinin elle yaptigi animasyonu ezmek geri alinamaz
+ * bir surpriz olurdu. Once "Zoom'u kaldir" ile temizlenmeli.
+ *
+ * @param planJson [{i, keys:[{t,v}]}] — t klibin kaynak zamaninda (saniye)
+ */
+function trApplyZoom(trackIndex, planJson) {
+    try {
+        var seq = app.project.activeSequence;
+        if (!seq) return err('Aktif sekans yok.');
+        var tr = seq.videoTracks[parseInt(trackIndex, 10)];
+        if (!tr) return err('Video pisti yok.');
+        var plan;
+        try { plan = eval('(' + planJson + ')'); } catch (e) { return err('Plan okunamadi: ' + e); }
+
+        var islenen = 0, atlanan = 0, anahtar = 0, bicim = '';
+        var hatalar = [];
+        for (var p = 0; p < plan.length; p++) {
+            var clip = tr.clips[plan[p].i];
+            if (!clip) { hatalar.push('#' + plan[p].i + ' klip yok'); continue; }
+            var sc = paramBul(clip, RE_MOTION, RE_SCALE);
+            if (!sc) { hatalar.push('#' + plan[p].i + ' Scale bulunamadi'); continue; }
+            var zaten = false;
+            try { zaten = sc.isTimeVarying(); } catch (e) {}
+            if (zaten) { atlanan++; continue; }
+            var taban = 100;
+            try { taban = Number(sc.getValue()) || 100; } catch (e) {}
+            try { sc.setTimeVarying(true); } catch (e) { hatalar.push('#' + plan[p].i + ' anahtar kare acilamadi'); continue; }
+            var keys = plan[p].keys;
+            for (var k = 0; k < keys.length; k++) {
+                var b = anahtarYaz(sc, keys[k].t, taban * Number(keys[k].v));
+                if (b) { anahtar++; bicim = b; }
+                else if (hatalar.length < 6) hatalar.push('#' + plan[p].i + ' anahtar ' + keys[k].t + ' yazilamadi');
+            }
+            islenen++;
+        }
+        return ok([
+            kv('clips', String(islenen), true),
+            kv('skipped', String(atlanan), true),
+            kv('keys', String(anahtar), true),
+            kv('format', bicim || 'yok'),
+            kv('errors', arrToJson(hatalar), true)
+        ]);
+    } catch (e) {
+        return err('Zoom uygulanamadi', e);
+    }
+}
+
+/**
+ * Pistteki kliplerin Scale anahtar karelerini kaldirir.
+ * Taban olcek = anahtar karelerin EN KUCUGU (zoom her zaman >1 oldugu
+ * icin bu klibin orijinal olcegidir).
+ */
+function trRemoveZoom(trackIndex) {
+    try {
+        var seq = app.project.activeSequence;
+        if (!seq) return err('Aktif sekans yok.');
+        var tr = seq.videoTracks[parseInt(trackIndex, 10)];
+        if (!tr) return err('Video pisti yok.');
+        var temiz = 0;
+        for (var i = 0; i < tr.clips.numItems; i++) {
+            var sc = paramBul(tr.clips[i], RE_MOTION, RE_SCALE);
+            if (!sc) continue;
+            var degisken = false;
+            try { degisken = sc.isTimeVarying(); } catch (e) {}
+            if (!degisken) continue;
+            var enKucuk = null;
+            try {
+                var ks = sc.getKeys();
+                for (var k = 0; k < ks.length; k++) {
+                    var v = Number(sc.getValueAtKey(ks[k]));
+                    if (!isNaN(v) && (enKucuk === null || v < enKucuk)) enKucuk = v;
+                }
+            } catch (e) {}
+            try {
+                sc.setTimeVarying(false);
+                if (enKucuk !== null) sc.setValue(enKucuk, true);
+                temiz++;
+            } catch (e) {}
+        }
+        return ok([kv('cleared', String(temiz), true)]);
+    } catch (e) {
+        return err('Zoom kaldirilamadi', e);
+    }
+}
+
+/**
+ * Bolgelere sekans marker'i koyar (Auto Cut / dolgu kesici "kesme, isaretle").
+ * Kullanici kesmeden once neyin kesilecegini gorebilir ya da elle keser.
+ */
+function trAddMarkers(bolgelerJson, ad, renk) {
+    try {
+        var seq = app.project.activeSequence;
+        if (!seq) return err('Aktif sekans yok.');
+        var bolgeler;
+        try { bolgeler = eval('(' + bolgelerJson + ')'); } catch (e) { return err('Bolge listesi okunamadi: ' + e); }
+        var konan = 0;
+        var hatalar = [];
+        for (var i = 0; i < bolgeler.length; i++) {
+            try {
+                var m = seq.markers.createMarker(Number(bolgeler[i].start));
+                if (!m) { hatalar.push('#' + (i + 1)); continue; }
+                try { m.end = zamanNesnesi(Number(bolgeler[i].end)); } catch (e) {}
+                try { m.name = String(bolgeler[i].ad || ad || 'TK'); } catch (e) {}
+                try { m.comments = 'TK Caption'; } catch (e) {}
+                try { m.setColorByIndex(parseInt(renk, 10) || 0); } catch (e) {}
+                konan++;
+            } catch (e) { hatalar.push('#' + (i + 1) + ' ' + String(e.message || e)); }
+        }
+        return ok([kv('placed', String(konan), true), kv('errors', arrToJson(hatalar), true)]);
+    } catch (e) {
+        return err('Marker eklenemedi', e);
+    }
+}
+
+var YAZI_BIN = 'TK Caption Yazı';
+
+/** Yazi kliplerinin proje klasoru */
+function yaziBin() {
+    try {
+        var root = app.project.rootItem;
+        for (var i = 0; i < root.children.numItems; i++) {
+            try { if (String(root.children[i].name) === YAZI_BIN) return root.children[i]; } catch (e) {}
+        }
+        return root.createBin(YAZI_BIN);
+    } catch (e) { return null; }
+}
+
+/**
+ * [bas, bit] araliginda bos olan bir video pisti bulur; V2'den baslar
+ * (V1 ana goruntudur). Yoksa en uste yeni pist ekler.
+ */
+function bosPistBul(seq, bas, bit) {
+    var n = seq.videoTracks.numTracks;
+    for (var t = 1; t < n; t++) {
+        var tr = seq.videoTracks[t];
+        var dolu = false;
+        for (var c = 0; c < tr.clips.numItems; c++) {
+            var s = 0, e = 0;
+            try { s = Number(tr.clips[c].start.seconds); e = Number(tr.clips[c].end.seconds); } catch (er) { continue; }
+            if (s < bit - 0.001 && e > bas + 0.001) { dolu = true; break; }
+        }
+        if (!dolu) return t;
+    }
+    try {
+        if (typeof qe === 'undefined') app.enableQE();
+        qe.project.getActiveSequence().addTracks(1, n, 0, 0, 0);
+    } catch (e) {}
+    var yeni = app.project.activeSequence.videoTracks.numTracks;
+    return yeni > n ? yeni - 1 : -1;
+}
+
+/**
+ * Yazi Studyosu: PNG (ya da numarali PNG dizisi) olarak uretilen yaziyi
+ * oynatma kafasina, bos bir piste koyar.
+ *
+ * @param ilkDosya  tek PNG ya da dizinin ilk karesi (..._0000.png)
+ * @param dizi      '1' ise numarali PNG dizisi olarak iceri alinir
+ * @param fps       dizinin kare hizi (sekansinkiyle ayni)
+ * @param sureSn    klip suresi
+ */
+function trPlaceTextClip(ilkDosya, dizi, fps, sureSn) {
+    try {
+        var seq = app.project.activeSequence;
+        if (!seq) return err('Aktif sekans yok.');
+        ilkDosya = toNativePath(ilkDosya);
+        if (!fileExists(ilkDosya)) return err('Yazi dosyasi bulunamadi: ' + ilkDosya);
+        var sayisal = String(dizi) === '1';
+        var adimlar = [];
+
+        var bas = 0;
+        try { bas = Number(seq.getPlayerPosition().seconds); } catch (e) {}
+        var sure = Math.max(0.1, Number(sureSn) || 3);
+
+        var before = snapshotItems();
+        var bin = yaziBin() || app.project.rootItem;
+        if (!app.project.importFiles([ilkDosya], true, bin, sayisal)) {
+            return err('Yazi projeye alinamadi.');
+        }
+        var item = findNewItem(before, ilkDosya);
+        if (!item) return err('Yazi iceri alindi ama proje ogesi bulunamadi.');
+        adimlar.push('oge: ' + item.name);
+
+        // PNG dizisinin kare hizi Premiere tercihinden gelir (genelde 29.97);
+        // sekansinkine esitlemezsek animasyon hizli/yavas oynar.
+        if (sayisal) {
+            try { item.setOverrideFrameRate(parseFloat(fps)); adimlar.push('kare hizi ' + fps); }
+            catch (e) { adimlar.push('kare hizi ayarlanamadi'); }
+        }
+
+        var pist = bosPistBul(seq, bas, bas + sure);
+        if (pist < 0) return err('Bos video pisti bulunamadi.', adimlar.join(' | '));
+        var tr = seq.videoTracks[pist];
+        try { tr.overwriteClip(item, bas); } catch (e) {
+            try { tr.overwriteClip(item, zamanNesnesi(bas)); } catch (e2) {
+                return err('Yazi piste konulamadi', String(e2.message || e2));
+            }
+        }
+
+        // Konulan klibi bul, suresini ayarla (tek PNG'de varsayilan sure
+        // tercihlerden gelir; dizide kare sayisindan)
+        var klip = null;
+        for (var c = 0; c < tr.clips.numItems; c++) {
+            var s = 0;
+            try { s = Number(tr.clips[c].start.seconds); } catch (e) {}
+            if (Math.abs(s - bas) < 0.05) { klip = tr.clips[c]; }
+        }
+        if (klip) {
+            try { klip.end = zamanNesnesi(bas + sure); } catch (e) {}
+            try { klip.name = 'TK Yazı'; } catch (e) {}
+            adimlar.push('sure ' + sure.toFixed(2) + ' sn');
+        } else {
+            adimlar.push('konulan klip bulunamadi; sure ayarlanmadi');
+        }
+        return ok([
+            kv('placed', 'true', true),
+            kv('track', String(pist + 1), true),
+            kv('at', bas.toFixed(3), true),
+            kv('steps', arrToJson(adimlar), true)
+        ]);
+    } catch (e) {
+        return err('Yazi yerlestirilemedi', e);
     }
 }

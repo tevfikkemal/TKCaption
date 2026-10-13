@@ -75,6 +75,33 @@ console.log('\n=== KAYDET-OKU TURU ===');
   });
 }
 
+console.log('\n=== DUZ METIN ===');
+{
+  const b = [
+    { start: 0, end: 2, lines: ['Merhaba,', 'bugün başlıyoruz.'] },
+    { start: 2.1, end: 4, lines: ['İlk konu'] },
+    { start: 4.1, end: 6, lines: ['kurgu.'] },
+    { start: 70, end: 72, lines: ['İkinci bölüm.'] }
+  ];
+  t('bloklar birlesir, satir sonlari bosluk olur', function () {
+    const m = srt.toPlainText(b);
+    if (m.indexOf('Merhaba, bugün başlıyoruz. İlk konu kurgu.') !== 0) throw new Error(m);
+  });
+  t('uzun duraklama + cumle sonu = yeni paragraf', function () {
+    const m = srt.toPlainText(b);
+    esitMetin(m.split('\n\n').length, 2);
+  });
+  t('zaman damgali paragraflar', function () {
+    const m = srt.toPlainText(b, { zaman: true });
+    if (m.indexOf('[0:00] Merhaba') !== 0 || m.indexOf('[1:10] İkinci') < 0) throw new Error(m);
+  });
+  t('cumle bitmeden paragraf bolunmez', function () {
+    const m = srt.toPlainText([{ start: 0, end: 1, lines: ['Ve sonra'] }, { start: 9, end: 10, lines: ['geldi.'] }]);
+    esitMetin(m.trim(), 'Ve sonra geldi.');
+  });
+}
+function esitMetin(a, b) { if (a !== b) throw new Error('beklenen=' + b + ' gelen=' + a); }
+
 console.log('\n================================');
 if (hata === 0) {
   console.log('TUM TESTLER GECTI (' + ok + ')');

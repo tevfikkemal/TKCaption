@@ -108,4 +108,45 @@ function write(filePath, content, cfg) {
   return filePath;
 }
 
-module.exports = { toSrt, toVtt, formatTime, parseTime, parseSrt, timecodeToSeconds, write };
+/**
+ * Altyazi bloklarini okunur duz metne cevirir (YouTube aciklamasi, blog,
+ * kayit icin). Blok sinirlari cumle sinirlari degil; bloklari birlestirip
+ * metni yeniden cumlelere gore paragraflara ayiriyoruz. Uzun bir duraklama
+ * (varsayilan 2 sn) yeni paragraf sayilir — konu degisimi genelde oradadir.
+ *
+ * @param {Array<{start,end,lines|text}>} blocks  parseSrt ciktisi da olur
+ * @param {Object} [o]
+ * @param {boolean} [o.zaman]  her paragrafin basina [dk:sn] yaz
+ * @param {number} [o.paragrafSn=2]
+ */
+function toPlainText(blocks, o) {
+  const opt = Object.assign({ zaman: false, paragrafSn: 2 }, o || {});
+  const paragraflar = [];
+  let cur = null;
+  let oncekiBitis = -Infinity;
+  for (const b of blocks || []) {
+    const metin = (b.lines ? b.lines.join(' ') : String(b.text || '')).replace(/\s+/g, ' ').trim();
+    if (!metin) continue;
+    // Yeni paragraf: uzun duraklama VE onceki cumle bitmis
+    const bitti = cur && /[.!?…]["')\]]?$/.test(cur.metin);
+    if (!cur || (b.start - oncekiBitis >= opt.paragrafSn && bitti)) {
+      cur = { start: b.start, metin: metin };
+      paragraflar.push(cur);
+    } else {
+      cur.metin += ' ' + metin;
+    }
+    oncekiBitis = b.end;
+  }
+  const dk = (s) => {
+    const t = Math.max(0, Math.floor(s));
+    const h = Math.floor(t / 3600);
+    const m = Math.floor(t / 60) % 60;
+    const ss = t % 60;
+    return (h ? h + ':' + pad(m, 2) : String(m)) + ':' + pad(ss, 2);
+  };
+  return paragraflar
+    .map((p) => (opt.zaman ? '[' + dk(p.start) + '] ' : '') + p.metin)
+    .join('\n\n') + '\n';
+}
+
+module.exports = { toSrt, toVtt, toPlainText, formatTime, parseTime, parseSrt, timecodeToSeconds, write };

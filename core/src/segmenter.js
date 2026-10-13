@@ -297,8 +297,80 @@ function applyTiming(blocks, cfg) {
 
 /* ---------------------------------------------------------------- */
 
+/**
+ * KISA MOD: Reels/TikTok tarzi, her blokta 1-3 kelime, tek satir.
+ *
+ * Klasik bolucunun kurallari (iki satir, okuma hizi, 5/6 sn asgari sure)
+ * burada bilerek yok: bu bicimde altyazi konusmayla birlikte AKAR, okunmak
+ * icin beklemez. Asgari sure bu yuzden cok daha kisa.
+ *
+ * Turkce kurali korunuyor: "geldi | de", "bu | özelliği" gibi yasak
+ * bolmeler icin blok bir kelime tasabilir — tek kelime modunda bile
+ * "de"yi yalniz basina ekrana getirmek okuyucuyu durdurur.
+ */
+function segmentShort(words, cfg) {
+  const L = cfg.layout;
+  const maxW = Math.max(1, Math.min(5, L.maxWords | 0));
+  const maxChars = Math.max(10, Math.min(L.maxCharsPerLine || 42, 24));
+  const frame = 1 / (L.fps || 25);
+  const minDur = Math.max(frame * 4, 0.2);
+  const groups = [];
+  let cur = [];
+
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    if (cur.length) {
+      const prev = cur[cur.length - 1];
+      const gap = w.start - prev.end;
+      const charsIfAdded = joinText(cur).length + 1 + w.text.length;
+      const doluMu = cur.length >= maxW || charsIfAdded > maxChars;
+      const noktalama = SENTENCE_END.test(prev.text) || CLAUSE_END.test(prev.text);
+      // Yasak bolme: bir kelime fazlasina izin ver, ama yalnizca bir kelime
+      const yasak = forbiddenBreak(prev, w) && cur.length <= maxW;
+      if (!yasak && (doluMu || noktalama || gap > 0.6)) {
+        groups.push(cur);
+        cur = [];
+      }
+    }
+    cur.push(w);
+  }
+  if (cur.length) groups.push(cur);
+
+  const blocks = groups.map((ws) => {
+    const text = joinText(ws);
+    return {
+      start: ws[0].start,
+      end: ws[ws.length - 1].end,
+      lines: [text],
+      text,
+      words: ws,
+      cps: 0,
+      confidence: ws.reduce((a, w) => a + (w.p == null ? 1 : w.p), 0) / ws.length
+    };
+  });
+
+  // Akis: bir sonraki blok yakinsa araya bosluk koyma, ekran bos kalip
+  // titremesin. Uzak ise kisa bir sure daha ekranda kalsin.
+  const minGap = (L.gapFrames || 2) * frame;
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    const next = blocks[i + 1];
+    if (next && next.start - b.end < 0.35) b.end = Math.max(b.end, next.start - minGap);
+    else b.end = Math.max(b.end, Math.min(b.end + 0.3, next ? next.start - minGap : b.end + 0.3));
+    if (b.end - b.start < minDur) {
+      b.end = next ? Math.max(b.end, Math.min(b.start + minDur, next.start - minGap)) : b.start + minDur;
+    }
+    b.start = Math.max(0, Math.round(b.start / frame) * frame);
+    b.end = Math.max(b.start + frame, Math.round(b.end / frame) * frame);
+    if (i > 0 && b.start < blocks[i - 1].end) blocks[i - 1].end = Math.max(blocks[i - 1].start + frame, b.start);
+    b.cps = b.text.length / Math.max(b.end - b.start, 0.001);
+  }
+  return blocks;
+}
+
 function segment(words, cfg) {
   if (!words || !words.length) return [];
+  if (cfg.layout && cfg.layout.maxWords > 0) return segmentShort(words, cfg);
 
   let raw = [];
   for (const sentence of bySentence(words)) {
@@ -332,6 +404,6 @@ function segment(words, cfg) {
 }
 
 module.exports = {
-  segment, wrapLines, splitToBlocks, applyTiming,
+  segment, segmentShort, wrapLines, splitToBlocks, applyTiming,
   CLITICS, POSTPOSITIONS, CONJUNCTIONS
 };

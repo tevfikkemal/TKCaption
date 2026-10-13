@@ -338,11 +338,17 @@
       if (Number(d.zeroPointSec) > 0.001) {
         parca.push('başlangıç ' + fmtTimecode(Number(d.zeroPointSec), Number(d.fps)));
       }
-      setText('seqMeta', parca.join(' · '));
+      // Ust bardaki hap dar: cozunurlugu basliga (title) birakiyoruz
+      setText('seqMeta', parca.slice(1).join(' · '));
       var el = $('seqName');
-      if (el) el.className = '';
+      if (el) { el.className = 'ellipsis'; el.title = parca.join(' · '); }
+      var nokta = $('seqDot');
+      if (nokta) nokta.className = 'dot on';
       kapsamiTazele(d);
+      zoomPistleriniCiz(asArray(d.videoList));
     }).catch(function (e) {
+      var nokta = $('seqDot');
+      if (nokta) nokta.className = 'dot';
       if (!auto) {
         setText('seqName', 'sekans okunamadı');
         setText('seqMeta', e.message);
@@ -540,7 +546,17 @@
   var kapsamYerlestirme = 'auto';
   var kapsamAralik = 'entire';   // 'entire' | 'inout'
   var kapsamSes = [];            // bos = tumu; dolu = secili ses timeline indeksleri
+  var kapsamBicim = 0;           // blok basina en cok kelime; 0 = klasik
   var sonSeqBilgi = null;
+
+  /** Bir dugme grubunda verilen degeri secili gosterir (kayitli secimi geri yuklerken) */
+  function grupYansit(grp, oznitelik, deger) {
+    if (!grp) return;
+    var hepsi = grp.querySelectorAll('.mini');
+    for (var i = 0; i < hepsi.length; i++) {
+      hepsi[i].className = hepsi[i].getAttribute(oznitelik) === String(deger) ? 'mini on' : 'mini';
+    }
+  }
 
   var HEDEF_ANAHTAR = 'tkcaption.hedef';
 
@@ -573,6 +589,17 @@
       yerelYaz(HEDEF_ANAHTAR, v);
       hedefiYansit();
     });
+
+    // Bicim: 0 = klasik (iki satir, okuma hizi), 3 = kisa, 1 = tek kelime
+    grupSecimi($('capGrp'), 'data-cap', function (v) {
+      kapsamBicim = parseInt(v, 10) || 0;
+      yerelYaz('tkcaption.bicim', String(kapsamBicim));
+    });
+    var kayitliB = yerelOku('tkcaption.bicim');
+    if (kayitliB === '0' || kayitliB === '1' || kayitliB === '3') {
+      kapsamBicim = parseInt(kayitliB, 10);
+      grupYansit($('capGrp'), 'data-cap', kayitliB);
+    }
 
     var kayitliY = yerelOku('tkcaption.yerlestirme');
     if (kayitliY === 'manual' || kayitliY === 'auto') {
@@ -616,7 +643,7 @@
       var it = mogrtSecili ? mogrtItem(mogrtSecili) : null;
       ipucu.textContent = it
         ? 'grafik timeline’a — şablon: ' + it.ad
-        : 'grafik timeline’a — önce Stilize Altyazı’dan şablon seçin';
+        : 'grafik timeline’a — önce Şablonlar’dan şablon seçin';
     } else {
       var mod = kapsamYerlestirme;
       ipucu.textContent = mod === 'manual'
@@ -654,6 +681,7 @@
     }
 
     sesPistleriniCiz(asArray(d.audioList));
+    yaziOnizBoyut();
   }
 
   /**
@@ -665,8 +693,7 @@
     var grp = $('audioGrp');
     if (!grp) return;
 
-    var html = '<span class="mini-lbl">Ses</span>' +
-               '<button class="mini' + (kapsamSes.length ? '' : ' on') +
+    var html = '<button class="mini' + (kapsamSes.length ? '' : ' on') +
                '" data-audio="all" type="button">Tümü</button>';
 
     var gosterilen = 0;
@@ -683,7 +710,8 @@
     }
 
     // Tek pist varsa secim anlamsiz; satiri hic gostermiyoruz
-    grp.hidden = gosterilen < 2;
+    var satir = $('audioRow') || grp;
+    satir.hidden = gosterilen < 2;
     grp.innerHTML = html;
 
     var dugmeler = grp.querySelectorAll('.mini');
@@ -1102,10 +1130,28 @@
     });
   }
 
+  var kesMod = 'kes';   // 'kes' | 'marker'
+
   function autocutUygula() {
     if (!kesBolgeler || !kesBolgeler.length) return;
     var btn = $('btnCutApply');
     btn.disabled = true;
+
+    // Marker modu: sekansa dokunmadan yalnizca isaretle. Kullanici neyin
+    // kesilecegini gorur, isterse elle keser.
+    if (kesMod === 'marker') {
+      kesYaz('<span class="dim">marker konuyor…</span>');
+      CEP.call('trAddMarkers("' + esPath(JSON.stringify(kesBolgeler)) + '", "Sessizlik", 6)')
+        .then(function (r) {
+          kesYaz('<span class="ok">' + r.placed + ' marker eklendi</span>');
+          var hs = asArray(r.errors);
+          if (hs.length) kesYaz('<span class="warn">' + hs.length + ' marker eklenemedi</span>');
+        }).catch(function (e) {
+          kesYaz('<span class="err">' + esc(e.message || String(e)) + '</span>');
+        }).then(function () { btn.disabled = false; });
+      return;
+    }
+
     kesYaz('<span class="dim">kesiliyor…</span>');
 
     CEP.call('trAutoCut("' + esPath(JSON.stringify(kesBolgeler)) + '", ' +
@@ -1161,7 +1207,8 @@
 
     var kayitli = null;
     try { kayitli = window.localStorage.getItem(SEKME_ANAHTAR); } catch (e) {}
-    gec(kayitli || 'ayar');
+    // Eski surumden kalan ya da artik olmayan bir sekme kayitliysa Altyazi'dan basla
+    gec(kayitli && $('tab-' + kayitli) ? kayitli : 'alt');
   }
 
   /** Cip gorunumu onay kutusunu takip etsin (CSS :has'e guvenmiyoruz) */
@@ -1838,7 +1885,7 @@
         '<span class="warn">Dışa aktarmadan önce kapatmayı unutmayın.</span>';
       safeOn = true;
       $('btnSafe').textContent = 'Kapat';
-      $('btnSafe').className = 'btn primary';
+      $('btnSafe').className = 'cta on';
     });
   }
 
@@ -1859,7 +1906,7 @@
       show('safeOut', msg);
       safeOn = false;
       $('btnSafe').textContent = 'Aç';
-      $('btnSafe').className = 'btn';
+      $('btnSafe').className = 'cta';
     });
   }
 
@@ -1881,8 +1928,654 @@
     CEP.call('trHasSafeZone()').then(function (r) {
       safeOn = String(r.present) === 'true';
       $('btnSafe').textContent = safeOn ? 'Kapat' : 'Aç';
-      $('btnSafe').className = safeOn ? 'btn primary' : 'btn';
+      $('btnSafe').className = safeOn ? 'cta on' : 'cta';
     }).catch(function () { /* sekans yoksa onemli degil */ });
+  }
+
+  /* ---------------------------------------------------------------- */
+  /*  Ortak yardimcilar (0.10 araclari)                                */
+  /* ---------------------------------------------------------------- */
+
+  /** Bir aracin gunluk kutusu ve ilerleme cubugu */
+  function gunluk(outId, barId, fillId) {
+    return {
+      temizle: function () { var el = $(outId); if (el) { el.innerHTML = ''; el.hidden = true; } },
+      yaz: function (html) {
+        var el = $(outId);
+        if (!el) return;
+        el.hidden = false;
+        el.innerHTML += html + '\n';
+        el.scrollTop = el.scrollHeight;
+        log.push(el.textContent);
+      },
+      bar: function (oran) {
+        var b = $(barId), f = $(fillId);
+        if (b) b.hidden = oran === null;
+        if (f && oran !== null) f.style.width = Math.round(Math.max(0, Math.min(1, oran)) * 100) + '%';
+      }
+    };
+  }
+
+  function hataMetni(e) { return esc((e && e.message) || String(e)); }
+
+  /** Kaydirici dolgusu: secili kisim turkuaz gorunsun */
+  function aralikBoya(el) {
+    var min = Number(el.min) || 0, max = Number(el.max) || 100;
+    var p = max > min ? (Number(el.value) - min) / (max - min) * 100 : 0;
+    el.style.setProperty('--p', p.toFixed(1) + '%');
+  }
+  function aralikBoyaHepsi() {
+    var hepsi = document.querySelectorAll('input[type=range]');
+    for (var i = 0; i < hepsi.length; i++) {
+      aralikBoya(hepsi[i]);
+      hepsi[i].addEventListener('input', function () { aralikBoya(this); });
+    }
+  }
+
+  /**
+   * Sekans sesini WAV'a aktarir, 16 kHz'e indirir ve konusma bolgelerini
+   * SANIYE olarak dondurur. Auto Cut'in kullandigi yolun aynisi; dolgu ve
+   * zoom ayni olcumu paylasiyor.
+   *
+   * @returns {Promise<{seq, wav, sure, konusma:[{start,end}]}>}
+   */
+  function sesVeKonusma(etiket, vadAyar, g) {
+    var core = resolveCore();
+    if (!core) return Promise.reject(new Error('Çekirdek bulunamadı.'));
+    var dir = npath.join(nos.tmpdir(), 'tkcaption-' + etiket + '-' + Date.now().toString(36));
+    try { nfs.mkdirSync(dir, { recursive: true }); } catch (e) {}
+    var wav = npath.join(dir, 'sekans.wav');
+    var seq = null;
+    return CEP.call('trGetSequenceInfo()').then(function (d) {
+      seq = d;
+      g.yaz('<span class="dim">sekans:</span> ' + esc(d.name) + '  ' + Number(d.durationSec).toFixed(1) + ' sn');
+      g.yaz('<span class="dim">ses çıkarılıyor…</span>');
+      g.bar(0.08);
+      var sesArg = kapsamSes.length ? kapsamSes.join(',') : '';
+      return CEP.call('trExportAudioAuto("' + esPath(wav) + '", 0, "' + sesArg + '")');
+    }).then(function () {
+      g.bar(0.25);
+      var au = nodeReq(npath.join(core, 'src', 'audio.js'));
+      var vad = nodeReq(npath.join(core, 'src', 'vad.js'));
+      var dec = au.decodeWav(wav);
+      var pcm = au.resample(dec.samples, dec.sampleRate, 16000);
+      var r = vad.detectSpeech(pcm, 16000, vadAyar || {}) || [];
+      var konusma = r.map(function (b) { return { start: b.start / 16000, end: b.end / 16000 }; });
+      return { seq: seq, wav: wav, dir: dir, sure: dec.durationSec, konusma: konusma };
+    });
+  }
+
+  /** Bolgeleri kare izgarasina oturtur; bir kareden kisa olanlari atar */
+  function kareyeOtur(bolgeler, fps) {
+    var f = Number(fps) || 25;
+    var out = [];
+    for (var i = 0; i < bolgeler.length; i++) {
+      var s = Math.round(bolgeler[i].start * f) / f;
+      var e = Math.round(bolgeler[i].end * f) / f;
+      if (e - s >= 1 / f - 1e-6) out.push({ start: +s.toFixed(5), end: +e.toFixed(5), ad: bolgeler[i].ad });
+    }
+    return out;
+  }
+
+  function mmss(sn) {
+    var t = Math.max(0, sn);
+    var m = Math.floor(t / 60);
+    var s = t - m * 60;
+    return m + ':' + (s < 10 ? '0' : '') + s.toFixed(1);
+  }
+
+  /* ---------------------------------------------------------------- */
+  /*  DOLGU KESICI                                                     */
+  /* ---------------------------------------------------------------- */
+
+  /*
+   * "ııı", "eee" ve secilen dolgu kelimelerini bulur, LISTE olarak
+   * gosterir; kullanici isaretlediklerini keser ya da marker koyar.
+   *
+   * Konusma tanima gerekiyor (kelime zamanlari icin). Ayni sekans icin az
+   * once tum-sekans altyazi uretildiyse o sonuc yeniden kullaniliyor.
+   * Yoksa ayrica bir tanima calisiyor — bu kez whisper'a dolgulari da
+   * yazdiran bir ipucuyla (bkz. core/src/filler.js DOLGU_IPUCU).
+   */
+
+  var dolguAdaylar = null;
+  var dolguSeq = null;
+  var dolguKelimeleri = null;
+  var dolguMod = 'kes';
+  var dolguG = gunluk('dolguOut', 'dolguBar', 'dolguFill');
+
+  function dolguMod_() {
+    try { return nodeReq(npath.join(resolveCore(), 'src', 'filler.js')); } catch (e) { return null; }
+  }
+
+  function dolguKelimeCiz() {
+    var kap = $('dolguKelimeler');
+    if (!kap) return;
+    var fm = dolguMod_();
+    // Cekirdek okunamazsa da liste gorunsun (core/src/filler.js ile ayni)
+    var liste = fm ? fm.KELIME_DOLGU : ['şey', 'yani', 'hani', 'işte', 'falan', 'filan', 'aslında', 'öyle'];
+    var html = '';
+    for (var i = 0; i < liste.length; i++) {
+      html += '<li><label class="chip"><input type="checkbox" class="dk" value="' +
+              esc(liste[i]) + '"><span>' + esc(liste[i]) + '</span></label></li>';
+    }
+    kap.innerHTML = html;
+  }
+
+  function dolguSeciliKelimeler() {
+    var out = [];
+    var k = document.querySelectorAll('#dolguKelimeler input.dk');
+    for (var i = 0; i < k.length; i++) if (k[i].checked) out.push(k[i].value);
+    return out;
+  }
+
+  function dolguListeCiz() {
+    var kap = $('dolguList');
+    if (!kap) return;
+    var html = '';
+    for (var i = 0; i < dolguAdaylar.length; i++) {
+      var a = dolguAdaylar[i];
+      var b = a.baglam || { once: '', sonra: '' };
+      html += '<label class="fitem" data-i="' + i + '">' +
+              '<input type="checkbox" checked>' +
+              '<span class="tm">' + mmss(a.start) + '</span>' +
+              '<span class="ctx">' + (b.once ? '…' + esc(b.once) + ' ' : '') +
+              '<b>' + esc(a.text) + '</b>' + (b.sonra ? ' ' + esc(b.sonra) + '…' : '') + '</span>' +
+              '<span class="sn">' + (a.end - a.start).toFixed(1) + 's</span></label>';
+    }
+    kap.innerHTML = html;
+    $('dolguSonuc').hidden = !dolguAdaylar.length;
+    dolguOzet();
+  }
+
+  function dolguSecili() {
+    var out = [];
+    var satirlar = document.querySelectorAll('#dolguList .fitem');
+    for (var i = 0; i < satirlar.length; i++) {
+      var cb = satirlar[i].querySelector('input');
+      satirlar[i].className = cb.checked ? 'fitem' : 'fitem off';
+      if (cb.checked) out.push(dolguAdaylar[parseInt(satirlar[i].getAttribute('data-i'), 10)]);
+    }
+    return out;
+  }
+
+  function dolguOzet() {
+    var s = dolguSecili();
+    var top = 0;
+    for (var i = 0; i < s.length; i++) top += s[i].end - s[i].start;
+    var btn = $('btnDolguUygula');
+    if (btn) {
+      btn.disabled = !s.length;
+      btn.textContent = s.length ? (dolguMod === 'marker' ? s.length + ' marker koy' : s.length + ' dolguyu kes') : 'Uygula';
+    }
+    setText('dolguBosVal', '');
+    return { adet: s.length, sure: top };
+  }
+
+  function dolguTara() {
+    if (!nodeReq) { dolguG.yaz('<span class="err">Node.js kapalı.</span>'); return; }
+    var core = resolveCore();
+    if (!core) { dolguG.yaz('<span class="err">Çekirdek bulunamadı.</span>'); return; }
+    var fm = dolguMod_();
+    var btn = $('btnDolguTara');
+    btn.disabled = true;
+    $('btnDolguUygula').disabled = true;
+    dolguG.temizle();
+    dolguAdaylar = null;
+    $('dolguSonuc').hidden = true;
+    var olcum = null;
+
+    // VAD sikı ayarli: kelimeler arasi kisa "ııı"lari gormek icin kisa
+    // sessizlikleri de bolge siniri sayiyoruz, kenar payi yok
+    sesVeKonusma('dolgu', { minRemovableSilenceMs: 250, padMs: 0 }, dolguG).then(function (o) {
+      olcum = o;
+      dolguSeq = o.seq;
+      var ayni = sonKelimeler && sonKelimeler.seqID === String(o.seq.sequenceID) &&
+                 Math.abs(sonKelimeler.sure - Number(o.seq.durationSec)) < 0.05;
+      if (ayni) {
+        dolguG.yaz('<span class="dim">son altyazının konuşma tanıması kullanılıyor</span>');
+        return sonKelimeler.words;
+      }
+      dolguG.yaz('<span class="dim">konuşma tanınıyor… (uzun videoda birkaç dakika)</span>');
+      var pipeline = nodeReq(npath.join(core, 'src', 'pipeline.js'));
+      var cfg = nodeReq(npath.join(core, 'src', 'config.js')).load();
+      cfg.whisper.model = $('optModel').value;
+      cfg.whisper.initialPrompt = fm.DOLGU_IPUCU;
+      cfg.layout.fps = Number(o.seq.fps) || 25;
+      return pipeline.run({
+        input: o.wav,
+        out: npath.join(o.dir, 'dolgu.srt'),
+        cfg: cfg,
+        onPhase: function (ph, msg) {
+          if (ph === 'indirme' || ph === 'uyarı') dolguG.yaz('<span class="dim">' + esc(msg) + '</span>');
+        },
+        onProgress: function (ph, pct) { dolguG.bar(0.25 + (pct || 0) * 0.7); }
+      }).then(function (res) {
+        sonKelimeler = { seqID: String(o.seq.sequenceID), sure: Number(o.seq.durationSec), words: res.wordList };
+        return res.wordList;
+      });
+    }).then(function (words) {
+      dolguG.bar(1);
+      var aday = fm.bul(words, olcum.konusma, {
+        kelimeler: dolguSeciliKelimeler(),
+        sesliBosluk: $('dolguBosluk').checked
+      });
+      if (!$('dolguSes').checked) aday = aday.filter(function (a) { return a.tur !== 'ses'; });
+      aday.forEach(function (a) { a.baglam = fm.baglam(words, a, 3); a.ad = a.text; });
+      dolguAdaylar = aday;
+      var top = 0;
+      aday.forEach(function (a) { top += a.end - a.start; });
+      dolguG.yaz(aday.length
+        ? '<span class="ok">' + aday.length + ' dolgu bulundu, toplam ' + top.toFixed(1) + ' sn</span>'
+        : '<span class="warn">Dolgu bulunamadı.</span>');
+      if (aday.length) dolguG.yaz('<span class="dim">Kesmek istemediklerinizin işaretini kaldırın.</span>');
+      dolguListeCiz();
+    }).catch(function (e) {
+      dolguG.yaz('<span class="err">' + hataMetni(e) + '</span>');
+    }).then(function () {
+      btn.disabled = false;
+      setTimeout(function () { dolguG.bar(null); }, 600);
+    });
+  }
+
+  function dolguUygula() {
+    var secili = dolguSecili();
+    if (!secili.length || !dolguSeq) return;
+    var btn = $('btnDolguUygula');
+    btn.disabled = true;
+    var bolgeler = kareyeOtur(secili, dolguSeq.fps);
+    var is;
+    if (dolguMod === 'marker') {
+      dolguG.yaz('<span class="dim">marker konuyor…</span>');
+      is = CEP.call('trAddMarkers("' + esPath(JSON.stringify(bolgeler)) + '", "Dolgu", 3)').then(function (r) {
+        dolguG.yaz('<span class="ok">' + r.placed + ' marker eklendi</span>');
+      });
+    } else {
+      dolguG.yaz('<span class="dim">kesiliyor…</span>');
+      is = CEP.call('trAutoCut("' + esPath(JSON.stringify(bolgeler)) + '", ' +
+                    Number(dolguSeq.fps) + ', "0")').then(function (r) {
+        dolguG.yaz('<span class="ok">' + r.removed + ' dolgu kesildi</span>');
+        var hs = asArray(r.errors);
+        if (hs.length) dolguG.yaz('<span class="warn">' + hs.length + ' sorun</span>');
+        // Sekans degisti: eski kelime zamanlari ve adaylar artik gecersiz
+        sonKelimeler = null;
+        dolguAdaylar = null;
+        $('dolguSonuc').hidden = true;
+      });
+    }
+    is.catch(function (e) {
+      dolguG.yaz('<span class="err">' + hataMetni(e) + '</span>');
+    }).then(function () {
+      btn.disabled = !dolguAdaylar;
+      btn.textContent = 'Uygula';
+    });
+  }
+
+  /* ---------------------------------------------------------------- */
+  /*  OTOMATIK ZOOM                                                    */
+  /* ---------------------------------------------------------------- */
+
+  var zoomStil = 'punch';
+  var zoomG = gunluk('zoomOut', 'zoomBar', 'zoomFill');
+
+  /** Video pisti secimini doldurur; ilk dolu pist varsayilan */
+  function zoomPistleriniCiz(liste) {
+    var sel = $('optZoomTrack');
+    if (!sel || !liste.length) return;
+    var onceki = sel.value;
+    var html = '';
+    var ilkDolu = -1;
+    for (var i = 0; i < liste.length; i++) {
+      var p = String(liste[i]).split('|');
+      var klip = parseInt(p[1], 10) || 0;
+      if (klip > 0 && ilkDolu < 0) ilkDolu = i;
+      html += '<option value="' + i + '">' + esc(p[0] || ('V' + (i + 1))) +
+              (klip ? ' — ' + klip + ' klip' : ' — boş') + '</option>';
+    }
+    sel.innerHTML = html;
+    if (onceki && Number(onceki) < liste.length && sel.dataset.secildi) sel.value = onceki;
+    else if (ilkDolu >= 0) sel.value = String(ilkDolu);
+  }
+
+  function zoomEtiketleri() {
+    setText('zoomOranVal', '%' + $('optZoomOran').value);
+    setText('zoomAralikVal', (Number($('optZoomAralik').value) / 10).toFixed(1) + ' sn');
+  }
+
+  function zoomUygula() {
+    if (!nodeReq) return;
+    var core = resolveCore();
+    var btn = $('btnZoomUygula');
+    btn.disabled = true;
+    zoomG.temizle();
+    var pist = $('optZoomTrack').value;
+    var anahtar = null;
+
+    sesVeKonusma('zoom', { minRemovableSilenceMs: 300, padMs: 0 }, zoomG).then(function (o) {
+      var zm = nodeReq(npath.join(core, 'src', 'zoom.js'));
+      anahtar = zm.planla(o.konusma, {
+        oran: Number($('optZoomOran').value) / 100,
+        aralikSn: Number($('optZoomAralik').value) / 10,
+        stil: zoomStil,
+        fps: Number(o.seq.fps) || 25
+      });
+      var gecis = zoomStil === 'yumusak' ? (anahtar.length - 1) / 2 : (anahtar.length - 1) / 2;
+      zoomG.yaz('<span class="dim">' + o.konusma.length + ' konuşma bölgesi → ' + gecis + ' geçiş</span>');
+      zoomG.bar(0.6);
+      if (!gecis) throw new Error('Geçiş noktası bulunamadı — sıklığı azaltıp tekrar deneyin.');
+      return CEP.call('trVideoClips(' + parseInt(pist, 10) + ')').then(function (r) {
+        var klipler = asArray(r.clips);
+        if (!klipler.length) throw new Error('Seçilen video pistinde klip yok.');
+        var plan = zm.kliplereDagit(anahtar, klipler);
+        zoomG.yaz('<span class="dim">' + plan.length + ' / ' + klipler.length + ' klibe anahtar kare yazılacak</span>');
+        return CEP.call('trApplyZoom(' + parseInt(pist, 10) + ', "' + esPath(JSON.stringify(plan)) + '")');
+      });
+    }).then(function (r) {
+      zoomG.bar(1);
+      zoomG.yaz('<span class="ok">' + r.clips + ' klibe ' + r.keys + ' anahtar kare yazıldı</span>' +
+                '  <span class="dim">(' + esc(r.format) + ')</span>');
+      if (Number(r.skipped)) {
+        zoomG.yaz('<span class="warn">' + r.skipped + ' klipte zaten Scale anahtar karesi vardı, atlandı. ' +
+                  'Önce "Zoom\'u Kaldır".</span>');
+      }
+      var hs = asArray(r.errors);
+      for (var i = 0; i < Math.min(4, hs.length); i++) zoomG.yaz('<span class="warn">' + esc(hs[i]) + '</span>');
+      zoomG.yaz('<span class="dim">Geri almak için Ctrl+Z ya da Zoom\'u Kaldır.</span>');
+    }).catch(function (e) {
+      zoomG.yaz('<span class="err">' + hataMetni(e) + '</span>');
+    }).then(function () {
+      btn.disabled = false;
+      setTimeout(function () { zoomG.bar(null); }, 600);
+    });
+  }
+
+  function zoomKaldir() {
+    var btn = $('btnZoomKaldir');
+    btn.disabled = true;
+    zoomG.temizle();
+    CEP.call('trRemoveZoom(' + parseInt($('optZoomTrack').value, 10) + ')').then(function (r) {
+      zoomG.yaz('<span class="ok">' + r.cleared + ' klipten zoom kaldırıldı</span>');
+    }).catch(function (e) {
+      zoomG.yaz('<span class="err">' + hataMetni(e) + '</span>');
+    }).then(function () { btn.disabled = false; });
+  }
+
+  /* ---------------------------------------------------------------- */
+  /*  YAZI STUDYOSU                                                    */
+  /* ---------------------------------------------------------------- */
+
+  var yaziStil = 'temiz';
+  var yaziAnim = 'pop';
+  var yaziG = gunluk('yaziOut', 'yaziBar', 'yaziFill');
+  var yaziOnizBas = 0;
+  var yaziCalisiyor = false;
+
+  function yaziSecenek() {
+    return {
+      metin: $('optYaziMetin').value,
+      stil: yaziStil,
+      anim: yaziAnim,
+      sure: Number($('optYaziSure').value) / 10,
+      boyut: Number($('optYaziBoyut').value) / 100,
+      konum: Number($('optYaziKonum').value) / 100
+    };
+  }
+
+  function yaziEtiketleri() {
+    var o = yaziSecenek();
+    setText('yaziSureVal', o.sure.toFixed(1) + ' sn');
+    setText('yaziBoyutVal', '%' + Math.round(o.boyut * 100));
+    var k = o.konum;
+    setText('yaziKonumVal', k < 0.3 ? 'üst' : k > 0.7 ? 'alt' : 'orta');
+  }
+
+  /** Onizleme tuvalini sekansin en/boy oranina getirir */
+  function yaziOnizBoyut() {
+    var cv = $('yaziOniz');
+    if (!cv) return;
+    var w = Number(sonSeqBilgi && sonSeqBilgi.width) || 1080;
+    var h = Number(sonSeqBilgi && sonSeqBilgi.height) || 1920;
+    var en = 270;
+    var boy = Math.round(en * h / w);
+    if (cv.width !== en || cv.height !== boy) { cv.width = en; cv.height = boy; }
+    var kap = $('yaziOnizKap');
+    if (kap) kap.style.width = (w >= h ? 230 : 150) + 'px';
+  }
+
+  /** Onizleme dongusu: animasyon + bir sure bekleme, sonra basa */
+  function yaziOnizCiz(zaman) {
+    var cv = $('yaziOniz');
+    var sayfa = $('tab-yazi');
+    if (cv && sayfa && !sayfa.hidden && window.TKYazi) {
+      var o = yaziSecenek();
+      var dongu = o.sure + 0.7;
+      if (!yaziOnizBas) yaziOnizBas = zaman;
+      var t = ((zaman - yaziOnizBas) / 1000) % dongu;
+      o.t = Math.min(t, o.sure);
+      if (t > o.sure) o.t = o.sure;   // bekleme: cikis bitti, ekran bos
+      var g = cv.getContext('2d');
+      window.TKYazi.ciz(g, cv.width, cv.height, o);
+      var ib = $('yaziOnizIlerleme');
+      if (ib) ib.style.width = Math.min(100, t / o.sure * 100).toFixed(1) + '%';
+    }
+    window.requestAnimationFrame(yaziOnizCiz);
+  }
+
+  function yaziKutulariCiz() {
+    var kap = $('yaziStiller');
+    if (!kap || !window.TKYazi) return;
+    var gruplar = {};
+    var sira = [];
+    window.TKYazi.STILLER.forEach(function (s) {
+      if (!gruplar[s.grup]) { gruplar[s.grup] = []; sira.push(s.grup); }
+      gruplar[s.grup].push(s);
+    });
+    var html = '';
+    sira.forEach(function (gr) {
+      html += '<div class="sgrup">' + esc(gr) + '</div><div class="sgrid">';
+      gruplar[gr].forEach(function (s) {
+        html += '<button type="button" class="stile' + (s.id === yaziStil ? ' on' : '') +
+                '" data-stil="' + s.id + '"><canvas width="108" height="52"></canvas>' +
+                '<span>' + esc(s.ad) + '</span></button>';
+      });
+      html += '</div>';
+    });
+    kap.innerHTML = html;
+
+    var kutular = kap.querySelectorAll('.stile');
+    for (var i = 0; i < kutular.length; i++) {
+      var c = kutular[i].querySelector('canvas');
+      window.TKYazi.ciz(c.getContext('2d'), c.width, c.height,
+        { metin: 'A*a*', stil: kutular[i].getAttribute('data-stil'), anim: 'yok', boyut: 4.6, konum: 0.52 });
+      kutular[i].addEventListener('click', function () {
+        yaziStil = this.getAttribute('data-stil');
+        yerelYaz('tkcaption.yaziStil', yaziStil);
+        var hepsi = kap.querySelectorAll('.stile');
+        for (var j = 0; j < hepsi.length; j++) {
+          hepsi[j].className = hepsi[j].getAttribute('data-stil') === yaziStil ? 'stile on' : 'stile';
+        }
+        yaziOnizBas = 0;
+      });
+    }
+  }
+
+  function yaziAnimCiz() {
+    var kap = $('yaziAnimGrp');
+    if (!kap || !window.TKYazi) return;
+    kap.innerHTML = window.TKYazi.ANIMLER.map(function (a) {
+      return '<button type="button" class="mini' + (a.id === yaziAnim ? ' on' : '') +
+             '" data-anim="' + a.id + '">' + esc(a.ad) + '</button>';
+    }).join('');
+    grupSecimi(kap, 'data-anim', function (v) {
+      yaziAnim = v;
+      yerelYaz('tkcaption.yaziAnim', v);
+      yaziOnizBas = 0;
+    });
+  }
+
+  function yaziInit() {
+    if (!window.TKYazi) return;
+    var ks = yerelOku('tkcaption.yaziStil');
+    if (ks && window.TKYazi.stil(ks).id === ks) yaziStil = ks;
+    var ka = yerelOku('tkcaption.yaziAnim');
+    if (ka) yaziAnim = ka;
+    window.TKYazi.fontlariYukle('fonts/').then(function () {
+      yaziKutulariCiz();
+    });
+    yaziKutulariCiz();
+    yaziAnimCiz();
+    ['optYaziSure', 'optYaziBoyut', 'optYaziKonum'].forEach(function (id) {
+      $(id).addEventListener('input', yaziEtiketleri);
+    });
+    $('optYaziMetin').addEventListener('input', function () { yaziOnizBas = 0; });
+    yaziEtiketleri();
+    yaziOnizBoyut();
+    window.requestAnimationFrame(yaziOnizCiz);
+  }
+
+  /**
+   * Yaziyi kare kare uretip timeline'a koyar.
+   * Dosyalar proje klasorunun yanina yazilir (gecici klasor temizlenirse
+   * Premiere'deki klip cevrimdisi kalirdi).
+   */
+  function yaziEkle() {
+    if (yaziCalisiyor || !nodeReq || !window.TKYazi) return;
+    var o = yaziSecenek();
+    if (!o.metin.replace(/[\s*]/g, '')) { yaziG.temizle(); yaziG.yaz('<span class="warn">Önce metni yazın.</span>'); return; }
+    yaziCalisiyor = true;
+    var btn = $('btnYaziEkle');
+    btn.disabled = true;
+    yaziG.temizle();
+    var seq = null, dir = null, ilk = null, dizi = o.anim !== 'yok';
+
+    window.TKYazi.fontlariYukle('fonts/').then(function () {
+      return CEP.call('trGetSequenceInfo()');
+    }).then(function (d) {
+      seq = d;
+      return CEP.call('trSuggestSrtPath("' + esPath(d.name) + '", ".png")')
+        .then(function (s) { return npath.dirname(s.path); })
+        .catch(function () { return nos.tmpdir(); });
+    }).then(function (kok) {
+      var damga = Date.now().toString(36);
+      dir = npath.join(kok, 'TK Yazi', damga);
+      nfs.mkdirSync(dir, { recursive: true });
+      var W = parseInt(seq.width, 10) || 1080;
+      var H = parseInt(seq.height, 10) || 1920;
+      var fps = Number(seq.fps) || 30;
+      var on = 'TKYazi_' + damga + '_';
+      yaziG.yaz('<span class="dim">' + W + '×' + H + ', ' + (dizi ? Math.round(o.sure * fps) + ' kare' : 'tek kare') + ' çiziliyor…</span>');
+      var ayar = { metin: o.metin, stil: o.stil, anim: dizi ? o.anim : 'yok',
+                   sure: dizi ? o.sure : 1, fps: dizi ? fps : 1, boyut: o.boyut, konum: o.konum };
+      return window.TKYazi.kareleriUret(W, H, ayar, function (no, veri) {
+        var ad = on + ('0000' + no).slice(-4) + '.png';
+        if (no === 0) ilk = npath.join(dir, ad);
+        nfs.writeFileSync(npath.join(dir, ad), Buffer.from(veri, 'base64'));
+      }, function (oran) { yaziG.bar(oran * 0.85); }).then(function (r) {
+        yaziG.yaz('<span class="dim">' + r.kare + ' kare yazıldı (' + r.kodlanan + ' farklı)</span>');
+        return CEP.call('trPlaceTextClip("' + esPath(ilk) + '", "' + (dizi ? '1' : '0') + '", ' +
+                        fps + ', ' + o.sure + ')');
+      });
+    }).then(function (r) {
+      yaziG.bar(1);
+      yaziG.yaz('<span class="ok">Eklendi — V' + r.track + ', ' + Number(r.at).toFixed(2) + ' sn</span>');
+      var ad = asArray(r.steps);
+      for (var i = 0; i < ad.length; i++) yaziG.yaz('<span class="dim">' + esc(ad[i]) + '</span>');
+    }).catch(function (e) {
+      yaziG.yaz('<span class="err">' + hataMetni(e) + '</span>');
+    }).then(function () {
+      yaziCalisiyor = false;
+      btn.disabled = false;
+      setTimeout(function () { yaziG.bar(null); }, 800);
+    });
+  }
+
+  /* ---------------------------------------------------------------- */
+  /*  Duz metin                                                        */
+  /* ---------------------------------------------------------------- */
+
+  function duzMetin() {
+    if (!subsBloklar || !subsBloklar.length) return '';
+    try {
+      var srtMod = nodeReq(npath.join(resolveCore(), 'src', 'srt.js'));
+      return srtMod.toPlainText(subsBloklar);
+    } catch (e) { return ''; }
+  }
+
+  function panoyaKopyala(metin) {
+    var ta = document.createElement('textarea');
+    ta.value = metin;
+    document.body.appendChild(ta);
+    ta.select();
+    var ok2 = false;
+    try { ok2 = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    return ok2;
+  }
+
+  function metniKopyala() {
+    var m = duzMetin();
+    if (!m) { subsNot('Önce altyazı üretin.'); return; }
+    subsNot(panoyaKopyala(m) ? 'Metin panoya kopyalandı.' : 'Kopyalanamadı.');
+  }
+
+  function metniKaydet() {
+    var m = duzMetin();
+    if (!m || !subsYol) { subsNot('Önce altyazı üretin.'); return; }
+    var yol = String(subsYol).replace(/(-d\d+)?\.[^.\\\/]+$/, '') + '.txt';
+    try {
+      nfs.writeFileSync(yol, '﻿' + m.replace(/\n/g, '\r\n'), 'utf8');
+      subsNot('Kaydedildi: ' + yol);
+    } catch (e) { subsNot('Kaydedilemedi: ' + e.message); }
+  }
+
+  /** 0.10 araclarinin baglantilari */
+  function yeniAraclariBagla() {
+    aralikBoyaHepsi();
+
+    // Cipler: onay kutusu degisince gorunum (CSS :has'e guvenmiyoruz)
+    document.addEventListener('change', function (e) {
+      if (e.target && e.target.parentNode && /chip/.test(e.target.parentNode.className)) cipleriTazele();
+    });
+
+    // Auto Cut modu
+    grupSecimi($('cutModeGrp'), 'data-mode', function (v) {
+      kesMod = v;
+      setText('cutModeNote', v === 'marker'
+        ? 'Sekansa dokunulmaz; sessiz bölümlere marker konur.'
+        : 'Sessiz bölümler silinir, kalan klipler sola kayar. Geri almak için Ctrl+Z.');
+    });
+
+    // Dolgu
+    dolguKelimeCiz();
+    grupSecimi($('dolguModeGrp'), 'data-mode', function (v) { dolguMod = v; if (dolguAdaylar) dolguOzet(); });
+    $('btnDolguTara').addEventListener('click', dolguTara);
+    $('btnDolguUygula').addEventListener('click', dolguUygula);
+    $('dolguList').addEventListener('change', dolguOzet);
+    $('btnDolguHepsi').addEventListener('click', function () { dolguHepsi(true); });
+    $('btnDolguHic').addEventListener('click', function () { dolguHepsi(false); });
+
+    // Zoom
+    grupSecimi($('zoomStilGrp'), 'data-stil', function (v) { zoomStil = v; });
+    $('optZoomOran').addEventListener('input', zoomEtiketleri);
+    $('optZoomAralik').addEventListener('input', zoomEtiketleri);
+    $('optZoomTrack').addEventListener('change', function () { this.dataset.secildi = '1'; });
+    $('btnZoomUygula').addEventListener('click', zoomUygula);
+    $('btnZoomKaldir').addEventListener('click', zoomKaldir);
+    zoomEtiketleri();
+
+    // Yazi
+    yaziInit();
+    $('btnYaziEkle').addEventListener('click', yaziEkle);
+
+    // Duz metin
+    $('btnTxtCopy').addEventListener('click', metniKopyala);
+    $('btnTxtSave').addEventListener('click', metniKaydet);
+  }
+
+  function dolguHepsi(acik) {
+    var k = document.querySelectorAll('#dolguList .fitem input');
+    for (var i = 0; i < k.length; i++) k[i].checked = acik;
+    dolguOzet();
   }
 
   /* ---------------------------------------------------------------- */
@@ -1892,6 +2585,7 @@
   var running = false;
   var cancelFn = null;
   var lastResult = null;
+  var sonKelimeler = null;   // {seqID, sure, words} — son tum-sekans taramasi
 
   function cancelRun() {
     if (cancelFn) {
@@ -2049,6 +2743,9 @@
       cfg.layout.maxCharsPerLine = parseInt($('optChars').value, 10) || 42;
       cfg.layout.maxCps = parseFloat($('optCps').value) || 17;
       cfg.layout.fps = Number(seqInfo.fps) || 25;
+      // Kisa / tek kelime bicimi (Reels tarzi). 0 = klasik bolucu.
+      cfg.layout.maxWords = kapsamBicim;
+      if (kapsamBicim) appendRun('<span class="dim">biçim:</span> blok başına en çok ' + kapsamBicim + ' kelime');
       // Zaman kodu kaymasini SRT'nin ICINE yaziyoruz. createCaptionTrack'in
       // ikinci argümaninin anlami belgelenmemis; 0 her durumda gecerli
       // oldugu icin bu yol o belirsizlige bagimli degil.
@@ -2075,6 +2772,13 @@
       });
     }).then(function (res) {
       lastResult = res;
+      // Dolgu kesici ayni konusma tanimayi yeniden kullanabilsin. Yalnizca
+      // TUM SEKANS taramasi gecerli: In/Out'ta kelime zamanlari aralik
+      // basina gore ve sekansin geri kalani hic taranmamis.
+      if (res.wordList && kapsamAralik === 'entire') {
+        sonKelimeler = { seqID: String(seqInfo.sequenceID), sure: Number(seqInfo.durationSec),
+                         words: res.wordList };
+      }
       // Stilize altyazi bolumu bu dosyayi okuyup MOGRT olarak dizecek
       sonAltyaziYolu = srtPath;
       subsYukle(srtPath);
@@ -2363,6 +3067,7 @@
     $('btnReload').addEventListener('click', reloadPanel);
     $('btnUpdate').addEventListener('click', runUpdate);
     $('btnRun').addEventListener('click', generate);
+    yeniAraclariBagla();
     $('btnSafe').addEventListener('click', toggleSafeZone);
     // "Tümü" kutusu digerlerini surukler
     $('optSafeDim').addEventListener('input', function () {
@@ -2413,7 +3118,7 @@
     $('btnAdv').addEventListener('click', function () {
       var g = $('advBody');
       g.hidden = !g.hidden;
-      this.className = g.hidden ? 'botlink' : 'botlink on';
+      this.className = g.hidden ? 'btn small' : 'btn small on';
     });
   });
 }());

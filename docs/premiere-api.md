@@ -296,3 +296,21 @@ ve yanlış yerden kesilir.
 **Bağlı klipler birlikte kesiliyor.** Ölçülen: tek sessiz bölüm için
 V1'de iki kesim yapıldığında ses de kesildi ve iki parça (video + ses)
 silindi. Her piste ayrı ayrı razor uygulamak gerekmiyor.
+
+## 0.10 — henüz Premiere'de ölçülmeyenler
+
+Kod hepsini deneyip sonucu geri okuyarak raporluyor; ilk gerçek kullanımda
+burası güncellenmeli.
+
+- **Anahtar kare zaman tabanı** (`ComponentParam.addKey`): klibin KAYNAK
+  zamanı varsayıldı (`sekans - klip.start + klip.inPoint`, bkz.
+  `core/src/zoom.js`). Zoom yanlış yerde başlıyorsa ilk şüpheli bu.
+  `addKey` için önce `Time` nesnesi, olmazsa saniye deneniyor; rapordaki
+  `(time)` / `(sn)` hangisinin tuttuğunu söyler.
+- **Numaralı PNG dizisi**: `importFiles([ilk], true, bin, true)` dizinin
+  tek klip olarak alınması için. Kare hızı `setOverrideFrameRate` ile
+  sekansınkine eşitleniyor; tutmazsa animasyon hızlı/yavaş oynar.
+- **Marker**: `seq.markers.createMarker(sn)` + `marker.end = Time`.
+  Saniyenin başlangıç zaman kodunu içerip içermediği ölçülmedi.
+- **Oynatma kafası**: `seq.getPlayerPosition().seconds`, `overwriteClip`
+  ile aynı zaman tabanında varsayıldı.
