@@ -4,7 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TK Caption</title>
-  <link rel="stylesheet" href="kurgu/fonts.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -44,36 +43,36 @@
       <button class="tab" data-tab="alt" type="button">
         <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 13h4M13 13h4M7 16h7"/></svg>
         <span>Altyazı</span></button>
-      <button class="tab" data-tab="yazi" type="button">
+      <button class="tab" data-tab="yazi" data-pro type="button">
         <svg viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>
         <span>Yazı</span></button>
-      <button class="tab" data-tab="hazir" type="button">
+      <button class="tab" data-tab="hazir" data-pro type="button">
         <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M7 9h6M7 13h10M7 16h4"/></svg>
         <span>Şablonlar</span></button>
-      <button class="tab" data-tab="gecis" type="button">
+      <button class="tab" data-tab="gecis" data-pro type="button">
         <svg viewBox="0 0 24 24"><rect x="3" y="5" width="11" height="14" rx="2"/><path d="M14 8h5a2 2 0 012 2v7a2 2 0 01-2 2h-5"/><path d="M8 12h9M14 9l3 3-3 3"/></svg>
         <span>Geçişler</span></button>
-      <button class="tab" data-tab="renk" type="button">
+      <button class="tab" data-tab="renk" data-pro type="button">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17"/><path d="M12 3.5a8.5 8.5 0 010 17" fill="currentColor" opacity=".35"/></svg>
         <span>Renk</span></button>
       <i class="railsep"></i>
-      <button class="tab" data-tab="kes" type="button">
+      <button class="tab" data-tab="kes" data-pro type="button">
         <svg viewBox="0 0 24 24"><path d="M3 12h3l2-5 3 10 2-6 2 3h6"/></svg>
         <span>Auto Cut</span></button>
-      <button class="tab" data-tab="dolgu" type="button">
+      <button class="tab" data-tab="dolgu" data-pro type="button">
         <svg viewBox="0 0 24 24"><path d="M4 7h4M4 12h7M4 17h4"/><path d="M14 9l6 6M20 9l-6 6"/></svg>
         <span>Dolgu</span></button>
-      <button class="tab" data-tab="zoom" type="button">
+      <button class="tab" data-tab="zoom" data-pro type="button">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg>
         <span>Zoom</span></button>
-      <button class="tab" data-tab="muzik" type="button">
+      <button class="tab" data-tab="muzik" data-pro type="button">
         <svg viewBox="0 0 24 24"><path d="M2 12h3l2-6 3 12 3-9 2 5 2-2h5"/></svg>
         <span>Müzik</span></button>
       <i class="railsep"></i>
-      <button class="tab" data-tab="safe" type="button">
+      <button class="tab" data-tab="safe" data-pro type="button">
         <svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><rect x="9" y="6" width="6" height="10" rx="1" stroke-dasharray="2 1.6"/></svg>
         <span>Safe Zone</span></button>
-      <button class="tab" data-tab="stil" type="button">
+      <button class="tab" data-tab="stil" data-pro type="button">
         <svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>
         <span>MOGRT</span></button>
       <i class="railgrow"></i>
@@ -120,7 +119,14 @@
             <span class="flbl">Nereye</span>
             <div class="seg" id="targetGrp">
               <button class="mini on" data-target="caption" type="button">Altyazı</button>
-              <button class="mini" data-target="graphic" type="button">Grafik</button>
+              <button class="mini" data-target="graphic" data-pro type="button">Grafik</button>
+            </div>
+          </div>
+          <div class="frow">
+            <span class="flbl">Dil</span>
+            <div class="seg" id="dilGrp">
+              <button class="mini on" data-dil="tr" type="button">Türkçe</button>
+              <button class="mini" data-dil="en" type="button">İngilizce (çeviri)</button>
             </div>
           </div>
           <div class="frow">
@@ -170,253 +176,27 @@
         </div>
       </section>
 
-      <section class="page" id="tab-yazi" hidden>
+      <!-- ============ PRO TANITIM (Pro yokken kilitli sekmeler burayi acar) ============ -->
+      <section class="page" id="tab-pro" hidden>
         <div class="phead">
-          <span class="picon"><svg viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg></span>
-          <h2>Yazı Stüdyosu</h2>
+          <span class="picon"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg></span>
+          <h2><span id="proOzellik">Bu özellik</span></h2>
         </div>
-        <p class="pdesc">Hazır görünüm ve animasyon seçin, metni yazın, timeline'a ekleyin (şeffaf katman).</p>
-        <div class="kfxkap" id="kfxYazi"></div>
-      </section>
-
-      <section class="page" id="tab-hazir" hidden>
-        <div class="phead">
-          <span class="picon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M7 9h6M7 13h10M7 16h4"/></svg></span>
-          <h2>Hazır Şablonlar</h2>
-        </div>
-        <p class="pdesc">Alt bant, sayı, karşılaştırma, süreç kartı… Seçin, metni yazın, oynatma kafasına ekleyin.</p>
-        <div class="kfxkap" id="kfxHazir"></div>
-      </section>
-
-      <section class="page" id="tab-gecis" hidden>
-        <div class="phead">
-          <span class="picon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="11" height="14" rx="2"/><path d="M14 8h5a2 2 0 012 2v7a2 2 0 01-2 2h-5"/><path d="M8 12h9M14 9l3 3-3 3"/></svg></span>
-          <h2>Geçişler</h2>
-        </div>
-        <p class="pdesc">Oynatma kafasını iki klibin birleştiği kesime getirip geçişe tıklayın. Ayar katmanı olarak timeline'da kalır.</p>
-        <div class="kfxkap" id="kfxGecis"></div>
-      </section>
-
-      <section class="page" id="tab-renk" hidden>
-        <div class="phead">
-          <span class="picon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17"/><path d="M12 3.5a8.5 8.5 0 010 17" fill="currentColor" opacity=".35"/></svg></span>
-          <h2>Lumetri Renk</h2>
-        </div>
-        <p class="pdesc">Hazır renk ayarı seçin, isterseniz ince ayar yapın. Seçili kliplere ya da ayar katmanına uygulanır.</p>
-        <div class="kfxkap" id="kfxRenk"></div>
-      </section>
-
-      <section class="page" id="tab-muzik" hidden>
-        <div class="phead">
-          <span class="picon"><svg viewBox="0 0 24 24"><path d="M2 12h3l2-6 3 12 3-9 2 5 2-2h5"/></svg></span>
-          <h2>Müzik → Marker</h2>
-        </div>
-        <p class="pdesc">Müziğin vuruşlarını ve tepe noktalarını bulup timeline'a marker koyar.</p>
-        <div class="kfxkap" id="kfxMuzik"></div>
-      </section>
-
-      <!-- ============ AUTO CUT ============ -->
-      <section class="page" id="tab-kes" hidden>
-        <div class="phead">
-          <span class="picon"><svg viewBox="0 0 24 24"><path d="M3 12h3l2-5 3 10 2-6 2 3h6"/></svg></span>
-          <h2>Auto Cut</h2>
-        </div>
-        <p class="pdesc">Konuşmadaki sessiz bölümleri bulur; keser ya da marker koyar.</p>
-
+        <p class="pdesc">TK Caption Pro'da. Altyazı ve çeviri ücretsiz ve hep öyle kalacak; Pro, kurguyu hızlandıran araçları bir arada sunuyor.</p>
         <div class="card">
-          <div class="clbl">Ayar</div>
-          <div class="frow">
-            <span class="flbl">En kısa sessizlik</span>
-            <input id="optCutMin" type="range" min="3" max="30" value="8">
-            <b class="val" id="cutMinVal">0.8 sn</b>
-          </div>
-          <div class="frow">
-            <span class="flbl">Kenar payı</span>
-            <input id="optCutPad" type="range" min="0" max="10" value="2">
-            <b class="val" id="cutPadVal">0.2 sn</b>
-          </div>
-          <p class="hint" id="cutNote"></p>
-        </div>
-
-        <div class="card">
-          <div class="clbl">Uygulama</div>
-          <div class="seg full" id="cutModeGrp">
-            <button class="mini on" data-mode="kes" type="button">Kes</button>
-            <button class="mini" data-mode="marker" type="button">Marker koy</button>
-          </div>
-          <p class="hint" id="cutModeNote">Sessiz bölümler silinir, kalan klipler sola kayar. Geri almak için Ctrl+Z.</p>
-        </div>
-
-        <div class="duo">
-          <button id="btnCutScan" class="btn ghost" type="button">Sessizlikleri Bul</button>
-          <button id="btnCutApply" class="btn primary" type="button" disabled>Uygula</button>
-        </div>
-        <div id="cutBar" class="bar" hidden><div id="cutFill" class="fill"></div></div>
-        <div id="cutOut" class="out" hidden></div>
-      </section>
-
-      <!-- ============ DOLGU KESICI ============ -->
-      <section class="page" id="tab-dolgu" hidden>
-        <div class="phead">
-          <span class="picon"><svg viewBox="0 0 24 24"><path d="M4 7h4M4 12h7M4 17h4"/><path d="M14 9l6 6M20 9l-6 6"/></svg></span>
-          <h2>Dolgu Kesici</h2>
-        </div>
-        <p class="pdesc">"Iıı", "eee" gibi sesleri ve seçtiğiniz dolgu kelimelerini bulur. Önce listeyi gösterir; onayladıklarınızı keser.</p>
-
-        <div class="card">
-          <div class="clbl">Ne aransın</div>
-          <ul class="chips" id="dolguTurler">
-            <li><label class="chip on"><input type="checkbox" id="dolguSes" checked><span>ııı · eee · hmm</span></label></li>
-            <li><label class="chip on"><input type="checkbox" id="dolguBosluk" checked><span>Kelimesiz sesler</span></label></li>
+          <div class="clbl">TK Caption Pro</div>
+          <ul class="prolist">
+            <li><b>Yazı Stüdyosu</b> — 21 görünüm, 25 animasyon, şeffaf katman</li>
+            <li><b>Hazır Şablonlar</b> — 74 animasyonlu alt bant, sayı, karşılaştırma</li>
+            <li><b>Geçişler</b> — 34 geçiş, ayar katmanıyla</li>
+            <li><b>Lumetri Renk</b> — 16 hazır renk ayarı</li>
+            <li><b>Auto Cut + Dolgu Kesici</b> — sessizlik ve "ııı/eee" temizliği</li>
+            <li><b>Otomatik Zoom</b>, <b>Müzik → Marker</b>, <b>Safe Zone</b>, <b>MOGRT altyazı</b></li>
           </ul>
-          <div class="clbl sub">Dolgu kelimeleri</div>
-          <ul class="chips" id="dolguKelimeler"></ul>
-          <p class="hint">Kelimeler varsayılan kapalı: "yani" bazen gerçekten "yani"dir.</p>
         </div>
-
-        <div class="card">
-          <div class="clbl">Uygulama</div>
-          <div class="seg full" id="dolguModeGrp">
-            <button class="mini on" data-mode="kes" type="button">Kes</button>
-            <button class="mini" data-mode="marker" type="button">Marker koy</button>
-          </div>
-        </div>
-
-        <div class="duo">
-          <button id="btnDolguTara" class="btn ghost" type="button">Analiz Et</button>
-          <button id="btnDolguUygula" class="btn primary" type="button" disabled>Uygula</button>
-        </div>
-        <div id="dolguBar" class="bar" hidden><div id="dolguFill" class="fill"></div></div>
-
-        <div class="card" id="dolguSonuc" hidden>
-          <div class="clbl">Bulunanlar <span class="clbl-r"><button class="link" id="btnDolguHepsi" type="button">tümü</button> · <button class="link" id="btnDolguHic" type="button">hiçbiri</button></span></div>
-          <div id="dolguList" class="flist"></div>
-        </div>
-        <div id="dolguOut" class="out" hidden></div>
-      </section>
-
-      <!-- ============ ZOOM ============ -->
-      <section class="page" id="tab-zoom" hidden>
-        <div class="phead">
-          <span class="picon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg></span>
-          <h2>Otomatik Zoom</h2>
-        </div>
-        <p class="pdesc">Konuşmada her yeni cümlede yakın/uzak geçiş yapar — tek kamerada ikinci kamera hissi.</p>
-
-        <div class="card">
-          <div class="clbl">Kaynak</div>
-          <div class="frow">
-            <span class="flbl">Video pisti</span>
-            <select id="optZoomTrack"><option value="0">V1</option></select>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="clbl">Ayar</div>
-          <div class="seg full" id="zoomStilGrp">
-            <button class="mini on" data-stil="punch" type="button">Ani (punch-in)</button>
-            <button class="mini" data-stil="yumusak" type="button">Yumuşak</button>
-          </div>
-          <div class="frow">
-            <span class="flbl">Yakınlık</span>
-            <input id="optZoomOran" type="range" min="105" max="140" value="115">
-            <b class="val" id="zoomOranVal">%115</b>
-          </div>
-          <div class="frow">
-            <span class="flbl">Sıklık</span>
-            <input id="optZoomAralik" type="range" min="15" max="100" value="40">
-            <b class="val" id="zoomAralikVal">4.0 sn</b>
-          </div>
-          <p class="hint">En az bu kadar saniyede bir geçiş. Zaten Scale anahtar karesi olan kliplere dokunulmaz.</p>
-        </div>
-
-        <div class="duo">
-          <button id="btnZoomKaldir" class="btn ghost" type="button">Zoom'u Kaldır</button>
-          <button id="btnZoomUygula" class="btn primary" type="button">Uygula</button>
-        </div>
-        <div id="zoomBar" class="bar" hidden><div id="zoomFill" class="fill"></div></div>
-        <div id="zoomOut" class="out" hidden></div>
-      </section>
-
-      <!-- ============ GUVENLI ALAN ============ -->
-      <section class="page" id="tab-safe" hidden>
-        <div class="phead">
-          <span class="picon"><svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><rect x="9" y="6" width="6" height="10" rx="1" stroke-dasharray="2 1.6"/></svg></span>
-          <h2>Safe Zone</h2>
-        </div>
-        <p class="pdesc">Platform arayüzünün altında kalacak bölgeleri gösteren kılavuz katmanı. Dışa aktarmadan önce kapatın.</p>
-
-        <div class="card">
-          <div class="clbl">Platform</div>
-          <ul class="chips" id="platformList">
-            <li><label class="chip"><input type="checkbox" class="sf" value="instagram-reels" checked>
-              <svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/></svg>
-              <span>Reels</span></label></li>
-            <li><label class="chip"><input type="checkbox" class="sf" value="instagram-story">
-              <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-dasharray="3 2"/><circle cx="12" cy="12" r="4"/></svg>
-              <span>Story</span></label></li>
-            <li><label class="chip"><input type="checkbox" class="sf" value="instagram-feed">
-              <svg class="ico" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="3"/></svg>
-              <span>Feed 4:5</span></label></li>
-            <li><label class="chip"><input type="checkbox" class="sf" value="tiktok">
-              <svg class="ico" viewBox="0 0 24 24"><path d="M14 4v10.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 4c.5 2.5 2 4 4.5 4.3"/></svg>
-              <span>TikTok</span></label></li>
-            <li><label class="chip"><input type="checkbox" class="sf" value="youtube-shorts">
-              <svg class="ico" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="4"/></svg>
-              <span>Shorts</span></label></li>
-            <li><label class="chip"><input type="checkbox" class="sf" value="youtube-16x9">
-              <svg class="ico" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="3"/></svg>
-              <span>YouTube</span></label></li>
-            <li><label class="chip subtle"><input type="checkbox" id="safeAll"><span>Tümü</span></label></li>
-          </ul>
-          <div class="frow">
-            <span class="flbl">Karartma</span>
-            <input id="optSafeDim" type="range" min="0" max="80" value="45">
-            <b class="val" id="safeDimVal">%45</b>
-          </div>
-          <p class="hint" id="safeMulti" hidden></p>
-          <p class="hint" id="safeNote" hidden></p>
-        </div>
-
-        <button id="btnSafe" class="cta" type="button"><span>Aç</span></button>
-        <div id="safeOut" class="out" hidden></div>
-      </section>
-
-      <!-- ============ SABLONLAR (kullanicinin MOGRT'leri) ============ -->
-      <section class="page" id="tab-stil" hidden>
-        <div class="phead">
-          <span class="picon"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span>
-          <h2>MOGRT Şablonları</h2>
-          <span class="ver" id="mogrtCount"></span>
-        </div>
-        <p class="pdesc">Kendi .mogrt şablonlarınızla altyazı. Şablonu seçin, sonra Altyazı'da <b>Nereye: Grafik</b> ile oluşturun.</p>
-
-        <div class="card">
-          <div class="clbl">Klasör</div>
-          <div class="row">
-            <button id="btnMogrtDir" class="btn small" type="button">Şablon klasörü…</button>
-            <span id="mogrtDirLabel" class="dim ellipsis">seçilmedi</span>
-          </div>
-          <div id="mogrtGrid" class="mogrt-grid" hidden></div>
-        </div>
-
-        <div class="card">
-          <div class="clbl">Yerleşim</div>
-          <div class="frow">
-            <span class="flbl">Dikey konum</span>
-            <input id="optMogrtPos" type="range" min="10" max="95" value="80">
-            <b class="val" id="mogrtPosVal">%80</b>
-          </div>
-          <div class="frow">
-            <span class="flbl">Boyut</span>
-            <input id="optMogrtScale" type="range" min="0" max="150" value="0">
-            <b class="val" id="mogrtScaleVal">otomatik</b>
-          </div>
-        </div>
-
-        <p class="hint" id="mogrtNote" hidden></p>
-        <div id="mogrtBar" class="bar" hidden><div id="mogrtFill" class="fill"></div></div>
-        <div id="mogrtOut" class="out" hidden></div>
+        <div class="profiyat"><b>249 TL</b><span>/ yıl</span></div>
+        <button id="btnProAl" class="cta" type="button"><span>Pro'ya geç</span></button>
+        <p class="hint center">labs.tkcreative.io</p>
       </section>
 
       <!-- ============ AYARLAR ============ -->
@@ -478,6 +258,7 @@
             <dt>Köprü</dt><dd id="envBridge" class="pending">—</dd>
             <dt>Çekirdek</dt><dd id="envCore" class="pending">—</dd>
             <dt>Veri</dt><dd id="envData" class="pending">—</dd>
+            <dt>Sürüm</dt><dd id="envPro" class="pending">—</dd>
           </dl>
           <div class="row mt">
             <button id="btnCopy" class="btn small primary" type="button">Raporu kopyala</button>
@@ -503,11 +284,6 @@
 </div>
 
   <script src="js/cep.js"></script>
-  <script src="kurgu/text.js"></script>
-  <script src="kurgu/templates.js"></script>
-  <script src="kurgu/trans.js"></script>
-  <script src="kurgu/audio.js"></script>
   <script src="js/main.js"></script>
-  <script src="js/kfx.js"></script>
 </body>
 </html>

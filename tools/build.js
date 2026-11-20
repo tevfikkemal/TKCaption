@@ -412,8 +412,12 @@ function build(notes) {
   fs.mkdirSync(OUT, { recursive: true });
 
   // --- Panel dosyalari ---
-  copyDir(path.join(ROOT, 'panel'), OUT);
-  console.log('  panel/      -> eklenti koku');
+  // panel/pro: gelistirmede Pro buraya konabilir (gitignore'da). Ucretsiz
+  // pakete ASLA girmemeli — Pro kodu ayri, gizli depoda.
+  const PRO_DIR = path.join(ROOT, 'panel', 'pro');
+  copyDir(path.join(ROOT, 'panel'), OUT, (s) => s !== PRO_DIR);
+  if (fs.existsSync(path.join(OUT, 'pro'))) throw new Error('Pro klasoru ucretsiz pakete girdi!');
+  console.log('  panel/      -> eklenti koku (pro/ haric)');
 
   // --- Cekirdek (yalnizca src; test ve arac dosyalari kullaniciya gerekmez) ---
   copyDir(path.join(ROOT, 'core', 'src'), path.join(OUT, 'core', 'src'));

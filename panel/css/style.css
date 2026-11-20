@@ -663,3 +663,26 @@ input[type=color] {
 }
 .tin:focus { border-color: var(--accent); }
 .formlar { display: flex; flex-direction: column; gap: 8px; }
+
+/* ---------------------------------------------------------------- */
+/*  Pro kilidi                                                       */
+/* ---------------------------------------------------------------- */
+
+.prorozet {
+  display: inline-block;
+  margin-top: 2px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font: 800 8px/1.4 "Segoe UI", system-ui, sans-serif;
+  letter-spacing: .6px;
+}
+.tab.kilitli { color: var(--text-3); }
+.tab.kilitli svg { opacity: .55; }
+.mini.kilitli .prorozet { margin: 0 0 0 5px; vertical-align: 1px; }
+.prolist { margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 6px; color: var(--text-2); font-size: 11.5px; }
+.prolist b { color: var(--text); }
+.profiyat { display: flex; align-items: baseline; justify-content: center; gap: 6px; }
+.profiyat b { font-size: 28px; font-weight: 800; color: var(--text); }
+.profiyat span { color: var(--text-3); font-size: 12px; }

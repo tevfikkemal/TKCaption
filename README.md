@@ -13,11 +13,15 @@ Premiere Pro'nun kendi altyazı özelliği 18 dil biliyor. Türkçe bunlardan bi
 
 TK Caption ikisini de yapmaz.
 
-## Neler yapar
+## Neler yapar (ücretsiz)
 
 **Altyazı** — Sekanstaki konuşmayı dinler, Türkçe altyazıyı üretir ve zaman çizgisine yerleştirir. Tek tık.
 
 Altyazıları düz bölmez, Türkçe'ye göre böler: `geldi | de`, `açıklamaya | göre`, `bu | özelliği` gibi yanlış kesimler yapmaz. Satır uzunluğu ve okuma hızı TRT/Netflix Türkçe ölçülerine uyar.
+
+**Çeviri** — Türkçe konuşmadan İngilizce altyazı. Yine bilgisayarınızda çalışır; ilk çeviride büyük model bir kez iner (~1 GB).
+
+**Kelime kelime altyazı** — Reels/TikTok tarzı: her altyazıda 1–3 kelime ya da tek kelime.
 
 **Seçili aralık** — Tüm sekansı değil, sadece In/Out arasını işleyebilir.
 
@@ -25,27 +29,18 @@ Altyazıları düz bölmez, Türkçe'ye göre böler: `geldi | de`, `açıklamay
 
 **Düzenleme** — Üretilen altyazıyı panelde görüp düzeltebilirsiniz. Özel isimler, marka adları, teknik terimler için.
 
-**Auto Cut** — Sessiz bölümleri bulup keser, kalan klipleri birleştirir. Ne kadar sürenin kesileceğini önce gösterir, onaylarsanız uygular. İsterseniz kesmeden yalnızca marker koyar.
-
-**Dolgu Kesici** — "Iıı", "eee" gibi sesleri ve isterseniz "şey", "yani" gibi dolgu kelimelerini bulur. Önce liste hâlinde gösterir; işaretlediklerinizi keser ya da marker koyar.
-
-**Kelime kelime altyazı** — Reels/TikTok tarzı: her altyazıda 1–3 kelime ya da tek kelime.
-
-**Yazı Stüdyosu** — 21 görünüm, 25 giriş ve 6 çıkış animasyonu; yazıyı oynatma kafasına şeffaf katman olarak ekler. `*yıldız*` ile vurgulu kelime.
-
-**Hazır Şablonlar** — 74 animasyonlu şablon: alt bant, büyük sayı, karşılaştırma, süreç kartı…
-
-**Geçişler** — 34 geçiş (zoom, whip, kaydırma, ışık, efekt); kesimin üstüne ayar katmanı olarak.
-
-**Lumetri Renk** — 16 hazır renk ayarı ve ince ayar; seçili kliplere ya da ayar katmanına.
-
-**Müzik → Marker** — Müziğin vuruşlarını bulup marker koyar (vuruş, bas, BPM ızgarası).
-
-**Otomatik zoom** — Konuşmanın her yeni cümlesinde yakın/uzak geçiş yapar; tek kamerada ikinci kamera hissi.
-
 **Düz metin** — Altyazıyı paragraflara ayrılmış düz metin olarak kopyalar ya da TXT kaydeder.
 
-**Güvenli alan** — Instagram, TikTok, YouTube için ekranın hangi kısmının arayüz altında kalacağını gösterir. Altyazıyı doğru yere koymak için.
+## TK Caption Pro — yıllık 249 TL
+
+Panelde kilitli görünür; Pro'ya geçince aynı panelde açılır.
+
+- **Yazı Stüdyosu** — 21 görünüm, 25 giriş ve 6 çıkış animasyonu, şeffaf katman
+- **Hazır Şablonlar** — 74 animasyonlu alt bant, sayı, karşılaştırma, süreç kartı
+- **Geçişler** — 34 geçiş, kesimin üstüne ayar katmanı olarak
+- **Lumetri Renk** — 16 hazır renk ayarı ve ince ayar
+- **Auto Cut** ve **Dolgu Kesici** — sessizlikleri ve "ııı/eee"leri bulup keser
+- **Otomatik Zoom**, **Müzik → Marker**, **Safe Zone**, **MOGRT altyazı**
 
 ## Kurulum
 
@@ -115,7 +110,6 @@ Birkaç dakika bekleyin; yeni sürümün yayılması zaman alabilir. Panelin alt
 
 ## Teşekkür
 
-Yazı Stüdyosu, Hazır Şablonlar, Geçişler, Lumetri Renk ve Müzik → Marker: **KURGU FX** — Vedat'ın eklentisinden, onun izniyle. Yazı tipleri Google Fonts'tan (SIL Open Font License).
 
 Konuşma tanıma: [whisper.cpp](https://github.com/ggml-org/whisper.cpp) — Georgi Gerganov ve katkıda bulunanlar. TK Caption onun üzerine kurulu.
 

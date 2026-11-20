@@ -48,6 +48,8 @@ function buildArgs(opts) {
     '-m', modelPath,
     '-f', wavPath,
     '-l', W.language || 'tr',
+    // Ceviri: konusma dilinden INGILIZCE metin (whisper'in kendi gorevi)
+    ...(W.translate ? ['-tr'] : []),
     '-t', String(threads),
     '-of', outPrefix,
     '-ojf',                  // token seviyesinde JSON - kelime birlestirme icin sart

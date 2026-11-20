@@ -91,6 +91,61 @@
   var MAC = /Mac/i.test((typeof navigator !== 'undefined' && navigator.platform) || '');
 
   var coreDir = null;
+
+  /* ---------------------------------------------------------------- */
+  /*  TK Caption Pro                                                   */
+  /* ---------------------------------------------------------------- */
+
+  /*
+   * Pro kodu ucretsiz pakette YOK. Eklenti klasorunde pro/pro.js varsa
+   * (Pro kurulumu) okunup bu kapsamda calistirilir; yoksa Pro sekmeleri
+   * kilitli gorunur ve tiklaninca tanitim sayfasi acilir.
+   */
+  var PRO = { acik: false };
+
+  function proKlasoru() {
+    var ext = CEP.extensionPath();
+    if (!ext || !nfs) return null;
+    var real = ext;
+    try { real = nfs.realpathSync(ext); } catch (e) {}
+    var p = npath.join(real, 'pro');
+    try { return nfs.existsSync(npath.join(p, 'pro.js')) ? p : null; } catch (e) { return null; }
+  }
+
+  function proYukle() {
+    var kok = proKlasoru();
+    if (kok) {
+      try {
+        var kaynak = nfs.readFileSync(npath.join(kok, 'pro.js'), 'utf8');
+        // Dogrudan eval: Pro kodu bu kapsamin yardimcilarini kullanir
+        eval(kaynak);
+      } catch (e) {
+        PRO.acik = false;
+        PRO.hata = e.message;
+        console.error('Pro yuklenemedi', e);
+      }
+    }
+    proKilitYansit();
+  }
+
+  /** Pro sekmelerine kilit rozeti; altyazidaki Grafik secenegi */
+  function proKilitYansit() {
+    var sekmeler = document.querySelectorAll('[data-pro]');
+    for (var i = 0; i < sekmeler.length; i++) {
+      var el = sekmeler[i];
+      el.classList.toggle('kilitli', !PRO.acik);
+      if (!PRO.acik && !el.querySelector('.prorozet')) {
+        var b = document.createElement('b');
+        b.className = 'prorozet';
+        b.textContent = 'PRO';
+        el.appendChild(b);
+      }
+    }
+    var gr = document.querySelector('#targetGrp [data-target="graphic"]');
+    if (gr && !PRO.acik) { gr.disabled = true; gr.title = 'Grafik timeline TK Caption Pro\'da'; }
+    field('envPro', PRO.acik ? 'Pro' : (PRO.hata ? 'Ücretsiz (Pro yüklenemedi: ' + PRO.hata + ')' : 'Ücretsiz'),
+          PRO.acik ? 'ok' : '');
+  }
   window.TK_COREDIR = function () { return resolveCore(); };
 
   /**
@@ -346,7 +401,7 @@
       var nokta = $('seqDot');
       if (nokta) nokta.className = 'dot on';
       kapsamiTazele(d);
-      zoomPistleriniCiz(asArray(d.videoList));
+      if (PRO.zoomPistleriniCiz) PRO.zoomPistleriniCiz(asArray(d.videoList));
     }).catch(function (e) {
       var nokta = $('seqDot');
       if (nokta) nokta.className = 'dot';
@@ -469,10 +524,6 @@
 
     updateDurum = 'kontrol ediliyor…';
     updater.check(root).then(function (r) {
-      if (r.apiLimit) {
-        // Kullanici 'guncelleme gelmedi' diye ugrasmasin: sebebi soyluyoruz
-        mogrtNot && null;
-      }
       updateDurum = (r.apiLimit ? '[GitHub saatlik istek limiti doldu — birkaç dakika sonra] ' : '') +
         'kurulu v' + r.current + ' / depoda v' + r.latest +
         (r.available ? ' — güncelleme var' : ' — güncel') +
@@ -548,6 +599,7 @@
   var kapsamAralik = 'entire';   // 'entire' | 'inout'
   var kapsamSes = [];            // bos = tumu; dolu = secili ses timeline indeksleri
   var kapsamBicim = 0;           // blok basina en cok kelime; 0 = klasik
+  var kapsamDil = 'tr';          // 'tr' | 'en' (ceviri)
   var sonSeqBilgi = null;
 
   /** Bir dugme grubunda verilen degeri secili gosterir (kayitli secimi geri yuklerken) */
@@ -591,6 +643,18 @@
       hedefiYansit();
     });
 
+    // Dil: tr = Turkce altyazi, en = Turkce konusmadan Ingilizce altyazi (ceviri)
+    grupSecimi($('dilGrp'), 'data-dil', function (v) {
+      kapsamDil = v;
+      yerelYaz('tkcaption.dil', v);
+      hedefiYansit();
+    });
+    var kayitliD = yerelOku('tkcaption.dil');
+    if (kayitliD === 'en' || kayitliD === 'tr') {
+      kapsamDil = kayitliD;
+      grupYansit($('dilGrp'), 'data-dil', kayitliD);
+    }
+
     // Bicim: 0 = klasik (iki satir, okuma hizi), 3 = kisa, 1 = tek kelime
     grupSecimi($('capGrp'), 'data-cap', function (v) {
       kapsamBicim = parseInt(v, 10) || 0;
@@ -616,6 +680,7 @@
 
     // Son secilen hedefi hatirla
     var kayitli = yerelOku(HEDEF_ANAHTAR);
+    if (kayitli === 'graphic' && !PRO.acik) kayitli = 'caption';
     if (kayitli === 'graphic' || kayitli === 'caption') {
       kapsamHedef = kayitli;
       var g = $('targetGrp');
@@ -641,9 +706,9 @@
     if (!ipucu) return;
 
     if (kapsamHedef === 'graphic') {
-      var it = mogrtSecili ? mogrtItem(mogrtSecili) : null;
-      ipucu.textContent = it
-        ? 'grafik timeline’a — şablon: ' + it.ad
+      var ad = PRO.mogrtAd ? PRO.mogrtAd() : null;
+      ipucu.textContent = ad
+        ? 'grafik timeline’a — şablon: ' + ad
         : 'grafik timeline’a — önce Şablonlar’dan şablon seçin';
     } else {
       var mod = kapsamYerlestirme;
@@ -682,7 +747,6 @@
     }
 
     sesPistleriniCiz(asArray(d.audioList));
-    yaziOnizBoyut();
   }
 
   /**
@@ -964,214 +1028,16 @@
   }
 
   /* ---------------------------------------------------------------- */
-  /*  AUTOCUT — sessiz bolumleri kesip silme                           */
+  /*  Yerel kayit (ucretsiz ve Pro ortak)                             */
   /* ---------------------------------------------------------------- */
 
-  /*
-   * IKI ADIM: once tara, sonra uygula.
-   *
-   * Tek dugme olsaydi kullanici neyin silinecegini gormeden sekansini
-   * degistirmis olurdu. Once kac bolge ve kac saniye oldugunu
-   * gosteriyoruz; "Uygula" ancak ondan sonra aciliyor.
-   *
-   * Sessizlik tespiti icin altyazi boru hattinin kullandigi VAD'i
-   * kullaniyoruz — ayni ses, ayni olcum. Ayri bir esik mantigi yazmak
-   * iki yerde farkli davranan bir sistem uretirdi.
-   */
+  var sonAltyaziYolu = null;   // son uretilen altyazi dosyasi
 
-  var kesBolgeler = null;   // [{start,end}] sekans saniyesi
-  var kesSeqBilgi = null;
-
-  function kesYaz(html) {
-    var el = $('cutOut');
-    if (!el) return;
-    el.hidden = false;
-    el.innerHTML += html + '\n';
-    el.scrollTop = el.scrollHeight;
+  function yerelOku(k) {
+    try { return window.localStorage.getItem(k); } catch (e) { return null; }
   }
-
-  function kesBar(oran) {
-    var b = $('cutBar'), f = $('cutFill');
-    if (b) b.hidden = false;
-    if (f) f.style.width = Math.round(Math.max(0, Math.min(1, oran)) * 100) + '%';
-  }
-
-  /**
-   * Kaydirici etiketleri.
-   *
-   * OLCULEN: kenar payi sessizligi IKI taraftan yiyor, yani gercekte
-   * kesilen esik (esik + 2*pay). Yalnizca esigi gostermek kullaniciyi
-   * yaniltir — "0.8 dedim ama 1 sn'lik bosluk kesilmedi" der. Efektif
-   * degeri de yaziyoruz.
-   */
-  function kesEtiketleri() {
-    var e = kesMinSn(), pd = kesPadSn();
-    var efektif = e + 2 * pd;
-    setText('cutMinVal', e.toFixed(1) + ' sn');
-    setText('cutPadVal', pd.toFixed(1) + ' sn');
-    var n = $('cutNote');
-    if (n) {
-      n.textContent = pd > 0
-        ? 'Kenar payı ile birlikte ' + efektif.toFixed(1) +
-          ' sn ve üzeri sessizlikler kesilecek.'
-        : e.toFixed(1) + ' sn ve üzeri sessizlikler kesilecek.';
-    }
-  }
-
-  /** Kaydirici degerleri: 8 -> 0.8 sn */
-  function kesMinSn() { return (Number($('optCutMin').value) || 8) / 10; }
-  function kesPadSn() { return (Number($('optCutPad').value) || 0) / 10; }
-
-  function autocutTara() {
-    var btn = $('btnCutScan');
-    btn.disabled = true;
-    $('btnCutApply').disabled = true;
-    $('cutOut').innerHTML = '';
-    kesBolgeler = null;
-    kesBar(0);
-
-    var core = resolveCore();
-    if (!core) { kesYaz('<span class="err">Çekirdek bulunamadı.</span>'); btn.disabled = false; return; }
-
-    var tmp = nos.tmpdir();
-    var wav = npath.join(tmp, 'tkcaption-kesim.wav');
-
-    CEP.call('trGetSequenceInfo()').then(function (d) {
-      kesSeqBilgi = d;
-      kesYaz('<span class="dim">sekans:</span> ' + esc(d.name) + '  ' +
-             Number(d.durationSec).toFixed(1) + ' sn');
-      kesBar(0.1);
-      kesYaz('<span class="dim">ses çıkarılıyor…</span>');
-      // Kesim her zaman TUM sekansta calisir: bir bolumu kesip digerini
-      // birakmak zaman cizgisini tutarsiz birakirdi.
-      return CEP.call('trExportAudioAuto("' + esPath(wav) + '", 0, "")');
-    }).then(function (e) {
-      kesBar(0.45);
-      kesYaz('<span class="ok">ses hazır</span> ' +
-             (Number(e.bytes) / 1048576).toFixed(1) + ' MB');
-
-      var au = nodeReq(npath.join(core, 'src', 'audio.js'));
-      var vad = nodeReq(npath.join(core, 'src', 'vad.js'));
-      var dec = au.decodeWav(wav);
-      var pcm = au.resample(dec.samples, dec.sampleRate, 16000);
-      kesBar(0.7);
-
-      var pad = kesPadSn();
-      var minSn = kesMinSn();
-
-      /* VAD'in varsayilan esigi 2 saniye: altyazi icin dogru, kesim icin
-       * degil. O esik whisper'in uydurma metin urettigi UZUN sessizlikleri
-       * atmak icin secilmisti; burada kullanicinin verdigi esigi
-       * gecirmezsek 0.8 sn ayari hicbir sey yapmaz ve panel sessizce
-       * yalan soylemis olur.
-       *
-       * padMs'i de biz veriyoruz: VAD konusma bolgesini o kadar genisletiyor,
-       * yani sessizlik o kadar daraliyor — kullanicinin "kenar payi"
-       * ayarinin karsiligi tam olarak bu. */
-      var bolgeler = vad.detectSpeech(pcm, 16000, {
-        minRemovableSilenceMs: Math.round(minSn * 1000),
-        padMs: Math.round(pad * 1000)
-      });
-      if (!bolgeler || !bolgeler.length) {
-        kesYaz('<span class="warn">Konuşma bulunamadı — kesim yapılmayacak.</span>');
-        return null;
-      }
-      var toplamSn = dec.durationSec;
-      var sessiz = [];
-      var oncekiBitis = 0;
-
-      for (var i = 0; i < bolgeler.length; i++) {
-        var bas = bolgeler[i].start / 16000;
-        var bit = bolgeler[i].end / 16000;
-        // Pay VAD icinde uygulandi; burada tekrar daraltmak cift kirpma olur
-        if (bas - oncekiBitis > 0) {
-          sessiz.push({ start: oncekiBitis, end: bas });
-        }
-        oncekiBitis = bit;
-      }
-      if (toplamSn - oncekiBitis > 0) {
-        sessiz.push({ start: oncekiBitis, end: toplamSn });
-      }
-
-      // Cok kisa olanlari atiyoruz: her yarim saniyeyi kesmek videoyu
-      // tanimaz hale getirir ve yuzlerce kesim yaratir.
-      var suzulmus = [];
-      for (var s = 0; s < sessiz.length; s++) {
-        var uz = sessiz[s].end - sessiz[s].start;
-        if (uz >= minSn) suzulmus.push(sessiz[s]);
-      }
-
-      kesBar(1);
-      if (!suzulmus.length) {
-        kesYaz('<span class="warn">' + minSn.toFixed(1) +
-               ' sn ve üzeri sessizlik bulunamadı.</span>');
-        return null;
-      }
-
-      var kazanc = 0;
-      for (var k = 0; k < suzulmus.length; k++) kazanc += suzulmus[k].end - suzulmus[k].start;
-
-      kesBolgeler = suzulmus;
-      kesYaz('<span class="ok">' + suzulmus.length + ' sessiz bölüm, toplam ' +
-             kazanc.toFixed(1) + ' sn</span>');
-      kesYaz('<span class="dim">sekans ' + toplamSn.toFixed(1) + ' sn → ' +
-             (toplamSn - kazanc).toFixed(1) + ' sn olacak</span>');
-      return CEP.call('trAutoCut("' + esPath(JSON.stringify(suzulmus)) + '", ' +
-                      Number(kesSeqBilgi.fps) + ', "1")');
-    }).then(function (r) {
-      if (r) {
-        kesYaz('<span class="dim">etkilenecek timeline:</span> ' +
-               r.videoTracks + ' video, ' + r.audioTracks + ' ses');
-        $('btnCutApply').disabled = false;
-      }
-    }).catch(function (e) {
-      kesYaz('<span class="err">' + esc(e.message || String(e)) + '</span>');
-    }).then(function () {
-      btn.disabled = false;
-    });
-  }
-
-  var kesMod = 'kes';   // 'kes' | 'marker'
-
-  function autocutUygula() {
-    if (!kesBolgeler || !kesBolgeler.length) return;
-    var btn = $('btnCutApply');
-    btn.disabled = true;
-
-    // Marker modu: sekansa dokunmadan yalnizca isaretle. Kullanici neyin
-    // kesilecegini gorur, isterse elle keser.
-    if (kesMod === 'marker') {
-      kesYaz('<span class="dim">marker konuyor…</span>');
-      CEP.call('trAddMarkers("' + esPath(JSON.stringify(kesBolgeler)) + '", "Sessizlik", 6)')
-        .then(function (r) {
-          kesYaz('<span class="ok">' + r.placed + ' marker eklendi</span>');
-          var hs = asArray(r.errors);
-          if (hs.length) kesYaz('<span class="warn">' + hs.length + ' marker eklenemedi</span>');
-        }).catch(function (e) {
-          kesYaz('<span class="err">' + esc(e.message || String(e)) + '</span>');
-        }).then(function () { btn.disabled = false; });
-      return;
-    }
-
-    kesYaz('<span class="dim">kesiliyor…</span>');
-
-    CEP.call('trAutoCut("' + esPath(JSON.stringify(kesBolgeler)) + '", ' +
-             Number(kesSeqBilgi.fps) + ', "0")').then(function (r) {
-      kesYaz('<span class="ok">' + r.cuts + ' kesim, ' + r.removed +
-             ' parça silindi</span>');
-      kesYaz('<span class="dim">zaman biçimi:</span> ' + esc(r.format));
-      var hs = asArray(r.errors);
-      if (hs.length) {
-        kesYaz('<span class="warn">' + hs.length + ' sorun</span>');
-        for (var i = 0; i < Math.min(4, hs.length); i++) {
-          kesYaz('<span class="dim">  ' + esc(hs[i]) + '</span>');
-        }
-      }
-      kesBolgeler = null;   // ayni bolgeler iki kez uygulanmasin
-    }).catch(function (e) {
-      kesYaz('<span class="err">' + esc(e.message || String(e)) + '</span>');
-      btn.disabled = false;
-    });
+  function yerelYaz(k, v) {
+    try { window.localStorage.setItem(k, v); } catch (e) {}
   }
 
   /* ---------------------------------------------------------------- */
@@ -1190,13 +1056,18 @@
     if (!tablar.length) return;
 
     function gec(ad) {
+      // Pro yuklu degilse Pro sekmesinin sayfasi yok: tanitim sayfasi acilir
+      var kilitli = !$('tab-' + ad);
       for (var i = 0; i < tablar.length; i++) {
         var t = tablar[i];
         var secili = t.getAttribute('data-tab') === ad;
-        t.className = secili ? 'tab on' : 'tab';
+        t.classList.toggle('on', secili);
         var govde = $('tab-' + t.getAttribute('data-tab'));
         if (govde) govde.hidden = !secili;
+        if (secili && kilitli) setText('proOzellik', t.textContent.replace('PRO', '').trim());
       }
+      var tanitim = $('tab-pro');
+      if (tanitim) tanitim.hidden = !kilitli;
       try { window.localStorage.setItem(SEKME_ANAHTAR, ad); } catch (e) {}
     }
 
@@ -1220,717 +1091,6 @@
       var temel = lab.className.indexOf('subtle') >= 0 ? 'chip subtle' : 'chip';
       lab.className = kutular[i].checked ? temel + ' on' : temel;
     }
-  }
-
-  /* ---------------------------------------------------------------- */
-  /*  STILIZE ALTYAZI — MOGRT sablonuyla video pistine                 */
-  /* ---------------------------------------------------------------- */
-
-  /*
-   * NEDEN AYRI BIR AKIS: Premiere altyazi pistinin stilini ne dosyadan
-   * ne betikten kabul ediyor (olculdu). Yazi tipi/renk vermenin tek yolu
-   * altyaziyi grafik olarak koymak. Bedeli de acik: cikti kapatilabilir
-   * bir altyazi pisti degil, videoya gomulu yazi oluyor. Bu yuzden
-   * mevcut altyazi akisini DEGISTIRMIYORUZ, yanina koyuyoruz.
-   *
-   * .mogrt dosyalari pakete girmiyor (50 sablon ~114 MB). Katalog ve
-   * kucuk onizlemeler pakette; dosyalarin kendisi kullanicinin
-   * klasorunden okunuyor.
-   */
-
-  var mogrtKatalog = null;
-  var mogrtSecili = null;
-  var mogrtKlasor = null;
-  var sonAltyaziYolu = null;
-
-  var MOGRT_KLASOR_ANAHTAR = 'tkcaption.mogrtDir';
-  var MOGRT_SECIM_ANAHTAR = 'tkcaption.mogrtStyle';
-
-  function yerelOku(k) {
-    try { return window.localStorage.getItem(k); } catch (e) { return null; }
-  }
-  function yerelYaz(k, v) {
-    try { window.localStorage.setItem(k, v); } catch (e) {}
-  }
-
-  var mogrtMod = null;
-
-  /**
-   * Katalog PAKETTE DEGIL, calisma aninda uretiliyor.
-   *
-   * Bir donem hazir katalog ve onizlemeler pakete konmustu; o veriler
-   * satin alinmis bir sablon paketinden cikarilmisti ve dagitma hakkimiz
-   * yoktu. Artik panel kullanicinin gosterdigi klasoru kendisi tariyor.
-   */
-  function initMogrt() {
-    if (!nodeReq) { mogrtNot('Node.js kapalı — bu bölüm çalışmaz.'); return; }
-
-    var core = resolveCore();
-    if (!core) { mogrtNot('Çekirdek bulunamadı.'); return; }
-
-    try {
-      mogrtMod = nodeReq(npath.join(core, 'src', 'mogrt.js'));
-    } catch (e) {
-      mogrtNot('Şablon okuyucu yüklenemedi: ' + e.message);
-      return;
-    }
-
-    mogrtKlasor = yerelOku(MOGRT_KLASOR_ANAHTAR);
-    mogrtSecili = yerelOku(MOGRT_SECIM_ANAHTAR);
-
-    klasorEtiketiTazele();
-
-    if (!mogrtKlasor) {
-      setText('mogrtCount', '');
-      mogrtNot('Şablon klasörünüzü seçin — .mogrt dosyalarının bulunduğu klasör.');
-      mogrtDurumTazele();
-      return;
-    }
-
-    katalogYukle(false);
-  }
-
-  /**
-   * Katalogu onbellekten alir; yoksa ya da klasor degistiyse tarar.
-   * @param {boolean} zorla onbellegi yok say
-   */
-  function katalogYukle(zorla) {
-    if (!mogrtMod || !mogrtKlasor) return;
-
-    try {
-      if (!zorla) {
-        var ob = mogrtMod.onbellek(mogrtKlasor);
-        if (ob) {
-          mogrtKatalog = ob;
-          kartlariCiz();
-          mogrtDurumTazele();
-          return;
-        }
-      }
-
-      mogrtNot('Şablonlar taranıyor…');
-      // Tarama 50 sablonda ~1 sn; arayuzu kilitlememek icin bir sonraki
-      // cerceveye birakiyoruz ki "taranıyor" yazisi gorunebilsin.
-      window.setTimeout(function () {
-        try {
-          mogrtKatalog = mogrtMod.tara(mogrtKlasor);
-          mogrtNot(mogrtKatalog.atlanan && mogrtKatalog.atlanan.length
-            ? mogrtKatalog.atlanan.length + ' şablon atlandı (metin alanı yok)'
-            : '');
-          kartlariCiz();
-          mogrtDurumTazele();
-        } catch (e) {
-          mogrtNot('Tarama başarısız: ' + e.message);
-        }
-      }, 30);
-    } catch (e) {
-      mogrtNot('Katalog okunamadı: ' + e.message);
-    }
-  }
-
-  /**
-   * Kartlari cizer — ama YALNIZCA secili klasorde dosyasi bulunanlari.
-   *
-   * Katalog 50 sablon tanimliyor; pakete gelen demo klasorunde 3 tane var.
-   * Hepsini gostermek kullaniciyi tiklayinca "dosya yok" diyen 47 kartla
-   * bas basa birakirdi.
-   */
-  /** Yerel bir dosyayi img src'de gosterilebilir hale getirir */
-  function dosyaUrl(p) {
-    // Mac yolu '/' ile basliyor; basina bir tane daha eklenirse file://// olur
-    return 'file:///' + String(p).replace(/\\/g, '/').replace(/^\/+/, '')
-      .split('/').map(encodeURIComponent).join('/');
-  }
-
-  function kartlariCiz() {
-    var grid = $('mogrtGrid');
-    if (!grid || !mogrtKatalog) return;
-
-    var thumbKok = mogrtMod.thumbsDir();
-    var html = '';
-    for (var i = 0; i < mogrtKatalog.items.length; i++) {
-      var it = mogrtKatalog.items[i];
-      var secili = (it.id === mogrtSecili) ? ' on' : '';
-      // Onizlemeler veri klasorunde (pakette degil) — mutlak yol gerekiyor
-      var gorsel = it.thumb
-        ? '<img src="' + dosyaUrl(npath.join(thumbKok, it.thumb)) + '" alt="">'
-        : '<span class="yok">önizleme yok</span>';
-      html += '<div class="mogrt-card' + secili + '" data-id="' + esc(it.id) + '">' +
-              gorsel + '<span class="ad">' + esc(it.ad) + '</span></div>';
-    }
-    grid.innerHTML = html;
-    grid.hidden = false;
-    setText('mogrtCount', mogrtKatalog.items.length + ' şablon');
-
-    var kartlar = grid.querySelectorAll('.mogrt-card');
-    for (var k = 0; k < kartlar.length; k++) {
-      kartlar[k].addEventListener('click', function () {
-        var hepsi = grid.querySelectorAll('.mogrt-card');
-        for (var j = 0; j < hepsi.length; j++) hepsi[j].className = 'mogrt-card';
-        this.className = 'mogrt-card on';
-        mogrtSecili = this.getAttribute('data-id');
-        yerelYaz(MOGRT_SECIM_ANAHTAR, mogrtSecili);
-        mogrtDurumTazele();
-      });
-    }
-  }
-
-  function klasorEtiketiTazele() {
-    if (!mogrtKlasor) { setText('mogrtDirLabel', 'seçilmedi'); return; }
-    var varMi = false;
-    try { varMi = nfs.existsSync(mogrtKlasor); } catch (e) {}
-    setText('mogrtDirLabel', (varMi ? '' : '(bulunamadı) ') + mogrtKlasor);
-  }
-
-  function chooseMogrtDir() {
-    var r = null;
-    try {
-      r = window.cep.fs.showOpenDialogEx(false, true, 'MOGRT şablon klasörü',
-                                         mogrtKlasor || '');
-    } catch (e) {
-      try { r = window.cep.fs.showOpenDialog(false, true, 'MOGRT şablon klasörü', ''); }
-      catch (e2) { mogrtNot('Klasör seçici açılamadı: ' + e2.message); return; }
-    }
-    if (!r || !r.data || !r.data.length) return;
-    mogrtKlasor = String(r.data[0]);
-    yerelYaz(MOGRT_KLASOR_ANAHTAR, mogrtKlasor);
-    klasorEtiketiTazele();
-    katalogYukle(true);   // yeni klasor: onbellegi yok say
-  }
-
-  function mogrtNot(msg) {
-    var el = $('mogrtNote');
-    if (!el) return;
-    el.textContent = msg || '';
-    el.hidden = !msg;
-  }
-
-  /**
-   * Sablon durumunu bildirir.
-   *
-   * Ayri bir "Stilize Altyazi Olustur" dugmesi yok artik — ana eylem
-   * hedefe gore dallaniyor. Burada yalnizca eksik olani soyluyoruz ve
-   * ana eylemin ipucunu tazeliyoruz.
-   */
-  function mogrtDurumTazele() {
-    if (!mogrtKlasor) { mogrtNot('Şablon klasörünü seçin.'); hedefiYansit(); return; }
-    if (!mogrtKatalog) { hedefiYansit(); return; }
-    if (!mogrtSecili) { mogrtNot('Bir şablon seçin.'); hedefiYansit(); return; }
-
-    var it = mogrtItem(mogrtSecili);
-    if (it) {
-      var dosya = npath.join(mogrtKlasor, it.dosya);
-      var varMi = false;
-      try { varMi = nfs.existsSync(dosya); } catch (e) {}
-      if (!varMi) {
-        mogrtNot('Seçilen şablon dosyası klasörde yok: ' + it.dosya);
-        hedefiYansit();
-        return;
-      }
-    }
-    mogrtNot('');
-    hedefiYansit();
-  }
-
-  function mogrtItem(id) {
-    if (!mogrtKatalog) return null;
-    for (var i = 0; i < mogrtKatalog.items.length; i++) {
-      if (mogrtKatalog.items[i].id === id) return mogrtKatalog.items[i];
-    }
-    return null;
-  }
-
-  function mogrtBar(oran) {
-    var b = $('mogrtBar');
-    var f = $('mogrtFill');
-    if (b) b.hidden = false;
-    if (f) f.style.width = Math.round(Math.max(0, Math.min(1, oran)) * 100) + '%';
-  }
-
-  function mogrtYaz(html) {
-    var el = $('mogrtOut');
-    if (!el) return;
-    el.hidden = false;
-    el.innerHTML += html + '\n';
-    el.scrollTop = el.scrollHeight;
-  }
-
-  /**
-   * Uretilmis altyaziyi MOGRT klipleri olarak grafik timeline'a dizer.
-   *
-   * Ana eylemden cagriliyor: kullanici 'Nereye: Grafik timeline' sectiyse
-   * altyazi uretildikten sonra bu calisiyor. Ayri bir dugme yoktu cunku
-   * ayni isin iki dugmesi olmasi kullaniciyi 'hangisine basayim' diye
-   * dusundurmustu.
-   *
-   * @returns {Promise} yerlestirme bitince cozulur
-   */
-  function mogrtYerlestir() {
-    var it = mogrtItem(mogrtSecili);
-    if (!it) return Promise.reject(new Error('Şablon seçilmedi.'));
-    if (!sonAltyaziYolu) return Promise.reject(new Error('Önce altyazı üretilmeli.'));
-
-    mogrtBar(0);
-    mogrtNot('');
-
-    var core = resolveCore();
-    var bloklar;
-    try {
-      var srtMod = nodeReq(npath.join(core, 'src', 'srt.js'));
-      bloklar = srtMod.parseSrt(nfs.readFileSync(sonAltyaziYolu, 'utf8'));
-    } catch (e) {
-      appendRun('<span class="err">Altyazı dosyası okunamadı: ' + esc(e.message) + '</span>');
-      return Promise.reject(new Error('Altyazı dosyası okunamadı.'));
-    }
-    if (!bloklar || !bloklar.length) {
-      return Promise.reject(new Error('Altyazı dosyasında blok yok.'));
-    }
-
-    var dosya = npath.join(mogrtKlasor, it.dosya);
-    appendRun('<span class="dim">şablon:</span> ' + esc(it.ad) + '  ' + bloklar.length + ' blok');
-
-    // SRT zamanlari sekansin BASLANGIC ZAMAN KODUNA gore yazildi (pipeline
-    // zeroPoint'i offset olarak ekliyor). importMGT ise sekansin basindan
-    // itibaren saniye istiyor. Sekans 01:00:00:00'dan basliyorsa bu farki
-    // dusmezsek her klip bir saat ileri gider.
-    var zeroSec = 0;
-    var olcek = 0;
-    var dikey = Number($('optMogrtPos').value) / 100;
-
-    return CEP.call('trGetSequenceInfo()').then(function (si) {
-      zeroSec = Number(si.zeroPointSec) || 0;
-
-      // Sablonlarin tamami 16:9 uretilmis; dikey sekansta genislik tasiyor.
-      // Elle bir deger verilmediyse sablonu sekans genisligine oturtuyoruz.
-      var elle = Number($('optMogrtScale').value) || 0;
-      if (elle > 0) {
-        olcek = elle;
-      } else if (it.en > 0 && Number(si.width) > 0) {
-        olcek = Math.round((Number(si.width) / it.en) * 1000) / 10;
-        appendRun('<span class="dim">Şablon ' + it.en + 'x' + it.boy +
-                 ', sekans ' + si.width + 'x' + si.height +
-                 ' — ölçek %' + olcek + '</span>');
-      }
-      if (zeroSec > 0.0005) {
-        appendRun('<span class="dim">Başlangıç zaman kodu düşülüyor:</span> ' +
-                 zeroSec.toFixed(3) + ' sn');
-      }
-      // Once bos bir video pisti bul; var olan klipleri ezmek istemiyoruz
-      return CEP.call('trFindFreeVideoTrack()');
-    }).then(function (t) {
-      var track = Number(t.track);
-      appendRun('<span class="dim">timeline:</span> V' + (track + 1) +
-               (String(t.created) === 'true' ? ' (yeni eklendi)' : ''));
-
-      // Grup grup gonderiyoruz: tek cagrida panel dakikalarca donardi.
-      // Ozyinelemeli zinciri bir Promise'e sariyoruz ki cagiran taraf
-      // yerlestirmenin BITTIGINI ogrenebilsin — eskiden bitis sinyali
-      // yoktu ve ana akis yerlestirme surerken tamamlanmis sayiyordu.
-      var GRUP = 10;
-      var i = 0;
-      var konan = 0;
-      var hatalar = [];
-
-      return new Promise(function (resolve, reject) {
-        function sonraki() {
-          if (i >= bloklar.length) {
-            mogrtBar(1);
-            appendRun('<span class="ok">' + konan + ' / ' + bloklar.length +
-                     ' altyazı yerleştirildi</span>');
-            if (hatalar.length) {
-              appendRun('<span class="warn">' + hatalar.length + ' blok atlandı</span>');
-              for (var h = 0; h < Math.min(5, hatalar.length); h++) {
-                appendRun('<span class="dim">  ' + esc(hatalar[h]) + '</span>');
-              }
-            }
-            resolve({ placed: konan, total: bloklar.length });
-            return;
-          }
-
-          var grup = [];
-          for (var g = 0; g < GRUP && i < bloklar.length; g++, i++) {
-            grup.push({
-              start: Math.max(0, bloklar[i].start - zeroSec),
-              end: Math.max(0.05, bloklar[i].end - zeroSec),
-              text: bloklar[i].lines ? bloklar[i].lines.join('\n') : (bloklar[i].text || '')
-            });
-          }
-
-          var json = JSON.stringify(grup);
-          CEP.call('trPlaceMogrtBatch("' + esPath(dosya) + '", "' + esPath(json) +
-                   '", ' + track + ', ' + olcek + ', ' + dikey.toFixed(4) + ')')
-            .then(function (r) {
-              konan += Number(r.placed) || 0;
-              var hs = asArray(r.errors);
-              for (var e = 0; e < hs.length; e++) hatalar.push(hs[e]);
-              mogrtBar(i / bloklar.length);
-              sonraki();
-            })
-            .catch(reject);
-        }
-        sonraki();
-      });
-    });
-  }
-
-  /* ---------------------------------------------------------------- */
-  /*  GUVENLI ALAN katmani                                             */
-  /* ---------------------------------------------------------------- */
-
-  var safeOn = false;
-
-  /** Isaretli platformlar. Bos birakilirsa Reels varsayilir. */
-  function selectedPresets() {
-    var out = [];
-    var boxes = document.querySelectorAll('.chips input.sf');
-    for (var i = 0; i < boxes.length; i++) {
-      if (boxes[i].checked) out.push(boxes[i].value);
-    }
-    return out.length ? out : ['instagram-reels'];
-  }
-
-  /**
-   * Platform arayuz elemanlarini ciz.
-   *
-   * Bunlar TEMSILIDIR — gercek ikonlarin kopyasi degil, "buraya kalp gelecek"
-   * diyen yer tutuculardir. Kurgucu boylece neyin nereyi kapatacagini goruyor.
-   */
-  function drawUI(g, els, width) {
-    var stroke = 'rgba(255,255,255,0.55)';
-    var fill = 'rgba(255,255,255,0.22)';
-    var lw = Math.max(2, Math.round(width / 500));
-
-    function heart(x, y, s) {
-      var r = s / 2;
-      g.beginPath();
-      g.moveTo(x, y + r * 0.75);
-      g.bezierCurveTo(x - r * 1.4, y - r * 0.4, x - r * 0.45, y - r * 1.15, x, y - r * 0.35);
-      g.bezierCurveTo(x + r * 0.45, y - r * 1.15, x + r * 1.4, y - r * 0.4, x, y + r * 0.75);
-      g.closePath();
-      g.fill(); g.stroke();
-    }
-    function comment(x, y, s) {
-      var r = s / 2;
-      g.beginPath();
-      g.moveTo(x - r, y - r * 0.7);
-      g.lineTo(x + r, y - r * 0.7);
-      g.lineTo(x + r, y + r * 0.35);
-      g.lineTo(x - r * 0.25, y + r * 0.35);
-      g.lineTo(x - r * 0.6, y + r * 0.85);   // kuyruk
-      g.lineTo(x - r * 0.6, y + r * 0.35);
-      g.lineTo(x - r, y + r * 0.35);
-      g.closePath();
-      g.fill(); g.stroke();
-    }
-    function share(x, y, s) {
-      var r = s / 2;
-      g.beginPath();                          // kagit ucak
-      g.moveTo(x - r, y - r * 0.35);
-      g.lineTo(x + r, y - r * 0.8);
-      g.lineTo(x + r * 0.15, y + r * 0.8);
-      g.lineTo(x - r * 0.1, y + r * 0.1);
-      g.closePath();
-      g.fill(); g.stroke();
-    }
-    function more(x, y, s) {
-      var r = Math.max(1.5, s / 9);
-      for (var i = -1; i <= 1; i++) {
-        g.beginPath();
-        g.arc(x, y + i * s * 0.32, r, 0, Math.PI * 2);
-        g.fill();
-      }
-    }
-    function circle(x, y, s, inner) {
-      g.beginPath(); g.arc(x, y, s / 2, 0, Math.PI * 2); g.fill(); g.stroke();
-      if (inner) { g.beginPath(); g.arc(x, y, s / 6, 0, Math.PI * 2); g.stroke(); }
-    }
-    function bar(x, y, w, h, round) {
-      var r = round ? h / 2 : Math.min(h / 2, width / 300);
-      g.beginPath();
-      g.moveTo(x + r, y);
-      g.lineTo(x + w - r, y);
-      g.quadraticCurveTo(x + w, y, x + w, y + r);
-      g.lineTo(x + w, y + h - r);
-      g.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-      g.lineTo(x + r, y + h);
-      g.quadraticCurveTo(x, y + h, x, y + h - r);
-      g.lineTo(x, y + r);
-      g.quadraticCurveTo(x, y, x + r, y);
-      g.closePath();
-      g.fill();
-    }
-
-    g.lineWidth = lw;
-    g.strokeStyle = stroke;
-    g.fillStyle = fill;
-
-    // Ikonun altindaki sayi da yer kaplar; onu da gostermek daha dogru
-    var nfs2 = Math.max(9, Math.round(width / 60));
-
-    for (var i = 0; i < els.length; i++) {
-      var e = els[i];
-      if (e.label) {
-        var eski = g.fillStyle;
-        g.font = '600 ' + nfs2 + 'px sans-serif';
-        g.fillStyle = 'rgba(255,255,255,0.6)';
-        g.textAlign = 'center';
-        g.textBaseline = 'top';
-        g.fillText(e.label, e.x, e.y + (e.size || 0) * 0.55);
-        g.textAlign = 'left';
-        g.textBaseline = 'alphabetic';
-        g.fillStyle = eski;
-      }
-      switch (e.type) {
-        case 'heart': heart(e.x, e.y, e.size); break;
-        case 'comment': comment(e.x, e.y, e.size); break;
-        case 'share': share(e.x, e.y, e.size); break;
-        case 'more': more(e.x, e.y, e.size); break;
-        case 'avatar': circle(e.x, e.y, e.size, false); break;
-        case 'disc': circle(e.x, e.y, e.size, true); break;
-        case 'text': bar(e.x, e.y, e.w, e.h, true); break;
-        case 'music': bar(e.x, e.y, e.w, e.h, true); break;
-        case 'box':
-          g.strokeRect(e.x, e.y, e.w, e.h);
-          break;
-        default: break;
-      }
-    }
-  }
-
-  /**
-   * Kilavuz katmanini canvas'ta cizip PNG olarak yazar.
-   *
-   * Program Monitor'e dogrudan cizim yapmak betikle mumkun degil; bu yuzden
-   * sekansin ustune saydam bir goruntu katmani koyuyoruz.
-   */
-  function drawSafeZone(presets, width, height, dim) {
-    var sz = nodeReq(npath.join(resolveCore(), 'src', 'safezone.js'));
-    var ids = [].concat(presets).filter(Boolean);
-    var rect = sz.intersectRects(ids, width, height);
-    if (!rect) throw new Error('Seçilen platformların ortak güvenli alanı yok.');
-
-    var etiket = ids.map(function (i) { return sz.PRESETS[i].label; }).join(' + ');
-    var title = ids.length === 1 ? sz.toTitleRect(ids[0], width, height) : null;
-
-    var cv = document.createElement('canvas');
-    cv.width = width;
-    cv.height = height;
-    var g = cv.getContext('2d');
-
-    /* KIRPILAN ALANLAR KIRMIZI.
-     * Notr karartma "burasi neden onemli?" demiyor; kirmizi dogrudan
-     * "buraya bir sey koyma" diyor. */
-    var a = Math.max(0.12, dim / 100 * 0.8);
-    g.fillStyle = 'rgba(214, 38, 78, ' + a + ')';
-    g.fillRect(0, 0, width, rect.y);                                   // üst
-    g.fillRect(0, rect.y + rect.h, width, height - rect.y - rect.h);   // alt
-    g.fillRect(0, rect.y, rect.x, rect.h);                             // sol
-    g.fillRect(rect.x + rect.w, rect.y, width - rect.x - rect.w, rect.h); // sağ
-
-    var lw = Math.max(2, Math.round(width / 380));
-
-    // Uyari metni — ust ve alt bantlarda, bant yeterince yuksekse
-    var uyari = 'BU ALAN ÇOĞU CİHAZDA KIRPILIR';
-    var us = Math.max(10, Math.round(width / 52));
-    g.font = '700 ' + us + 'px sans-serif';
-    g.fillStyle = 'rgba(255,255,255,0.92)';
-    g.textAlign = 'center';
-    g.textBaseline = 'middle';
-    if (rect.y > us * 2.2) g.fillText(uyari, width / 2, rect.y / 2);
-    var altBant = height - (rect.y + rect.h);
-    if (altBant > us * 2.2) {
-      g.fillText(uyari, width / 2, rect.y + rect.h + altBant / 2);
-    }
-    g.textAlign = 'left';
-    g.textBaseline = 'alphabetic';
-
-    // Guvenli alan siniri
-    g.strokeStyle = 'rgba(255,255,255,0.95)';
-    g.lineWidth = lw;
-    g.strokeRect(rect.x + lw / 2, rect.y + lw / 2, rect.w - lw, rect.h - lw);
-
-    // Tek platform secildiyse o platformun kendi siniri da ayrica gorunsun
-    if (ids.length > 1) {
-      g.lineWidth = Math.max(1, lw / 2);
-      g.setLineDash([lw * 3, lw * 3]);
-      for (var q = 0; q < ids.length; q++) {
-        var rq = sz.toRect(ids[q], width, height);
-        g.strokeStyle = 'rgba(255,255,255,0.30)';
-        g.strokeRect(rq.x, rq.y, rq.w, rq.h);
-      }
-      g.setLineDash([]);
-    }
-
-    // Yatay YouTube'da ikinci seviye: baslik guvenli alani
-    if (title) {
-      g.strokeStyle = 'rgba(255,255,255,0.45)';
-      g.lineWidth = Math.max(1, lw / 2);
-      g.setLineDash([lw * 4, lw * 3]);
-      g.strokeRect(title.x, title.y, title.w, title.h);
-      g.setLineDash([]);
-    }
-
-    // Platform arayuz elemanlari — "burasi neden yasak?" sorusunu cevaplar
-    drawUI(g, sz.mergedUi(ids, width, height), width);
-
-    // Etiket
-    var fs = Math.max(14, Math.round(width / 36));
-    g.font = '600 ' + fs + 'px sans-serif';
-    g.fillStyle = 'rgba(255,255,255,0.9)';
-    g.textBaseline = 'top';
-    g.fillText(etiket, rect.x + lw * 2, rect.y + lw * 2);
-
-    // PNG olarak diske yaz
-    var data = cv.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
-    var dir = npath.join(nos.tmpdir(), 'tkcaption-safezone');
-    try { nfs.mkdirSync(dir, { recursive: true }); } catch (e) {}
-
-    /* Dosya adi AYARLARI ICERIR: preset, cozunurluk ve karartma.
-     *
-     * Boylece ayni gorunum icin hep ayni dosya kullanilir (projede tek oge
-     * kalir), ayar degisince de yeni dosya uretilir. Eski dosyalari SILMIYORUZ:
-     * Premiere projeye aldigi dosyayi acik tutuyor ve hala kullaniliyor
-     * olabilir — silmek ogeyi cevrimdisi birakir. */
-    var file = npath.join(dir, 'TKSafeZone_' + ids.join('-') + '_' + width + 'x' + height +
-      '_d' + dim + '.png');
-    if (!nfs.existsSync(file)) {
-      nfs.writeFileSync(file, Buffer.from(data, 'base64'));
-    }
-    return {
-      path: file,
-      rect: rect,
-      label: etiket,
-      note: ids.length === 1 ? sz.PRESETS[ids[0]].note
-        : ids.length + ' platformun ortak alanı — en kısıtlayıcı kenarlar geçerli.'
-    };
-  }
-
-  /**
-   * Secim degisince aciklamayi tazele.
-   * Birden fazla platform secilirse ortak alanin daralacagini soylemek onemli:
-   * kullanici "neden bu kadar dar?" diye sormasin.
-   */
-  function refreshPlatformNote() {
-    var ids = selectedPresets();
-    var el = $('safeMulti');
-    try {
-      var sz = nodeReq(npath.join(resolveCore(), 'src', 'safezone.js'));
-      if (ids.length === 1) {
-        var nEl = $('safeNote');
-        if (nEl) { nEl.hidden = false; nEl.textContent = sz.PRESETS[ids[0]].note; }
-        if (el) el.hidden = true;
-      } else {
-        if ($('safeNote')) $('safeNote').hidden = true;
-        if (el) {
-          el.hidden = false;
-          el.textContent = ids.length + ' platform seçili — gösterilen alan ' +
-            'hepsinin ortak (en dar) bölgesidir.';
-        }
-      }
-    } catch (e) {}
-
-    // "Tümü" kutusu gercek durumu yansitsin
-    var boxes = document.querySelectorAll('.chips input.sf');
-    var hepsi = true;
-    for (var i = 0; i < boxes.length; i++) if (!boxes[i].checked) hepsi = false;
-    if ($('safeAll')) $('safeAll').checked = hepsi;
-  }
-
-  function safeZoneOn() {
-    var presets = selectedPresets();
-    var dim = parseInt($('optSafeDim').value, 10);
-
-    return CEP.call('trGetSequenceInfo()').then(function (d) {
-      var w = parseInt(d.width, 10);
-      var h = parseInt(d.height, 10);
-      if (!w || !h) throw new Error('Sekans çözünürlüğü okunamadı.');
-
-      /* Ayni preset+cozunurluk icin katman zaten projedeyse yeni PNG
-       * URETME. Her acilista dosya uretmek hem diski hem projeyi sisiriyordu. */
-      var key = presets.join('-') + '_' + w + 'x' + h + '_d' + dim;
-      return CEP.call('trFindSafeZoneItem("' + esPath(key) + '")')
-        .then(function (f) {
-          return { w: w, h: h, reuse: String(f.found) === 'true', name: f.name };
-        });
-    }).then(function (ctx) {
-      var w = ctx.w, h = ctx.h;
-      var drawn;
-      if (ctx.reuse) {
-        // Mevcut oge kullanilacak; dosya adini ondan turetiyoruz
-        var szm = nodeReq(npath.join(resolveCore(), 'src', 'safezone.js'));
-        var rr = szm.intersectRects(presets, w, h);
-        drawn = {
-          path: npath.join(nos.tmpdir(), 'tkcaption-safezone', ctx.name +
-                 (/.png$/i.test(ctx.name) ? '' : '.png')),
-          rect: rr,
-          label: presets.map(function (i) { return szm.PRESETS[i].label; }).join(' + '),
-          note: ''
-        };
-        if (!nfs.existsSync(drawn.path)) drawn = drawSafeZone(presets, w, h, dim);
-      } else {
-        drawn = drawSafeZone(presets, w, h, dim);
-      }
-      show('safeOut', '<span class="dim">' + esc(drawn.label) + '  ' + w + '×' + h +
-        '  — güvenli alan ' + drawn.rect.w + '×' + drawn.rect.h + ' px</span>');
-      setText('safeNote', drawn.note);
-
-      return CEP.call('trPlaceSafeZone("' + esPath(drawn.path) + '", "' +
-                      esPath(drawn.label) + '")');
-    }).then(function (r) {
-      var steps = asArray(r.steps);
-      for (var i = 0; i < steps.length; i++) {
-        $('safeOut').innerHTML += NL + '<span class="dim">' + esc(steps[i]) + '</span>';
-      }
-      $('safeOut').innerHTML += NL +
-        '<span class="ok">Katman eklendi (video ' + esc(r.track) + ').</span>' + NL +
-        '<span class="warn">Dışa aktarmadan önce kapatmayı unutmayın.</span>';
-      safeOn = true;
-      $('btnSafe').textContent = 'Kapat';
-      $('btnSafe').className = 'cta on';
-    });
-  }
-
-  function safeZoneOff() {
-    return CEP.call('trRemoveSafeZone()').then(function (r) {
-      var msg = '<span class="ok">Katman kaldırıldı' +
-        (Number(r.removed) ? ' (' + esc(r.removed) + ' klip)' : '') + '.</span>';
-      // Silme gercekten oldu mu? Cagrinin donmesi silindigi anlamina gelmiyor.
-      if (r.binTried !== undefined) {
-        msg += NL + '<span class="dim">proje öğesi: ' + esc(r.binTried) + ' denendi, ' +
-               esc(r.binDeleted) + ' silindi, ' + esc(r.binLeft) + ' kaldı' +
-               ' (' + esc(r.binMethod) + ')</span>';
-        if (Number(r.binLeft) > 0) {
-          msg += NL + '<span class="warn">Premiere bu öğeleri silmeye izin vermiyor; ' +
-                 'proje panelinden elle silebilirsiniz.</span>';
-        }
-      }
-      show('safeOut', msg);
-      safeOn = false;
-      $('btnSafe').textContent = 'Aç';
-      $('btnSafe').className = 'cta';
-    });
-  }
-
-  function toggleSafeZone() {
-    var btn = $('btnSafe');
-    btn.disabled = true;
-    setStatus(safeOn ? 'kaldırılıyor…' : 'ekleniyor…');
-    var work = safeOn ? safeZoneOff() : safeZoneOn();
-    work.catch(function (e) {
-      show('safeOut', '<span class="err">' + esc(e.message) + '</span>');
-    }).then(function () {
-      btn.disabled = false;
-      setStatus('');
-    });
-  }
-
-  /** Panel acilinca katman zaten duruyor mu? Dugme durumu dogru olsun. */
-  function refreshSafeState() {
-    CEP.call('trHasSafeZone()').then(function (r) {
-      safeOn = String(r.present) === 'true';
-      $('btnSafe').textContent = safeOn ? 'Kapat' : 'Aç';
-      $('btnSafe').className = safeOn ? 'cta on' : 'cta';
-    }).catch(function () { /* sekans yoksa onemli degil */ });
   }
 
   /* ---------------------------------------------------------------- */
@@ -2026,285 +1186,6 @@
   }
 
   /* ---------------------------------------------------------------- */
-  /*  DOLGU KESICI                                                     */
-  /* ---------------------------------------------------------------- */
-
-  /*
-   * "ııı", "eee" ve secilen dolgu kelimelerini bulur, LISTE olarak
-   * gosterir; kullanici isaretlediklerini keser ya da marker koyar.
-   *
-   * Konusma tanima gerekiyor (kelime zamanlari icin). Ayni sekans icin az
-   * once tum-sekans altyazi uretildiyse o sonuc yeniden kullaniliyor.
-   * Yoksa ayrica bir tanima calisiyor — bu kez whisper'a dolgulari da
-   * yazdiran bir ipucuyla (bkz. core/src/filler.js DOLGU_IPUCU).
-   */
-
-  var dolguAdaylar = null;
-  var dolguSeq = null;
-  var dolguKelimeleri = null;
-  var dolguMod = 'kes';
-  var dolguG = gunluk('dolguOut', 'dolguBar', 'dolguFill');
-
-  function dolguMod_() {
-    try { return nodeReq(npath.join(resolveCore(), 'src', 'filler.js')); } catch (e) { return null; }
-  }
-
-  function dolguKelimeCiz() {
-    var kap = $('dolguKelimeler');
-    if (!kap) return;
-    var fm = dolguMod_();
-    // Cekirdek okunamazsa da liste gorunsun (core/src/filler.js ile ayni)
-    var liste = fm ? fm.KELIME_DOLGU : ['şey', 'yani', 'hani', 'işte', 'falan', 'filan', 'aslında', 'öyle'];
-    var html = '';
-    for (var i = 0; i < liste.length; i++) {
-      html += '<li><label class="chip"><input type="checkbox" class="dk" value="' +
-              esc(liste[i]) + '"><span>' + esc(liste[i]) + '</span></label></li>';
-    }
-    kap.innerHTML = html;
-  }
-
-  function dolguSeciliKelimeler() {
-    var out = [];
-    var k = document.querySelectorAll('#dolguKelimeler input.dk');
-    for (var i = 0; i < k.length; i++) if (k[i].checked) out.push(k[i].value);
-    return out;
-  }
-
-  function dolguListeCiz() {
-    var kap = $('dolguList');
-    if (!kap) return;
-    var html = '';
-    for (var i = 0; i < dolguAdaylar.length; i++) {
-      var a = dolguAdaylar[i];
-      var b = a.baglam || { once: '', sonra: '' };
-      html += '<label class="fitem" data-i="' + i + '">' +
-              '<input type="checkbox" checked>' +
-              '<span class="tm">' + mmss(a.start) + '</span>' +
-              '<span class="ctx">' + (b.once ? '…' + esc(b.once) + ' ' : '') +
-              '<b>' + esc(a.text) + '</b>' + (b.sonra ? ' ' + esc(b.sonra) + '…' : '') + '</span>' +
-              '<span class="sn">' + (a.end - a.start).toFixed(1) + 's</span></label>';
-    }
-    kap.innerHTML = html;
-    $('dolguSonuc').hidden = !dolguAdaylar.length;
-    dolguOzet();
-  }
-
-  function dolguSecili() {
-    var out = [];
-    var satirlar = document.querySelectorAll('#dolguList .fitem');
-    for (var i = 0; i < satirlar.length; i++) {
-      var cb = satirlar[i].querySelector('input');
-      satirlar[i].className = cb.checked ? 'fitem' : 'fitem off';
-      if (cb.checked) out.push(dolguAdaylar[parseInt(satirlar[i].getAttribute('data-i'), 10)]);
-    }
-    return out;
-  }
-
-  function dolguOzet() {
-    var s = dolguSecili();
-    var top = 0;
-    for (var i = 0; i < s.length; i++) top += s[i].end - s[i].start;
-    var btn = $('btnDolguUygula');
-    if (btn) {
-      btn.disabled = !s.length;
-      btn.textContent = s.length ? (dolguMod === 'marker' ? s.length + ' marker koy' : s.length + ' dolguyu kes') : 'Uygula';
-    }
-    setText('dolguBosVal', '');
-    return { adet: s.length, sure: top };
-  }
-
-  function dolguTara() {
-    if (!nodeReq) { dolguG.yaz('<span class="err">Node.js kapalı.</span>'); return; }
-    var core = resolveCore();
-    if (!core) { dolguG.yaz('<span class="err">Çekirdek bulunamadı.</span>'); return; }
-    var fm = dolguMod_();
-    var btn = $('btnDolguTara');
-    btn.disabled = true;
-    $('btnDolguUygula').disabled = true;
-    dolguG.temizle();
-    dolguAdaylar = null;
-    $('dolguSonuc').hidden = true;
-    var olcum = null;
-
-    // VAD sikı ayarli: kelimeler arasi kisa "ııı"lari gormek icin kisa
-    // sessizlikleri de bolge siniri sayiyoruz, kenar payi yok
-    sesVeKonusma('dolgu', { minRemovableSilenceMs: 250, padMs: 0 }, dolguG).then(function (o) {
-      olcum = o;
-      dolguSeq = o.seq;
-      var ayni = sonKelimeler && sonKelimeler.seqID === String(o.seq.sequenceID) &&
-                 Math.abs(sonKelimeler.sure - Number(o.seq.durationSec)) < 0.05;
-      if (ayni) {
-        dolguG.yaz('<span class="dim">son altyazının konuşma tanıması kullanılıyor</span>');
-        return sonKelimeler.words;
-      }
-      dolguG.yaz('<span class="dim">konuşma tanınıyor… (uzun videoda birkaç dakika)</span>');
-      var pipeline = nodeReq(npath.join(core, 'src', 'pipeline.js'));
-      var cfg = nodeReq(npath.join(core, 'src', 'config.js')).load();
-      cfg.whisper.model = $('optModel').value;
-      cfg.whisper.initialPrompt = fm.DOLGU_IPUCU;
-      cfg.layout.fps = Number(o.seq.fps) || 25;
-      return pipeline.run({
-        input: o.wav,
-        out: npath.join(o.dir, 'dolgu.srt'),
-        cfg: cfg,
-        onPhase: function (ph, msg) {
-          if (ph === 'indirme' || ph === 'uyarı') dolguG.yaz('<span class="dim">' + esc(msg) + '</span>');
-        },
-        onProgress: function (ph, pct) { dolguG.bar(0.25 + (pct || 0) * 0.7); }
-      }).then(function (res) {
-        sonKelimeler = { seqID: String(o.seq.sequenceID), sure: Number(o.seq.durationSec), words: res.wordList };
-        return res.wordList;
-      });
-    }).then(function (words) {
-      dolguG.bar(1);
-      var aday = fm.bul(words, olcum.konusma, {
-        kelimeler: dolguSeciliKelimeler(),
-        sesliBosluk: $('dolguBosluk').checked
-      });
-      if (!$('dolguSes').checked) aday = aday.filter(function (a) { return a.tur !== 'ses'; });
-      aday.forEach(function (a) { a.baglam = fm.baglam(words, a, 3); a.ad = a.text; });
-      dolguAdaylar = aday;
-      var top = 0;
-      aday.forEach(function (a) { top += a.end - a.start; });
-      dolguG.yaz(aday.length
-        ? '<span class="ok">' + aday.length + ' dolgu bulundu, toplam ' + top.toFixed(1) + ' sn</span>'
-        : '<span class="warn">Dolgu bulunamadı.</span>');
-      if (aday.length) dolguG.yaz('<span class="dim">Kesmek istemediklerinizin işaretini kaldırın.</span>');
-      dolguListeCiz();
-    }).catch(function (e) {
-      dolguG.yaz('<span class="err">' + hataMetni(e) + '</span>');
-    }).then(function () {
-      btn.disabled = false;
-      setTimeout(function () { dolguG.bar(null); }, 600);
-    });
-  }
-
-  function dolguUygula() {
-    var secili = dolguSecili();
-    if (!secili.length || !dolguSeq) return;
-    var btn = $('btnDolguUygula');
-    btn.disabled = true;
-    var bolgeler = kareyeOtur(secili, dolguSeq.fps);
-    var is;
-    if (dolguMod === 'marker') {
-      dolguG.yaz('<span class="dim">marker konuyor…</span>');
-      is = CEP.call('trAddMarkers("' + esPath(JSON.stringify(bolgeler)) + '", "Dolgu", 3)').then(function (r) {
-        dolguG.yaz('<span class="ok">' + r.placed + ' marker eklendi</span>');
-      });
-    } else {
-      dolguG.yaz('<span class="dim">kesiliyor…</span>');
-      is = CEP.call('trAutoCut("' + esPath(JSON.stringify(bolgeler)) + '", ' +
-                    Number(dolguSeq.fps) + ', "0")').then(function (r) {
-        dolguG.yaz('<span class="ok">' + r.removed + ' dolgu kesildi</span>');
-        var hs = asArray(r.errors);
-        if (hs.length) dolguG.yaz('<span class="warn">' + hs.length + ' sorun</span>');
-        // Sekans degisti: eski kelime zamanlari ve adaylar artik gecersiz
-        sonKelimeler = null;
-        dolguAdaylar = null;
-        $('dolguSonuc').hidden = true;
-      });
-    }
-    is.catch(function (e) {
-      dolguG.yaz('<span class="err">' + hataMetni(e) + '</span>');
-    }).then(function () {
-      btn.disabled = !dolguAdaylar;
-      btn.textContent = 'Uygula';
-    });
-  }
-
-  /* ---------------------------------------------------------------- */
-  /*  OTOMATIK ZOOM                                                    */
-  /* ---------------------------------------------------------------- */
-
-  var zoomStil = 'punch';
-  var zoomG = gunluk('zoomOut', 'zoomBar', 'zoomFill');
-
-  /** Video pisti secimini doldurur; ilk dolu pist varsayilan */
-  function zoomPistleriniCiz(liste) {
-    var sel = $('optZoomTrack');
-    if (!sel || !liste.length) return;
-    var onceki = sel.value;
-    var html = '';
-    var ilkDolu = -1;
-    for (var i = 0; i < liste.length; i++) {
-      var p = String(liste[i]).split('|');
-      var klip = parseInt(p[1], 10) || 0;
-      if (klip > 0 && ilkDolu < 0) ilkDolu = i;
-      html += '<option value="' + i + '">' + esc(p[0] || ('V' + (i + 1))) +
-              (klip ? ' — ' + klip + ' klip' : ' — boş') + '</option>';
-    }
-    sel.innerHTML = html;
-    if (onceki && Number(onceki) < liste.length && sel.dataset.secildi) sel.value = onceki;
-    else if (ilkDolu >= 0) sel.value = String(ilkDolu);
-  }
-
-  function zoomEtiketleri() {
-    setText('zoomOranVal', '%' + $('optZoomOran').value);
-    setText('zoomAralikVal', (Number($('optZoomAralik').value) / 10).toFixed(1) + ' sn');
-  }
-
-  function zoomUygula() {
-    if (!nodeReq) return;
-    var core = resolveCore();
-    var btn = $('btnZoomUygula');
-    btn.disabled = true;
-    zoomG.temizle();
-    var pist = $('optZoomTrack').value;
-    var anahtar = null;
-
-    sesVeKonusma('zoom', { minRemovableSilenceMs: 300, padMs: 0 }, zoomG).then(function (o) {
-      var zm = nodeReq(npath.join(core, 'src', 'zoom.js'));
-      anahtar = zm.planla(o.konusma, {
-        oran: Number($('optZoomOran').value) / 100,
-        aralikSn: Number($('optZoomAralik').value) / 10,
-        stil: zoomStil,
-        fps: Number(o.seq.fps) || 25
-      });
-      var gecis = zoomStil === 'yumusak' ? (anahtar.length - 1) / 2 : (anahtar.length - 1) / 2;
-      zoomG.yaz('<span class="dim">' + o.konusma.length + ' konuşma bölgesi → ' + gecis + ' geçiş</span>');
-      zoomG.bar(0.6);
-      if (!gecis) throw new Error('Geçiş noktası bulunamadı — sıklığı azaltıp tekrar deneyin.');
-      return CEP.call('trVideoClips(' + parseInt(pist, 10) + ')').then(function (r) {
-        var klipler = asArray(r.clips);
-        if (!klipler.length) throw new Error('Seçilen video pistinde klip yok.');
-        var plan = zm.kliplereDagit(anahtar, klipler);
-        zoomG.yaz('<span class="dim">' + plan.length + ' / ' + klipler.length + ' klibe anahtar kare yazılacak</span>');
-        return CEP.call('trApplyZoom(' + parseInt(pist, 10) + ', "' + esPath(JSON.stringify(plan)) + '")');
-      });
-    }).then(function (r) {
-      zoomG.bar(1);
-      zoomG.yaz('<span class="ok">' + r.clips + ' klibe ' + r.keys + ' anahtar kare yazıldı</span>' +
-                '  <span class="dim">(' + esc(r.format) + ')</span>');
-      if (Number(r.skipped)) {
-        zoomG.yaz('<span class="warn">' + r.skipped + ' klipte zaten Scale anahtar karesi vardı, atlandı. ' +
-                  'Önce "Zoom\'u Kaldır".</span>');
-      }
-      var hs = asArray(r.errors);
-      for (var i = 0; i < Math.min(4, hs.length); i++) zoomG.yaz('<span class="warn">' + esc(hs[i]) + '</span>');
-      zoomG.yaz('<span class="dim">Geri almak için Ctrl+Z ya da Zoom\'u Kaldır.</span>');
-    }).catch(function (e) {
-      zoomG.yaz('<span class="err">' + hataMetni(e) + '</span>');
-    }).then(function () {
-      btn.disabled = false;
-      setTimeout(function () { zoomG.bar(null); }, 600);
-    });
-  }
-
-  function zoomKaldir() {
-    var btn = $('btnZoomKaldir');
-    btn.disabled = true;
-    zoomG.temizle();
-    CEP.call('trRemoveZoom(' + parseInt($('optZoomTrack').value, 10) + ')').then(function (r) {
-      zoomG.yaz('<span class="ok">' + r.cleared + ' klipten zoom kaldırıldı</span>');
-    }).catch(function (e) {
-      zoomG.yaz('<span class="err">' + hataMetni(e) + '</span>');
-    }).then(function () { btn.disabled = false; });
-  }
-
-  /* Yazi Studyosu artik panel/js/kfx.js icinde (KURGU FX cizicisiyle). */
-  function yaziOnizBoyut() {}
-
-  /* ---------------------------------------------------------------- */
   /*  Duz metin                                                        */
   /* ---------------------------------------------------------------- */
 
@@ -2388,42 +1269,9 @@
       if (e.target && e.target.parentNode && /chip/.test(e.target.parentNode.className)) cipleriTazele();
     });
 
-    // Auto Cut modu
-    grupSecimi($('cutModeGrp'), 'data-mode', function (v) {
-      kesMod = v;
-      setText('cutModeNote', v === 'marker'
-        ? 'Sekansa dokunulmaz; sessiz bölümlere marker konur.'
-        : 'Sessiz bölümler silinir, kalan klipler sola kayar. Geri almak için Ctrl+Z.');
-    });
-
-    // Dolgu
-    dolguKelimeCiz();
-    grupSecimi($('dolguModeGrp'), 'data-mode', function (v) { dolguMod = v; if (dolguAdaylar) dolguOzet(); });
-    $('btnDolguTara').addEventListener('click', dolguTara);
-    $('btnDolguUygula').addEventListener('click', dolguUygula);
-    $('dolguList').addEventListener('change', dolguOzet);
-    $('btnDolguHepsi').addEventListener('click', function () { dolguHepsi(true); });
-    $('btnDolguHic').addEventListener('click', function () { dolguHepsi(false); });
-
-    // Zoom
-    grupSecimi($('zoomStilGrp'), 'data-stil', function (v) { zoomStil = v; });
-    $('optZoomOran').addEventListener('input', zoomEtiketleri);
-    $('optZoomAralik').addEventListener('input', zoomEtiketleri);
-    $('optZoomTrack').addEventListener('change', function () { this.dataset.secildi = '1'; });
-    $('btnZoomUygula').addEventListener('click', zoomUygula);
-    $('btnZoomKaldir').addEventListener('click', zoomKaldir);
-    zoomEtiketleri();
-
-
     // Duz metin
     $('btnTxtCopy').addEventListener('click', metniKopyala);
     $('btnTxtSave').addEventListener('click', metniKaydet);
-  }
-
-  function dolguHepsi(acik) {
-    var k = document.querySelectorAll('#dolguList .fitem input');
-    for (var i = 0; i < k.length; i++) k[i].checked = acik;
-    dolguOzet();
   }
 
   /* ---------------------------------------------------------------- */
@@ -2501,7 +1349,9 @@
       // dusuluyordu; yani kare hizini dosyada tasima cozumu hic devreye
       // girmemisti. Icerik yine TTML, yalnizca uzanti .dfxp.
       var uzanti = fmt === 'ttml' ? '.dfxp' : '.srt';
-      return CEP.call('trSuggestSrtPath("' + esPath(d.name) + '", "' + uzanti + '")')
+      // Ceviri dosyasi Turkce altyazinin uzerine yazmasin
+      var dosyaAdi = d.name + (kapsamDil === 'en' ? ' EN' : '');
+      return CEP.call('trSuggestSrtPath("' + esPath(dosyaAdi) + '", "' + uzanti + '")')
         .then(function (s) { srtPath = s.path; })
         .catch(function () { /* gecici yolda kalir */ })
         .then(function () { return d; });
@@ -2588,6 +1438,19 @@
       var cfg = configMod.load();
 
       cfg.whisper.model = $('optModel').value;
+      /* CEVIRI: whisper'in kendi ceviri gorevi — konusma dilinden Ingilizce.
+       * Turbo modeller ceviri verisiyle egitilmedi (OpenAI'nin notu), ceviri
+       * icin large-v3'e geciyoruz. Turkce'ye ozel son islem (kesme isareti,
+       * ozel isim, cumle basi) Ingilizce metni bozar; kapatiyoruz. Baslangic
+       * ipucu da Ingilizce olmali, yoksa cikti Turkce'ye kayar. */
+      if (kapsamDil === 'en') {
+        cfg.whisper.translate = true;
+        if (/turbo/.test(cfg.whisper.model)) cfg.whisper.model = 'large-v3-q5_0';
+        cfg.whisper.initialPrompt = 'Hello, today I am going to talk about an important topic. Yes, you heard that right.';
+        cfg.turkish.enabled = false;
+        appendRun('<span class="dim">dil:</span> İngilizce çeviri — model ' + esc(cfg.whisper.model) +
+                  ' (ilk kullanımda bir kez ~1 GB iner)');
+      }
       cfg.layout.maxCharsPerLine = parseInt($('optChars').value, 10) || 42;
       cfg.layout.maxCps = parseFloat($('optCps').value) || 17;
       cfg.layout.fps = Number(seqInfo.fps) || 25;
@@ -2630,7 +1493,7 @@
       // Stilize altyazi bolumu bu dosyayi okuyup MOGRT olarak dizecek
       sonAltyaziYolu = srtPath;
       subsYukle(srtPath);
-      mogrtDurumTazele();
+      if (PRO.mogrtDurumTazele) PRO.mogrtDurumTazele();
       setBar(0.95);
       appendRun('<span class="ok">' + res.blocks + ' blok, ' + res.words + ' kelime</span>  ' +
                 res.elapsedSec + ' sn (' + res.speedRealtime + 'x)');
@@ -2684,7 +1547,8 @@
       // altyazi MOGRT klipleri olarak grafik timeline'a diziliyor.
       if (kapsamHedef === 'graphic') {
         sonAltyaziYolu = srtPath;
-        return mogrtYerlestir().then(function (r) {
+        if (!PRO.mogrtYerlestir) throw new Error('Grafik timeline TK Caption Pro\'da.');
+        return PRO.mogrtYerlestir().then(function (r) {
           // Ortak rapor bicimi: sonraki adim ikisini de ayni sekilde okur
           return { placed: 'true', grafik: true, konan: r.placed, attempts: [] };
         });
@@ -2910,52 +1774,22 @@
     checkEnvironment();
     readSequence(true);
     initAutoRefresh();
-    refreshSafeState();
     checkUpdate();  // sekans ozeti dugme beklemeden gorunsun
     $('btnReload').addEventListener('click', reloadPanel);
     $('btnUpdate').addEventListener('click', runUpdate);
     $('btnRun').addEventListener('click', generate);
     yeniAraclariBagla();
-    $('btnSafe').addEventListener('click', toggleSafeZone);
-    // "Tümü" kutusu digerlerini surukler
-    $('optSafeDim').addEventListener('input', function () {
-      setText('safeDimVal', '%' + $('optSafeDim').value);
+    proYukle();
+    if ($('btnProAl')) $('btnProAl').addEventListener('click', function () {
+      var u = 'https://labs.tkcreative.io/tk-caption';
+      // CEP'te window.open panelin icinde acar; varsayilan tarayiciya gonder
+      try { window.cep.util.openURLInDefaultBrowser(u); } catch (e) { window.open(u); }
     });
-    $('safeAll').addEventListener('change', function () {
-      var on = $('safeAll').checked;
-      var boxes = document.querySelectorAll('.chips input.sf');
-      for (var i = 0; i < boxes.length; i++) boxes[i].checked = on;
-      refreshPlatformNote();
-      cipleriTazele();
-    });
-    var sfBoxes = document.querySelectorAll('.chips input.sf');
-    for (var b = 0; b < sfBoxes.length; b++) {
-      sfBoxes[b].addEventListener('change', function () {
-        refreshPlatformNote();
-        cipleriTazele();
-      });
-    }
-    refreshPlatformNote();
-    cipleriTazele();
     $('btnSubsSave').addEventListener('click', subsKaydet);
     $('btnSubsPlace').addEventListener('click', subsYerlestir);
 
-    $('btnCutScan').addEventListener('click', autocutTara);
-    $('btnCutApply').addEventListener('click', autocutUygula);
-    $('optCutMin').addEventListener('input', kesEtiketleri);
-    $('optCutPad').addEventListener('input', kesEtiketleri);
-    kesEtiketleri();
     initScope();
     initTabs();
-    initMogrt();
-    $('btnMogrtDir').addEventListener('click', chooseMogrtDir);
-    $('optMogrtPos').addEventListener('input', function () {
-      setText('mogrtPosVal', '%' + this.value);
-    });
-    $('optMogrtScale').addEventListener('input', function () {
-      // 0 = dokunulmadi: sablon boyutundan otomatik hesaplanacak
-      setText('mogrtScaleVal', Number(this.value) > 0 ? '%' + this.value : 'otomatik');
-    });
     $('btnCancel').addEventListener('click', cancelRun);
     $('btnSeq').addEventListener('click', function () { readSequence(false); });
     $('btnProbe').addEventListener('click', runProbe);

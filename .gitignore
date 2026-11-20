@@ -27,3 +27,6 @@ stil-denemesi/
 
 # Kullanicinin kendi MOGRT sablonlari — baskasinin tasarimi, depoya girmez
 mogrt sablonlar/
+
+# TK Caption Pro: ayri gizli depo (TKCaption-Pro). Gelistirmede buraya konabilir.
+panel/pro/
